@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`InterXShift`
+# R/`InterXShift` <img src="man/figures/InterXshift.001.png" height="300" align="right"/>
 
 <!-- badges: start -->
 
@@ -55,7 +55,7 @@ which is the stochastic shift target parameters for the exposure sets
 identified as having synergy or antagonism. The process begins by
 partitioning the data into parameter-generating and estimation samples.
 In the parameter-generating sample, we identify our ranks of
-antogonistic and synergistic exposure sets through a machine learning
+antagonistic and synergistic exposure sets through a machine learning
 g-computation framework. In the estimation sample we then estimate our
 interaction target parameter using the doubly robust estimator TMLE to
 ensure asymptotic efficiency which allows us to construct confidence
@@ -80,9 +80,9 @@ outcomes, allowing users to glean insights effectively.
 `InterXshift` also incorporates features from the `sl3` package (Coyle,
 Hejazi, Malenica, et al. 2022), facilitating ensemble machine learning
 in the estimation process. If the user does not specify any stack
-parameters, `SuperNOVA` will automatically create an ensemble of machine
-learning algorithms that strike a balance between flexibility and
-computational efficiency.
+parameters, `InterXshift` will automatically create an ensemble of
+machine learning algorithms that strike a balance between flexibility
+and computational efficiency.
 
 ------------------------------------------------------------------------
 
@@ -145,9 +145,8 @@ library(devtools)
 library(kableExtra)
 library(sl3)
 
-set.seed(429153)
-# simulate simple data
-n_obs <- 10000
+seed <- 429153
+set.seed(seed)
 ```
 
 We will directly use synthetic data from the NIEHS used to test new
@@ -431,7 +430,10 @@ W
 
 Based on the data key, we expect X1 to have the strongest positive
 effect, X5 the strongest negative. So we would expect these to take the
-top ranks for these marginal associations. For interactions
+top ranks for these marginal associations. For interactions we expect to
+find interactions built into the data if there is enough observations in
+the region. The github page gives details on the types of interactions
+built into this synthetic data.
 
 ``` r
 
@@ -444,237 +446,231 @@ sim_results <- InterXshift(
   n_folds = 3,
   num_cores = 6,
   outcome_type = "continuous",
-  seed = 294580,
+  seed = seed,
   top_n = 2
 )
 #> 
-#> Iter: 1 fn: 207.8441  Pars:  0.24716 0.75284
-#> Iter: 2 fn: 207.8441  Pars:  0.24716 0.75284
+#> Iter: 1 fn: 188.2217  Pars:  0.18996 0.81004
+#> Iter: 2 fn: 188.2217  Pars:  0.18996 0.81004
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 377.5727  Pars:  0.15499 0.84501
-#> Iter: 2 fn: 377.5727  Pars:  0.15499 0.84501
+#> Iter: 1 fn: 376.1549  Pars:  0.15230 0.84770
+#> Iter: 2 fn: 376.1549  Pars:  0.15230 0.84770
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 330.3357  Pars:  0.0000008108 0.9999991895
-#> Iter: 2 fn: 330.3357  Pars:  0.0000003246 0.9999996754
+#> Iter: 1 fn: 330.7270  Pars:  0.0000001547 0.9999998440
+#> Iter: 2 fn: 330.7270  Pars:  0.00000009486 0.99999990514
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 401.8556  Pars:  0.86134 0.13866
-#> Iter: 2 fn: 401.8556  Pars:  0.86138 0.13862
+#> Iter: 1 fn: 395.5675  Pars:  0.9999995911 0.0000004086
+#> Iter: 2 fn: 395.5675  Pars:  0.9999997531 0.0000002469
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 332.3736  Pars:  0.0000004115 0.9999995885
-#> Iter: 2 fn: 332.3736  Pars:  0.0000002689 0.9999997311
+#> Iter: 1 fn: 329.0977  Pars:  0.00000009094 0.99999990921
+#> Iter: 2 fn: 329.0977  Pars:  0.00000005678 0.99999994322
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 397.6163  Pars:  0.99999899 0.00000101
-#> Iter: 2 fn: 397.6163  Pars:  0.9999993431 0.0000006569
+#> Iter: 1 fn: 394.9951  Pars:  0.97308 0.02692
+#> Iter: 2 fn: 394.9951  Pars:  0.97315 0.02685
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 401.6642  Pars:  0.34162 0.65838
-#> Iter: 2 fn: 401.6642  Pars:  0.34162 0.65838
+#> Iter: 1 fn: 411.6276  Pars:  0.77643 0.22357
+#> Iter: 2 fn: 411.6276  Pars:  0.77645 0.22355
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 394.7229  Pars:  0.999996612 0.000003388
-#> Iter: 2 fn: 394.7229  Pars:  0.9999992222 0.0000007778
-#> Iter: 3 fn: 394.7229  Pars:  0.9999996471 0.0000003529
+#> Iter: 1 fn: 396.0738  Pars:  0.9999991806 0.0000008196
+#> Iter: 2 fn: 396.0738  Pars:  0.9999995607 0.0000004393
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 359.4551  Pars:  0.001522 0.998478
+#> Iter: 2 fn: 358.7028  Pars:  0.57483 0.42517
+#> Iter: 3 fn: 358.7028  Pars:  0.57483 0.42517
 #> solnp--> Completed in 3 iterations
 #> 
-#> Iter: 1 fn: 356.1339  Pars:  0.000005701 0.999994299
-#> Iter: 2 fn: 356.1339  Pars:  0.000002949 0.999997051
+#> Iter: 1 fn: 271.4984  Pars:  0.05346 0.94654
+#> Iter: 2 fn: 271.4984  Pars:  0.05345 0.94655
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 266.7341  Pars:  0.05148 0.94852
-#> Iter: 2 fn: 266.7341  Pars:  0.05148 0.94852
+#> Iter: 1 fn: 138.6347  Pars:  0.14848 0.85152
+#> Iter: 2 fn: 138.6347  Pars:  0.14848 0.85152
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 333.6510  Pars:  0.00000144 0.99999856
-#> Iter: 2 fn: 333.6510  Pars:  0.0000008037 0.9999991963
+#> Iter: 1 fn: 66.5503   Pars:  0.0000001271 0.9999998736
+#> Iter: 2 fn: 66.5503   Pars:  0.00000007528 0.99999992472
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 400.0847  Pars:  0.999997174 0.000002826
-#> Iter: 2 fn: 400.0847  Pars:  0.999998661 0.000001339
+#> Iter: 1 fn: -5.0555   Pars:  0.44462 0.55538
+#> Iter: 2 fn: -5.0555   Pars:  0.44462 0.55538
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 404.9955  Pars:  0.000001765 0.999998235
-#> Iter: 2 fn: 404.9955  Pars:  0.0000005755 0.9999994245
+#> Iter: 1 fn: 183.8985  Pars:  0.20871 0.79129
+#> Iter: 2 fn: 183.8985  Pars:  0.20871 0.79129
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 398.2493  Pars:  0.91734 0.08266
-#> Iter: 2 fn: 398.2493  Pars:  0.91734 0.08266
+#> Iter: 1 fn: 383.7304  Pars:  0.15233 0.84767
+#> Iter: 2 fn: 383.7304  Pars:  0.15232 0.84768
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 357.3580  Pars:  0.73183 0.26817
-#> Iter: 2 fn: 357.3580  Pars:  0.73184 0.26816
+#> Iter: 1 fn: 380.2020  Pars:  0.23886 0.76114
+#> Iter: 2 fn: 380.2020  Pars:  0.23886 0.76114
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 273.0408  Pars:  0.05909 0.94091
-#> Iter: 2 fn: 273.0408  Pars:  0.05909 0.94091
+#> Iter: 1 fn: 183.6422  Pars:  0.03878 0.96122
+#> Iter: 2 fn: 183.6422  Pars:  0.03878 0.96122
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 183.0370  Pars:  0.01430 0.98570
-#> Iter: 2 fn: 183.0370  Pars:  0.01430 0.98570
+#> Iter: 1 fn: 333.7236  Pars:  0.03373 0.96627
+#> Iter: 2 fn: 333.7236  Pars:  0.03373 0.96627
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 368.3078  Pars:  0.28787 0.71213
-#> Iter: 2 fn: 368.3078  Pars:  0.28787 0.71213
+#> Iter: 1 fn: 341.5709  Pars:  0.21640 0.78360
+#> Iter: 2 fn: 341.5709  Pars:  0.21640 0.78360
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 339.4673  Pars:  0.31384 0.68616
-#> Iter: 2 fn: 339.4673  Pars:  0.31385 0.68615
+#> Iter: 1 fn: 388.3596  Pars:  0.34865 0.65135
+#> Iter: 2 fn: 388.3596  Pars:  0.34865 0.65135
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 383.2973  Pars:  0.09198 0.90802
-#> Iter: 2 fn: 383.2973  Pars:  0.09198 0.90802
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 340.5352  Pars:  0.72757 0.27243
-#> Iter: 2 fn: 340.5352  Pars:  0.72757 0.27243
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 391.8501  Pars:  0.20653 0.79347
-#> Iter: 2 fn: 391.8501  Pars:  0.20653 0.79347
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 393.0514  Pars:  0.41725 0.58275
-#> Iter: 2 fn: 393.0514  Pars:  0.41724 0.58276
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 385.7589  Pars:  0.23439 0.76561
-#> Iter: 2 fn: 385.7589  Pars:  0.23439 0.76561
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 359.8025  Pars:  0.64588 0.35412
-#> Iter: 2 fn: 359.8025  Pars:  0.64589 0.35411
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 298.1049  Pars:  0.13593 0.86407
-#> Iter: 2 fn: 298.1049  Pars:  0.13593 0.86407
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 343.2012  Pars:  0.69630 0.30370
-#> Iter: 2 fn: 343.2012  Pars:  0.69631 0.30369
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 387.6236  Pars:  0.26685 0.73315
-#> Iter: 2 fn: 387.6236  Pars:  0.26685 0.73315
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 382.9423  Pars:  0.38852 0.61148
-#> Iter: 2 fn: 382.9423  Pars:  0.38852 0.61148
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 386.7048  Pars:  0.26779 0.73221
-#> Iter: 2 fn: 386.7048  Pars:  0.26780 0.73220
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 358.5122  Pars:  0.81840 0.18160
-#> Iter: 2 fn: 358.5122  Pars:  0.81843 0.18157
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 299.7883  Pars:  0.18540 0.81460
-#> Iter: 2 fn: 299.7883  Pars:  0.18540 0.81460
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 175.6340  Pars:  0.0000000298 0.9999999697
-#> Iter: 2 fn: 175.6340  Pars:  0.000000002366 0.999999997634
-#> Iter: 3 fn: 175.6340  Pars:  0.000000001002 0.999999998998
+#> Iter: 1 fn: 342.6278  Pars:  0.60993 0.39007
+#> Iter: 2 fn: 342.6278  Pars:  0.60876 0.39124
+#> Iter: 3 fn: 342.6278  Pars:  0.60876 0.39124
 #> solnp--> Completed in 3 iterations
 #> 
-#> Iter: 1 fn: 390.2291  Pars:  0.10353 0.89647
-#> Iter: 2 fn: 390.2291  Pars:  0.10353 0.89647
+#> Iter: 1 fn: 388.2628  Pars:  0.20855 0.79145
+#> Iter: 2 fn: 388.2628  Pars:  0.20855 0.79145
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 345.9065  Pars:  0.0000001012 0.9999998989
-#> Iter: 2 fn: 345.9065  Pars:  0.00000006067 0.99999993933
+#> Iter: 1 fn: 393.7808  Pars:  0.58218 0.41782
+#> Iter: 2 fn: 393.7808  Pars:  0.58218 0.41782
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 400.4320  Pars:  0.04147 0.95853
-#> Iter: 2 fn: 400.4320  Pars:  0.04141 0.95859
+#> Iter: 1 fn: 390.2628  Pars:  0.19613 0.80387
+#> Iter: 2 fn: 390.2628  Pars:  0.19612 0.80388
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 350.7453  Pars:  0.07386 0.92614
-#> Iter: 2 fn: 350.7453  Pars:  0.07386 0.92614
+#> Iter: 1 fn: 360.8686  Pars:  0.999997556 0.000002444
+#> Iter: 2 fn: 360.8686  Pars:  0.999998373 0.000001627
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 399.6946  Pars:  0.72024 0.27976
-#> Iter: 2 fn: 399.6854  Pars:  0.994207 0.005793
-#> Iter: 3 fn: 399.6853  Pars:  0.9997299 0.0002701
-#> Iter: 4 fn: 399.6853  Pars:  0.999892 0.000108
-#> solnp--> Completed in 4 iterations
-#> 
-#> Iter: 1 fn: 401.3928  Pars:  0.87583 0.12417
-#> Iter: 2 fn: 401.3928  Pars:  0.87590 0.12410
+#> Iter: 1 fn: 299.4745  Pars:  0.20485 0.79515
+#> Iter: 2 fn: 299.4745  Pars:  0.20486 0.79514
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 402.8578  Pars:  0.000699 0.999301
-#> Iter: 2 fn: 398.8164  Pars:  0.999998775 0.000001225
-#> Iter: 3 fn: 398.8164  Pars:  0.9999997522 0.0000002478
+#> Iter: 1 fn: 185.8446  Pars:  0.03814 0.96186
+#> Iter: 2 fn: 185.8446  Pars:  0.03814 0.96186
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 86.1185   Pars:  0.26299 0.73701
+#> Iter: 2 fn: 86.1185   Pars:  0.26298 0.73702
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 18.4205   Pars:  0.37690 0.62310
+#> Iter: 2 fn: 18.4205   Pars:  0.37690 0.62310
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 184.0532  Pars:  0.00000009628 0.99999990364
+#> Iter: 2 fn: 184.0532  Pars:  0.00000005058 0.99999994942
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 356.5325  Pars:  0.18829 0.81171
+#> Iter: 2 fn: 356.5325  Pars:  0.18829 0.81171
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 353.1351  Pars:  0.24568 0.75432
+#> Iter: 2 fn: 353.1351  Pars:  0.24568 0.75432
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 180.6660  Pars:  0.00000004153 0.99999995880
+#> Iter: 2 fn: 180.6660  Pars:  0.00000002203 0.99999997797
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 390.6584  Pars:  0.04254 0.95746
+#> Iter: 2 fn: 390.6584  Pars:  0.04253 0.95747
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 345.8211  Pars:  0.03422 0.96578
+#> Iter: 2 fn: 345.8211  Pars:  0.03422 0.96578
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 400.1339  Pars:  0.999997412 0.000002589
+#> Iter: 2 fn: 400.1339  Pars:  0.9999993596 0.0000006404
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 347.2235  Pars:  0.000007085 0.999992915
+#> Iter: 2 fn: 347.2235  Pars:  0.000001319 0.999998681
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 401.4868  Pars:  0.999997153 0.000002846
+#> Iter: 2 fn: 401.4868  Pars:  0.999998259 0.000001741
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 403.9855  Pars:  0.75152 0.24848
+#> Iter: 2 fn: 403.9855  Pars:  0.75154 0.24846
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 401.3947  Pars:  0.999984 0.000016
+#> Iter: 2 fn: 401.3947  Pars:  0.999995323 0.000004677
+#> Iter: 3 fn: 401.3947  Pars:  0.999998239 0.000001761
 #> solnp--> Completed in 3 iterations
 #> 
-#> Iter: 1 fn: 351.1701  Pars:  0.33886 0.66114
-#> Iter: 2 fn: 351.1701  Pars:  0.33886 0.66114
+#> Iter: 1 fn: 350.1500  Pars:  0.999997608 0.000002392
+#> Iter: 2 fn: 350.1500  Pars:  0.99999857 0.00000143
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 263.4308  Pars:  0.10274 0.89726
-#> Iter: 2 fn: 263.4308  Pars:  0.10275 0.89725
+#> Iter: 1 fn: 256.1493  Pars:  0.09862 0.90138
+#> Iter: 2 fn: 256.1493  Pars:  0.09862 0.90138
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 349.1731  Pars:  0.09060 0.90940
-#> Iter: 2 fn: 349.1731  Pars:  0.09060 0.90940
+#> Iter: 1 fn: 176.8860  Pars:  0.0000000001619 1.0000000003752
+#> Iter: 2 fn: 176.8860  Pars:  4.409e-11 1.000e+00
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 398.4919  Pars:  0.12241 0.87759
-#> Iter: 2 fn: 398.4902  Pars:  0.21590 0.78410
-#> Iter: 3 fn: 398.4902  Pars:  0.21590 0.78410
+#> Iter: 1 fn: 83.6283   Pars:  0.14539 0.85461
+#> Iter: 2 fn: 83.6283   Pars:  0.14539 0.85461
+#> solnp--> Completed in 2 iterations
+#> 
+#> Iter: 1 fn: 6.8251    Pars:  0.008576 0.991424
+#> Iter: 2 fn: 6.8251    Pars:  0.00852 0.99148
+#> Iter: 3 fn: 6.8251    Pars:  0.00852 0.99148
 #> solnp--> Completed in 3 iterations
 #> 
-#> Iter: 1 fn: 406.4360  Pars:  0.76833 0.23167
-#> Iter: 2 fn: 406.4360  Pars:  0.76833 0.23167
+#> Iter: 1 fn: 192.2133  Pars:  0.05664 0.94336
+#> Iter: 2 fn: 192.2133  Pars:  0.05664 0.94336
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 403.4659  Pars:  0.90911 0.09089
-#> Iter: 2 fn: 403.4659  Pars:  0.90972 0.09028
+#> Iter: 1 fn: 396.6718  Pars:  0.18042 0.81958
+#> Iter: 2 fn: 396.6718  Pars:  0.18042 0.81958
 #> solnp--> Completed in 2 iterations
 #> 
-#> Iter: 1 fn: 349.7103  Pars:  0.000002336 0.999997663
-#> Iter: 2 fn: 349.7103  Pars:  0.0000002178 0.9999997822
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 261.9160  Pars:  0.000002122 0.999997879
-#> Iter: 2 fn: 261.9160  Pars:  0.0000004885 0.9999995115
+#> Iter: 1 fn: 387.5808  Pars:  0.08945 0.91055
+#> Iter: 2 fn: 387.5808  Pars:  0.08945 0.91055
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
 #>     user   system  elapsed 
-#>   76.950    4.150 1362.112
+#>   82.902    4.349 1455.498
 
 ## marginal effects
-top_positive_effects <- sim_results$`Pos Shift Results`
-top_negative_effects <- sim_results$`Neg Shift Results`
+top_positive_effects <- sim_results$`Pos Shift Results by Rank`
+top_negative_effects <- sim_results$`Neg Shift Results by Rank`
 
 ## interaction effects
-pooled_synergy_effects <- sim_results$`Pooled Synergy Results`
-pooled_antagonism_effects <- sim_results$`Pooled Antagonism Results`
+pooled_synergy_effects <- sim_results$`Pooled Synergy Results by Rank`
+pooled_antagonism_effects <- sim_results$`Pooled Antagonism Results by Rank`
 
 k_fold_synergy_effects <- sim_results$`K Fold Synergy Results`
 k_fold_antagonism_effects <- sim_results$`K Fold Antagonism Results`
 ```
 
 ``` r
-top_positive_effects %>%
+top_positive_effects$`Rank 1` %>%
   kbl(caption = "Rank 1 Positive Stochastic Intervention Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-<table class="kable_wrapper lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
+<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
 Rank 1 Positive Stochastic Intervention Results
 </caption>
-<tbody>
-<tr>
-<td>
-<table>
 <thead>
 <tr>
 <th style="text-align:left;">
@@ -721,22 +717,22 @@ Delta
 X1
 </td>
 <td style="text-align:right;">
-13.272347
+13.81500
 </td>
 <td style="text-align:right;">
-0.4610176
+0.4971182
 </td>
 <td style="text-align:right;">
-0.6789827
+0.7050661
 </td>
 <td style="text-align:right;">
-11.9416
+12.4331
 </td>
 <td style="text-align:right;">
-14.6031
+15.1969
 </td>
 <td style="text-align:right;">
-0.0000000
+0
 </td>
 <td style="text-align:left;">
 1
@@ -759,22 +755,22 @@ X1
 X1
 </td>
 <td style="text-align:right;">
--2.687271
+12.00894
 </td>
 <td style="text-align:right;">
-1.6059094
+0.7999055
 </td>
 <td style="text-align:right;">
-1.2672448
+0.8943744
 </td>
 <td style="text-align:right;">
--5.1710
+10.2560
 </td>
 <td style="text-align:right;">
--0.2035
+13.7619
 </td>
 <td style="text-align:right;">
-0.0339587
+0
 </td>
 <td style="text-align:left;">
 2
@@ -797,22 +793,22 @@ X1
 X1
 </td>
 <td style="text-align:right;">
-15.980403
+16.34802
 </td>
 <td style="text-align:right;">
-0.6346225
+0.5371240
 </td>
 <td style="text-align:right;">
-0.7966320
+0.7328874
 </td>
 <td style="text-align:right;">
-14.4190
+14.9116
 </td>
 <td style="text-align:right;">
-17.5418
+17.7844
 </td>
 <td style="text-align:right;">
-0.0000000
+0
 </td>
 <td style="text-align:left;">
 3
@@ -835,22 +831,22 @@ X1
 Rank 1
 </td>
 <td style="text-align:right;">
-14.366549
+14.98981
 </td>
 <td style="text-align:right;">
-0.2866767
+0.2786728
 </td>
 <td style="text-align:right;">
-0.5354220
+0.5278947
 </td>
 <td style="text-align:right;">
-13.3171
+13.9552
 </td>
 <td style="text-align:right;">
-15.4160
+16.0245
 </td>
 <td style="text-align:right;">
-0.0000000
+0
 </td>
 <td style="text-align:left;">
 Pooled TMLE
@@ -866,208 +862,6 @@ Rank 1
 </td>
 <td style="text-align:right;">
 1
-</td>
-</tr>
-</tbody>
-</table>
-</td>
-<td>
-<table>
-<thead>
-<tr>
-<th style="text-align:left;">
-Condition
-</th>
-<th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower CI
-</th>
-<th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
-</th>
-<th style="text-align:left;">
-Fold
-</th>
-<th style="text-align:left;">
-Type
-</th>
-<th style="text-align:left;">
-Variables
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-3.418538
-</td>
-<td style="text-align:right;">
-0.7348417
-</td>
-<td style="text-align:right;">
-0.8572291
-</td>
-<td style="text-align:right;">
-1.7384
-</td>
-<td style="text-align:right;">
-5.0987
-</td>
-<td style="text-align:right;">
-0.0000667
-</td>
-<td style="text-align:left;">
-1
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-2.716254
-</td>
-<td style="text-align:right;">
-0.7413940
-</td>
-<td style="text-align:right;">
-0.8610424
-</td>
-<td style="text-align:right;">
-1.0286
-</td>
-<td style="text-align:right;">
-4.4039
-</td>
-<td style="text-align:right;">
-0.0016071
-</td>
-<td style="text-align:left;">
-2
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-2.879122
-</td>
-<td style="text-align:right;">
-0.5118995
-</td>
-<td style="text-align:right;">
-0.7154715
-</td>
-<td style="text-align:right;">
-1.4768
-</td>
-<td style="text-align:right;">
-4.2814
-</td>
-<td style="text-align:right;">
-0.0000572
-</td>
-<td style="text-align:left;">
-3
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-X7
-</td>
-<td style="text-align:right;">
-166
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Rank 2
-</td>
-<td style="text-align:right;">
-3.138611
-</td>
-<td style="text-align:right;">
-0.2468434
-</td>
-<td style="text-align:right;">
-0.4968334
-</td>
-<td style="text-align:right;">
-2.1648
-</td>
-<td style="text-align:right;">
-4.1124
-</td>
-<td style="text-align:right;">
-0.0000000
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-Rank 2
-</td>
-<td style="text-align:right;">
-500
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-</tbody>
-</table>
 </td>
 </tr>
 </tbody>
@@ -1075,12 +869,13 @@ Rank 2
 
 Above we show the findings for the top rank positive marginal effect.
 Here we consistently find X1 which is true based on what is built into
-the DGP.
+the DGP. The pooled estimate is pooling the findings for the top ranked
+positive result found across the folds which is all X1 in this case.
 
 Next we look at the top negative result:
 
 ``` r
-top_negative_effects$`Rank 1` %>%
+top_negative_effects$`Rank 2` %>%
   kbl(caption = "Rank 1 Negative Stochastic Intervention Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
@@ -1132,25 +927,25 @@ Delta
 <tbody>
 <tr>
 <td style="text-align:left;">
-X4
+X5
 </td>
 <td style="text-align:right;">
--0.8445876
+-3.735474
 </td>
 <td style="text-align:right;">
-0.7361409
+0.6972921
 </td>
 <td style="text-align:right;">
-0.8579865
+0.8350402
 </td>
 <td style="text-align:right;">
--2.5262
+-5.3721
 </td>
 <td style="text-align:right;">
-0.8370
+-2.0988
 </td>
 <td style="text-align:right;">
-0.3249271
+7.7e-06
 </td>
 <td style="text-align:left;">
 1
@@ -1159,7 +954,7 @@ X4
 Indiv Shift
 </td>
 <td style="text-align:left;">
-X4
+X5
 </td>
 <td style="text-align:right;">
 167
@@ -1170,25 +965,25 @@ X4
 </tr>
 <tr>
 <td style="text-align:left;">
-X4
+X5
 </td>
 <td style="text-align:right;">
--0.6088896
+-3.708447
 </td>
 <td style="text-align:right;">
-0.7229439
+0.6808466
 </td>
 <td style="text-align:right;">
-0.8502611
+0.8251343
 </td>
 <td style="text-align:right;">
--2.2754
+-5.3257
 </td>
 <td style="text-align:right;">
-1.0576
+-2.0912
 </td>
 <td style="text-align:right;">
-0.4739168
+7.0e-06
 </td>
 <td style="text-align:left;">
 2
@@ -1197,7 +992,7 @@ X4
 Indiv Shift
 </td>
 <td style="text-align:left;">
-X4
+X5
 </td>
 <td style="text-align:right;">
 167
@@ -1208,25 +1003,25 @@ X4
 </tr>
 <tr>
 <td style="text-align:left;">
-X4
+X5
 </td>
 <td style="text-align:right;">
--0.4510666
+-3.337799
 </td>
 <td style="text-align:right;">
-0.5543036
+0.4530761
 </td>
 <td style="text-align:right;">
-0.7445157
+0.6731093
 </td>
 <td style="text-align:right;">
--1.9103
+-4.6571
 </td>
 <td style="text-align:right;">
-1.0082
+-2.0185
 </td>
 <td style="text-align:right;">
-0.5446128
+7.0e-07
 </td>
 <td style="text-align:left;">
 3
@@ -1235,7 +1030,7 @@ X4
 Indiv Shift
 </td>
 <td style="text-align:left;">
-X4
+X5
 </td>
 <td style="text-align:right;">
 166
@@ -1246,25 +1041,25 @@ X4
 </tr>
 <tr>
 <td style="text-align:left;">
-Rank 1
+Rank 2
 </td>
 <td style="text-align:right;">
--0.7797371
+-3.502256
 </td>
 <td style="text-align:right;">
-0.2457405
+0.2273206
 </td>
 <td style="text-align:right;">
-0.4957222
+0.4767815
 </td>
 <td style="text-align:right;">
--1.7513
+-4.4367
 </td>
 <td style="text-align:right;">
-0.1919
+-2.5678
 </td>
 <td style="text-align:right;">
-0.1157346
+0.0e+00
 </td>
 <td style="text-align:left;">
 Pooled TMLE
@@ -1273,7 +1068,7 @@ Pooled TMLE
 Indiv Shift
 </td>
 <td style="text-align:left;">
-Rank 1
+Rank 2
 </td>
 <td style="text-align:right;">
 500
@@ -1349,22 +1144,22 @@ Type
 Rank 1
 </td>
 <td style="text-align:right;">
--0.7839407
+-0.7658578
 </td>
 <td style="text-align:right;">
-0.2439296
+0.2417480
 </td>
 <td style="text-align:right;">
-0.4938923
+0.4916788
 </td>
 <td style="text-align:right;">
--1.7520
+-1.7295
 </td>
 <td style="text-align:right;">
-0.1841
+0.1978
 </td>
 <td style="text-align:right;">
-0.2646390
+0.2747394
 </td>
 <td style="text-align:left;">
 Pooled TMLE
@@ -1387,19 +1182,19 @@ Var 1
 Rank 1
 </td>
 <td style="text-align:right;">
--3.5652153
+-3.5759161
 </td>
 <td style="text-align:right;">
-0.2374525
+0.2393057
 </td>
 <td style="text-align:right;">
-0.4872909
+0.4891888
 </td>
 <td style="text-align:right;">
--4.5203
+-4.5347
 </td>
 <td style="text-align:right;">
--2.6101
+-2.6171
 </td>
 <td style="text-align:right;">
 0.0000003
@@ -1425,19 +1220,19 @@ Var 2
 Rank 1
 </td>
 <td style="text-align:right;">
--4.0194749
+-3.9894164
 </td>
 <td style="text-align:right;">
-0.2484014
+0.2265181
 </td>
 <td style="text-align:right;">
-0.4983989
+0.4759392
 </td>
 <td style="text-align:right;">
--4.9963
+-4.9222
 </td>
 <td style="text-align:right;">
--3.0426
+-3.0566
 </td>
 <td style="text-align:right;">
 0.0000000
@@ -1463,22 +1258,22 @@ Joint
 Rank 1
 </td>
 <td style="text-align:right;">
-0.3296811
+0.3523575
 </td>
 <td style="text-align:right;">
-0.2511571
+0.2508620
 </td>
 <td style="text-align:right;">
-0.5011557
+0.5008613
 </td>
 <td style="text-align:right;">
--0.6526
+-0.6293
 </td>
 <td style="text-align:right;">
-1.3119
+1.3340
 </td>
 <td style="text-align:right;">
-0.6414291
+0.6185685
 </td>
 <td style="text-align:left;">
 Pooled TMLE
@@ -1566,22 +1361,22 @@ Type
 1
 </td>
 <td style="text-align:right;">
--0.8307433
+-0.8485023
 </td>
 <td style="text-align:right;">
-0.7422102
+0.7309842
 </td>
 <td style="text-align:right;">
-0.8615162
+0.8549761
 </td>
 <td style="text-align:right;">
--2.5193
+-2.5242
 </td>
 <td style="text-align:right;">
-0.8578
+0.8272
 </td>
 <td style="text-align:right;">
-0.3707738
+0.3588033
 </td>
 <td style="text-align:right;">
 1
@@ -1604,22 +1399,22 @@ X4
 1
 </td>
 <td style="text-align:right;">
--3.6842524
+-3.8157757
 </td>
 <td style="text-align:right;">
-0.6854063
+0.7073221
 </td>
 <td style="text-align:right;">
-0.8278927
+0.8410244
 </td>
 <td style="text-align:right;">
--5.3069
+-5.4642
 </td>
 <td style="text-align:right;">
--2.0616
+-2.1674
 </td>
 <td style="text-align:right;">
-0.0000514
+0.0000317
 </td>
 <td style="text-align:right;">
 1
@@ -1642,22 +1437,22 @@ X5
 1
 </td>
 <td style="text-align:right;">
--3.8745306
+-3.8404800
 </td>
 <td style="text-align:right;">
-0.6396612
+0.6566876
 </td>
 <td style="text-align:right;">
-0.7997882
+0.8103627
 </td>
 <td style="text-align:right;">
--5.4421
+-5.4288
 </td>
 <td style="text-align:right;">
--2.3070
+-2.2522
 </td>
 <td style="text-align:right;">
-0.0000147
+0.0000199
 </td>
 <td style="text-align:right;">
 1
@@ -1680,22 +1475,22 @@ X4-X5
 1
 </td>
 <td style="text-align:right;">
-0.6404651
+0.8237980
 </td>
 <td style="text-align:right;">
-0.8229767
+0.9055973
 </td>
 <td style="text-align:right;">
-0.9071806
+0.9516288
 </td>
 <td style="text-align:right;">
--1.1376
+-1.0414
 </td>
 <td style="text-align:right;">
-2.4185
+2.6890
 </td>
 <td style="text-align:right;">
-0.5013085
+0.3984039
 </td>
 <td style="text-align:right;">
 1
@@ -1718,22 +1513,22 @@ Interaction
 1
 </td>
 <td style="text-align:right;">
--0.6414818
+-0.6330329
 </td>
 <td style="text-align:right;">
-0.7115233
+0.6895704
 </td>
 <td style="text-align:right;">
-0.8435184
+0.8304037
 </td>
 <td style="text-align:right;">
--2.2947
+-2.2606
 </td>
 <td style="text-align:right;">
-1.0118
+0.9945
 </td>
 <td style="text-align:right;">
-0.4848941
+0.4872591
 </td>
 <td style="text-align:right;">
 2
@@ -1756,22 +1551,22 @@ X4
 1
 </td>
 <td style="text-align:right;">
--3.8106050
+-3.7729863
 </td>
 <td style="text-align:right;">
-0.7023745
+0.7084949
 </td>
 <td style="text-align:right;">
-0.8380779
+0.8417214
 </td>
 <td style="text-align:right;">
--5.4532
+-5.4227
 </td>
 <td style="text-align:right;">
--2.1680
+-2.1232
 </td>
 <td style="text-align:right;">
-0.0000315
+0.0000391
 </td>
 <td style="text-align:right;">
 2
@@ -1794,22 +1589,22 @@ X5
 1
 </td>
 <td style="text-align:right;">
--3.9552472
+-4.2714349
 </td>
 <td style="text-align:right;">
-1.0958593
+0.6780636
 </td>
 <td style="text-align:right;">
-1.0468330
+0.8234462
 </td>
 <td style="text-align:right;">
--6.0070
+-5.8854
 </td>
 <td style="text-align:right;">
--1.9035
+-2.6575
 </td>
 <td style="text-align:right;">
-0.0001107
+0.0000025
 </td>
 <td style="text-align:right;">
 2
@@ -1832,22 +1627,22 @@ X4-X5
 1
 </td>
 <td style="text-align:right;">
-0.4968396
+0.1345843
 </td>
 <td style="text-align:right;">
-1.0111131
+0.7007521
 </td>
 <td style="text-align:right;">
-1.0055412
+0.8371094
 </td>
 <td style="text-align:right;">
--1.4740
+-1.5061
 </td>
 <td style="text-align:right;">
-2.4677
+1.7753
 </td>
 <td style="text-align:right;">
-0.6202693
+0.8830556
 </td>
 <td style="text-align:right;">
 2
@@ -1870,22 +1665,22 @@ Interaction
 1
 </td>
 <td style="text-align:right;">
--0.5022413
+-0.4549679
 </td>
 <td style="text-align:right;">
-0.5467407
+0.5524247
 </td>
 <td style="text-align:right;">
-0.7394192
+0.7432528
 </td>
 <td style="text-align:right;">
--1.9515
+-1.9117
 </td>
 <td style="text-align:right;">
-0.9470
+1.0018
 </td>
 <td style="text-align:right;">
-0.5591713
+0.5976862
 </td>
 <td style="text-align:right;">
 3
@@ -1908,22 +1703,22 @@ X4
 1
 </td>
 <td style="text-align:right;">
--3.3334914
+-3.3168676
 </td>
 <td style="text-align:right;">
-0.4549681
+0.4551012
 </td>
 <td style="text-align:right;">
-0.6745133
+0.6746119
 </td>
 <td style="text-align:right;">
--4.6555
+-4.6391
 </td>
 <td style="text-align:right;">
--2.0115
+-1.9947
 </td>
 <td style="text-align:right;">
-0.0000493
+0.0000538
 </td>
 <td style="text-align:right;">
 3
@@ -1946,22 +1741,22 @@ X5
 1
 </td>
 <td style="text-align:right;">
--3.8353454
+-3.9151131
 </td>
 <td style="text-align:right;">
-0.4708589
+0.4671708
 </td>
 <td style="text-align:right;">
-0.6861916
+0.6834989
 </td>
 <td style="text-align:right;">
--5.1803
+-5.2547
 </td>
 <td style="text-align:right;">
--2.4904
+-2.5755
 </td>
 <td style="text-align:right;">
-0.0000037
+0.0000022
 </td>
 <td style="text-align:right;">
 3
@@ -1984,22 +1779,22 @@ X4-X5
 1
 </td>
 <td style="text-align:right;">
-0.0003873
+-0.1432777
 </td>
 <td style="text-align:right;">
-0.5123543
+0.5245870
 </td>
 <td style="text-align:right;">
-0.7157893
+0.7242838
 </td>
 <td style="text-align:right;">
--1.4025
+-1.5628
 </td>
 <td style="text-align:right;">
-1.4033
+1.2763
 </td>
 <td style="text-align:right;">
-0.9996347
+0.8663046
 </td>
 <td style="text-align:right;">
 3
@@ -2021,7 +1816,7 @@ Interaction
 </table>
 
 Here we see that the interaction between X4 and X5 was consistently
-found to have the highest antagonistic interaction across the folds.
+found to have the highest synergistic interaction across the folds.
 Therefore, for our pooled parameter var 1 represents the pooled effects
 of shifting X4, var 2 represents the pooled effects of shifting X5,
 joint is X4 and X5 together and the interaction represents the
@@ -2085,60 +1880,22 @@ Type
 1
 </td>
 <td style="text-align:right;">
--0.8417448
+13.542234
 </td>
 <td style="text-align:right;">
-0.7276929
+0.4842421
 </td>
 <td style="text-align:right;">
-0.8530492
+0.6958751
 </td>
 <td style="text-align:right;">
--2.5137
+12.1783
 </td>
 <td style="text-align:right;">
-0.8302
+14.9061
 </td>
 <td style="text-align:right;">
-0.3621019
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.7508836
-</td>
-<td style="text-align:right;">
-0.6817120
-</td>
-<td style="text-align:right;">
-0.8256585
-</td>
-<td style="text-align:right;">
--5.3691
-</td>
-<td style="text-align:right;">
--2.1326
-</td>
-<td style="text-align:right;">
-0.0000366
+0.0000000
 </td>
 <td style="text-align:right;">
 1
@@ -2153,7 +1910,7 @@ X4
 1
 </td>
 <td style="text-align:left;">
-X5
+X1
 </td>
 </tr>
 <tr>
@@ -2161,22 +1918,22 @@ X5
 1
 </td>
 <td style="text-align:right;">
--3.8262154
+3.487427
 </td>
 <td style="text-align:right;">
-0.6713063
+0.7311449
 </td>
 <td style="text-align:right;">
-0.8193329
+0.8550701
 </td>
 <td style="text-align:right;">
--5.4321
+1.8115
 </td>
 <td style="text-align:right;">
--2.2204
+5.1633
 </td>
 <td style="text-align:right;">
-0.0000237
+0.0001623
 </td>
 <td style="text-align:right;">
 1
@@ -2191,7 +1948,7 @@ X5
 1
 </td>
 <td style="text-align:left;">
-X4-X5
+X7
 </td>
 </tr>
 <tr>
@@ -2199,22 +1956,22 @@ X4-X5
 1
 </td>
 <td style="text-align:right;">
-0.7664130
+10.366036
 </td>
 <td style="text-align:right;">
-0.8668148
+0.3799426
 </td>
 <td style="text-align:right;">
-0.9310289
+0.6163949
 </td>
 <td style="text-align:right;">
--1.0584
+9.1579
 </td>
 <td style="text-align:right;">
-2.5912
+11.5741
 </td>
 <td style="text-align:right;">
-0.4270243
+0.0000000
 </td>
 <td style="text-align:right;">
 1
@@ -2229,7 +1986,7 @@ X4-X5
 1
 </td>
 <td style="text-align:left;">
-Interaction
+X1-X7
 </td>
 </tr>
 <tr>
@@ -2237,139 +1994,25 @@ Interaction
 1
 </td>
 <td style="text-align:right;">
--0.6171086
+-6.663625
 </td>
 <td style="text-align:right;">
-0.7073394
+0.6288383
 </td>
 <td style="text-align:right;">
-0.8410347
+0.7929932
 </td>
 <td style="text-align:right;">
--2.2655
+-8.2179
 </td>
 <td style="text-align:right;">
-1.0313
+-5.1094
 </td>
 <td style="text-align:right;">
-0.5010069
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
+0.0000000
 </td>
 <td style="text-align:right;">
 1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--3.7414210
-</td>
-<td style="text-align:right;">
-0.7056593
-</td>
-<td style="text-align:right;">
-0.8400353
-</td>
-<td style="text-align:right;">
--5.3879
-</td>
-<td style="text-align:right;">
--2.0950
-</td>
-<td style="text-align:right;">
-0.0000446
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--4.0338956
-</td>
-<td style="text-align:right;">
-1.1183969
-</td>
-<td style="text-align:right;">
-1.0575429
-</td>
-<td style="text-align:right;">
--6.1066
-</td>
-<td style="text-align:right;">
--1.9611
-</td>
-<td style="text-align:right;">
-0.0000876
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-167
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-X4-X5
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.3246339
-</td>
-<td style="text-align:right;">
-0.9701553
-</td>
-<td style="text-align:right;">
-0.9849646
-</td>
-<td style="text-align:right;">
--1.6059
-</td>
-<td style="text-align:right;">
-2.2551
-</td>
-<td style="text-align:right;">
-0.7435905
-</td>
-<td style="text-align:right;">
-2
 </td>
 <td style="text-align:right;">
 167
@@ -2389,22 +2032,174 @@ Interaction
 1
 </td>
 <td style="text-align:right;">
--0.4952579
+-1.245423
 </td>
 <td style="text-align:right;">
-0.5544481
+1.5739266
 </td>
 <td style="text-align:right;">
-0.7446127
+1.2545623
 </td>
 <td style="text-align:right;">
--1.9547
+-3.7043
 </td>
 <td style="text-align:right;">
-0.9642
+1.2135
 </td>
 <td style="text-align:right;">
-0.5660087
+0.2661755
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+167
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+X1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+2.963629
+</td>
+<td style="text-align:right;">
+0.8560357
+</td>
+<td style="text-align:right;">
+0.9252220
+</td>
+<td style="text-align:right;">
+1.1502
+</td>
+<td style="text-align:right;">
+4.7770
+</td>
+<td style="text-align:right;">
+0.0020626
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+167
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+X7
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+7.220341
+</td>
+<td style="text-align:right;">
+0.5888704
+</td>
+<td style="text-align:right;">
+0.7673789
+</td>
+<td style="text-align:right;">
+5.7163
+</td>
+<td style="text-align:right;">
+8.7244
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+167
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+X1-X7
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+5.502135
+</td>
+<td style="text-align:right;">
+2.0114489
+</td>
+<td style="text-align:right;">
+1.4182556
+</td>
+<td style="text-align:right;">
+2.7224
+</td>
+<td style="text-align:right;">
+8.2819
+</td>
+<td style="text-align:right;">
+0.0000038
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+167
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+Interaction
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+16.279113
+</td>
+<td style="text-align:right;">
+0.4910244
+</td>
+<td style="text-align:right;">
+0.7007314
+</td>
+<td style="text-align:right;">
+14.9057
+</td>
+<td style="text-align:right;">
+17.6525
+</td>
+<td style="text-align:right;">
+0.0000000
 </td>
 <td style="text-align:right;">
 3
@@ -2419,7 +2214,7 @@ Interaction
 1
 </td>
 <td style="text-align:left;">
-X4
+X1
 </td>
 </tr>
 <tr>
@@ -2427,22 +2222,22 @@ X4
 1
 </td>
 <td style="text-align:right;">
--3.3504760
+2.878816
 </td>
 <td style="text-align:right;">
-0.4553080
+0.4632692
 </td>
 <td style="text-align:right;">
-0.6747651
+0.6806388
 </td>
 <td style="text-align:right;">
--4.6730
+1.5448
 </td>
 <td style="text-align:right;">
--2.0280
+4.2128
 </td>
 <td style="text-align:right;">
-0.0000453
+0.0004840
 </td>
 <td style="text-align:right;">
 3
@@ -2457,7 +2252,7 @@ X4
 1
 </td>
 <td style="text-align:left;">
-X5
+X7
 </td>
 </tr>
 <tr>
@@ -2465,22 +2260,22 @@ X5
 1
 </td>
 <td style="text-align:right;">
--3.9422309
+7.522615
 </td>
 <td style="text-align:right;">
-0.4672794
+0.3101366
 </td>
 <td style="text-align:right;">
-0.6835783
+0.5568991
 </td>
 <td style="text-align:right;">
--5.2820
+6.4311
 </td>
 <td style="text-align:right;">
--2.6024
+8.6141
 </td>
 <td style="text-align:right;">
-0.0000019
+0.0000000
 </td>
 <td style="text-align:right;">
 3
@@ -2495,7 +2290,7 @@ X5
 1
 </td>
 <td style="text-align:left;">
-X4-X5
+X1-X7
 </td>
 </tr>
 <tr>
@@ -2503,22 +2298,22 @@ X4-X5
 1
 </td>
 <td style="text-align:right;">
--0.0964970
+-11.635314
 </td>
 <td style="text-align:right;">
-0.5204951
+0.4261335
 </td>
 <td style="text-align:right;">
-0.7214535
+0.6527890
 </td>
 <td style="text-align:right;">
--1.5105
+-12.9148
 </td>
 <td style="text-align:right;">
-1.3175
+-10.3559
 </td>
 <td style="text-align:right;">
-0.9095484
+0.0000000
 </td>
 <td style="text-align:right;">
 3
@@ -2539,12 +2334,230 @@ Interaction
 </tbody>
 </table>
 
+Here, we see that in all the folds the X1-X7 has the strongest
+antagonistic relationship. X1-X7 was found in all the folds and
+therefore the oracle parameter is interpreted the same as we found in
+the synergy results. Which is here:
+
+``` r
+pooled_antagonism_effects$`Rank 1` %>%
+  kbl(caption = "Rank 1 Antagonism Stochastic Intervention Results") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Rank 1 Antagonism Stochastic Intervention Results
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Rank
+</th>
+<th style="text-align:right;">
+Psi
+</th>
+<th style="text-align:right;">
+Variance
+</th>
+<th style="text-align:right;">
+SE
+</th>
+<th style="text-align:right;">
+Lower CI
+</th>
+<th style="text-align:right;">
+Upper CI
+</th>
+<th style="text-align:right;">
+P-value
+</th>
+<th style="text-align:left;">
+Fold
+</th>
+<th style="text-align:right;">
+N
+</th>
+<th style="text-align:right;">
+Delta Exposure 1
+</th>
+<th style="text-align:right;">
+Delta Exposure 2
+</th>
+<th style="text-align:left;">
+Type
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Rank 1
+</td>
+<td style="text-align:right;">
+13.215850
+</td>
+<td style="text-align:right;">
+0.2422382
+</td>
+<td style="text-align:right;">
+0.4921770
+</td>
+<td style="text-align:right;">
+12.2512
+</td>
+<td style="text-align:right;">
+14.1805
+</td>
+<td style="text-align:right;">
+0.0e+00
+</td>
+<td style="text-align:left;">
+Pooled TMLE
+</td>
+<td style="text-align:right;">
+500
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+Var 1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rank 1
+</td>
+<td style="text-align:right;">
+3.253814
+</td>
+<td style="text-align:right;">
+0.2683451
+</td>
+<td style="text-align:right;">
+0.5180204
+</td>
+<td style="text-align:right;">
+2.2385
+</td>
+<td style="text-align:right;">
+4.2691
+</td>
+<td style="text-align:right;">
+6.2e-06
+</td>
+<td style="text-align:left;">
+Pooled TMLE
+</td>
+<td style="text-align:right;">
+500
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+Var 2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rank 1
+</td>
+<td style="text-align:right;">
+9.138029
+</td>
+<td style="text-align:right;">
+0.1578888
+</td>
+<td style="text-align:right;">
+0.3973522
+</td>
+<td style="text-align:right;">
+8.3592
+</td>
+<td style="text-align:right;">
+9.9168
+</td>
+<td style="text-align:right;">
+0.0e+00
+</td>
+<td style="text-align:left;">
+Pooled TMLE
+</td>
+<td style="text-align:right;">
+500
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+Joint
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Rank 1
+</td>
+<td style="text-align:right;">
+-7.331635
+</td>
+<td style="text-align:right;">
+0.3119851
+</td>
+<td style="text-align:right;">
+0.5585563
+</td>
+<td style="text-align:right;">
+-8.4264
+</td>
+<td style="text-align:right;">
+-6.2369
+</td>
+<td style="text-align:right;">
+0.0e+00
+</td>
+<td style="text-align:left;">
+Pooled TMLE
+</td>
+<td style="text-align:right;">
+500
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+Interaction
+</td>
+</tr>
+</tbody>
+</table>
+
+So we see the interaction effect is negative, -7.33, and represents the
+pooled interaction effects across the folds which are all X1-X7.
+
 Overall, this package provides implementation of estimation a
 non-parametric definition of interaction. We define positive values as
 synergy meaning the expected outcome under joint shift is much larger
 compared to individual addivitive effects. Likewise, we define
 antagonism as negative effects, the joint value being lower than the
 additive effects.
+
+In this NIEHS data set w correctly identify the strongest individual
+effects in positive and negative directions and identify exposure
+relationships consistently for our definition of synergy and antagonism.
 
 ------------------------------------------------------------------------
 

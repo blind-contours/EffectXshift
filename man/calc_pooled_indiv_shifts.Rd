@@ -9,7 +9,8 @@ calc_pooled_indiv_shifts(
   estimator = c("tmle", "onestep"),
   fluc_mod_out = NULL,
   fluctuation,
-  n_folds
+  n_folds,
+  rank = TRUE
 )
 }
 \arguments{

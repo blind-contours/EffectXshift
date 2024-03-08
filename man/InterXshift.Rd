@@ -2,13 +2,7 @@
 % Please edit documentation in R/InterXshift.R
 \name{InterXshift}
 \alias{InterXshift}
-\title{Data-adaptive estimation of interactions, effect modification, and
-mediation using stochastic shift intervention target parameters. In many mixed exposure settings,
-interactions in the mixture, effect modifiers in the covariates that modify the
-impact of an exposure and mediating pathways from exposure to outcome are generally unknown. SuperNOVA finds these variable sets
-on one part of the data and estimates counterfactual outcome changes given shifts to exposure on an estimation part of the data.
-Using cross-validation and targeted learning, estimators are created that utlize machine learning that are unbiased and have the
-minimum variance.}
+\title{InterXshift}
 \usage{
 InterXshift(
   w,
@@ -25,7 +19,6 @@ InterXshift(
   zeta_learner = NULL,
   n_folds = 2,
   outcome_type = "continuous",
-  verbose = FALSE,
   parallel = TRUE,
   parallel_type = "multi_session",
   num_cores = 2,
@@ -55,7 +48,7 @@ maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.}
 \item{fluctuation}{Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.}
 
-\item{var_sets}{A list specifying variable sets for deterministic SuperNOVA usage.
+\item{var_sets}{A list specifying variable sets for deterministic InterXshift usage.
 Example: var_sets <- c("A_1", "A_1-Z_2") where the analyst provides variable sets
 for exposures, exposure-mediator, or exposure-covariate relationships.}
 
@@ -75,8 +68,6 @@ g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \p
 
 \item{outcome_type}{Data type of the outcome, default is "continuous".}
 
-\item{verbose}{Whether to run verbosely (default: FALSE).}
-
 \item{parallel}{Whether to parallelize across cores (default: TRUE).}
 
 \item{parallel_type}{Type of parallelization to use if parallel is TRUE:
@@ -92,40 +83,8 @@ g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \p
 the Hn calculated for a shift does not have any observation greater
 than hn_trunc_thresh (default: FALSE).}
 
-\item{discover_only}{TRUE/FALSE. If TRUE, only the data-adaptive path discovery
-is done. No estimates are delivered only exposure mediator sets. If FALSE paths
-are both discovered and estimated.}
-
 \item{z}{\code{matrix}, \code{data.frame}, or similar containing individual or
 multiple mediators (optional).}
-
-\item{mediator_type}{Data type of the mediator, default is "continuous".}
-
-\item{quantile_thresh}{Threshold based on quantiles of the F-statistic, used to
-identify "important" basis functions in the data-adaptive procedure.}
-
-\item{n_mc_sample}{Number of iterations to be used for the Monte Carlo integration
-procedure when using continuous exposures (default: 1000).}
-
-\item{exposure_quantized}{Whether the exposure has been discretized into bins,
-in which case the integration procedure is skipped and weighted sums are used instead (default: FALSE).}
-
-\item{mediator_quantized}{If the mediator is discretized, a multinomial ML function
-is used in this regression to avoid density estimation (default: FALSE).}
-
-\item{density_type}{Type of density estimation to be used: "sl" for Super Learner
-(default) or "hal" for highly adaptive lasso.}
-
-\item{n_bins}{Number of bins for quantizing the exposure if mediation is detected (default: 10).}
-
-\item{max_degree}{Maximum degree of interactions used in the highly adaptive lasso
-density estimator if used (default: 1).}
-
-\item{integration_method}{Type of integration to be used in the continuous exposure
-case: "MC" for Monte Carlo integration (default) or "AQ" for adaptive quadrature.}
-
-\item{use_multinomial}{Whether to use multinomial regression for binned exposures
-(default: FALSE).}
 }
 \value{
 An S3 object of class \code{SuperNOVA} containing the results of the
@@ -135,11 +94,8 @@ by a scalar amount \code{delta}. These exposures are data-adaptively
 identified using the CV-TMLE procedure.
 }
 \description{
-The SuperNOVA function provides an efficient approach to estimate
-interactions, effect modification, and mediation using targeted minimum loss
-estimators for counterfactual mean differences under various target parameters.
-The procedure employs data-adaptive ensemble b-spline models and stochastic interventions,
-leveraging the \pkg{sl3} package for ensemble machine learning. The data is split into V folds, in each fold
-the training data is used to find variable sets using flexible basis function estimators. Given the different variable sets,
-stochastic intervention target parameters are applied with cross-validated targeted learning.
+Under a fixed shift to exposures identify using g-computation the joint shift of
+pairwise exposures in a mixed exposure compared to the additive individual shifts. Positive values indicate
+synergy and negative antagonism, get the top synergy and antagonism results and use CV-TMLE to efficiently
+estimate the interaction target parameter.
 }

@@ -1,4 +1,4 @@
-library(SuperNOVA)
+library(InterXshift)
 library(readr)
 library(here)
 
@@ -65,17 +65,16 @@ a <- NIEHS_2019[, exposures]
 y <- NIEHS_2019$TELOMEAN
 
 
-nhanes_results <- SuperNOVA(
+nhanes_results <- InterXshift(
   w = w,
   a = a,
   y = y,
   delta = deltas,
-  n_folds = 20,
+  n_folds = 10,
   num_cores = 20,
-  family = "continuous",
-  quantile_thresh = 0,
   seed = 294580,
-  adaptive_delta = FALSE
+  adaptive_delta = FALSE,
+  outcome_type = "continuous"
 )
 
 saveRDS(

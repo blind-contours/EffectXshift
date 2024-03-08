@@ -26,14 +26,20 @@ calc_pooled_indiv_shifts <- function(indiv_shift_results,
                                      estimator = c("tmle", "onestep"),
                                      fluc_mod_out = NULL,
                                      fluctuation,
-                                     n_folds) {
+                                     n_folds,
+                                     rank = TRUE) {
   # set TMLE as default estimator type
   estimator <- match.arg(estimator)
 
   results_list <- list()
 
   names <- names(indiv_shift_results)
-  names <- gsub("^(Rank [0-9]+) :.*", "\\1", names)
+
+  if (rank == TRUE) {
+    names <- gsub("^(Rank [0-9]+) :.*", "\\1", names)
+  }else{
+    names <- gsub("^.+?:", "", names)
+  }
 
 
   for (var_set in unique(names)) {

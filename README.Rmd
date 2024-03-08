@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`InterXShift`
+# R/`InterXShift` <img src="man/figures/InterXshift.001.png" height="300" align="right"/>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/InterXShift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/InterXShift/actions)
@@ -41,13 +41,13 @@ The `InterXshift` R package offers an approach which identifies and estimates th
 `InterXshift` builds on work described in [@mccoy2023semiparametric]. However instead of identifying interactions through an semi-parametric definition of an F-statistics and then estimating our interaction target parameter using CV-TMLE pooled across exposure sets, we provide a more streamlined approach. In this package, we identify interactions through g-computation first - evaluating the expected outcome under joint shift compared to the sum of individual shifts using Super Learner. We then rank these estimates as the highest sets of synergy and antagonism. We then use CV-TMLE and pool within the ranks. 
 
 
-The package ensures robustness by employing a k-fold cross-validation framework. This framework helps in estimating a data-adaptive parameter, which is the stochastic shift target parameters for the exposure sets identified as having synergy or antagonism. The process begins by partitioning the data into parameter-generating and estimation samples. In the parameter-generating sample, we identify our ranks of antogonistic and synergistic exposure sets through a machine learning g-computation framework. In the estimation sample we then estimate our interaction target parameter using the doubly robust estimator TMLE to ensure asymptotic efficiency which allows us to construct confidence intervals for our estimates (unlike the g-comp method). 
+The package ensures robustness by employing a k-fold cross-validation framework. This framework helps in estimating a data-adaptive parameter, which is the stochastic shift target parameters for the exposure sets identified as having synergy or antagonism. The process begins by partitioning the data into parameter-generating and estimation samples. In the parameter-generating sample, we identify our ranks of antagonistic and synergistic exposure sets through a machine learning g-computation framework. In the estimation sample we then estimate our interaction target parameter using the doubly robust estimator TMLE to ensure asymptotic efficiency which allows us to construct confidence intervals for our estimates (unlike the g-comp method). 
 
 By using InterXshift, users get access to a tool that offers both k-fold specific and aggregated results for the top synergistic and antagonistic relationships, ensuring that researchers can glean the most information from their data. For a more in-depth exploration, there's an accompanying vignette.
 
 To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the respective $\delta$ for each exposure (indicating the degree of shift) and if this delta should be adaptive in response to positivity violations. The `top_n` parameter defines the top number of synergistic, antagonistic, positive and negative ranked impacts to estiamte. A detailed guide is provided in the vignette. With these inputs, `InterXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
 
-`InterXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `SuperNOVA` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
+`InterXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `InterXshift` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
 
 
 ---
@@ -107,9 +107,8 @@ library(devtools)
 library(kableExtra)
 library(sl3)
 
-set.seed(429153)
-# simulate simple data
-n_obs <- 10000
+seed <- 429153
+set.seed(seed)
 ```
 
 We will directly use synthetic data from the NIEHS used to test new mixture methods. This data has built in strong positive and negative marginal effects and certain interactions. Found here: https://github.com/niehs-prime/2015-NIEHS-MIxtures-Workshop
@@ -134,7 +133,7 @@ head(NIEHS_data_1) %>%
 ```
 
 
-Based on the data key, we expect X1 to have the strongest positive effect, X5 the strongest negative. So we would expect these to take the top ranks for these marginal associations. For interactions 
+Based on the data key, we expect X1 to have the strongest positive effect, X5 the strongest negative. So we would expect these to take the top ranks for these marginal associations. For interactions we expect to find interactions built into the data if there is enough observations in the region. The github page gives details on the types of interactions built into this synthetic data. 
 
 
 ```{r run InterXshift, eval = TRUE, message=FALSE, warning=FALSE}
@@ -148,18 +147,18 @@ sim_results <- InterXshift(
   n_folds = 3,
   num_cores = 6,
   outcome_type = "continuous",
-  seed = 294580,
+  seed = seed,
   top_n = 2
 )
 proc.time() - ptm
 
 ## marginal effects
-top_positive_effects <- sim_results$`Pos Shift Results`
-top_negative_effects <- sim_results$`Neg Shift Results`
+top_positive_effects <- sim_results$`Pos Shift Results by Rank`
+top_negative_effects <- sim_results$`Neg Shift Results by Rank`
 
 ## interaction effects
-pooled_synergy_effects <- sim_results$`Pooled Synergy Results`
-pooled_antagonism_effects <- sim_results$`Pooled Antagonism Results`
+pooled_synergy_effects <- sim_results$`Pooled Synergy Results by Rank`
+pooled_antagonism_effects <- sim_results$`Pooled Antagonism Results by Rank`
 
 k_fold_synergy_effects <- sim_results$`K Fold Synergy Results`
 k_fold_antagonism_effects <- sim_results$`K Fold Antagonism Results`
@@ -168,18 +167,18 @@ k_fold_antagonism_effects <- sim_results$`K Fold Antagonism Results`
 
 
 ```{r pos shift results}
-top_positive_effects %>%
+top_positive_effects$`Rank 1` %>%
   kbl(caption = "Rank 1 Positive Stochastic Intervention Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-Above we show the findings for the top rank positive marginal effect. Here we consistently find X1 which is true based on what is built into the DGP. 
+Above we show the findings for the top rank positive marginal effect. Here we consistently find X1 which is true based on what is built into the DGP. The pooled estimate is pooling the findings for the top ranked positive result found across the folds which is all X1 in this case. 
 
 
 Next we look at the top negative result: 
 
 ```{r top negative results}
-top_negative_effects$`Rank 1` %>%
+top_negative_effects$`Rank 2` %>%
   kbl(caption = "Rank 1 Negative Stochastic Intervention Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
@@ -189,7 +188,7 @@ Here we consistently see X5 as having the strongest negative impact which is als
 
 Next we will look at the top synergy results which is defined as the exposures that when shifted jointly have the highest, most positive, expected outcome difference compared to the sum of individual shifts of the same variables. 
 
-```{r joint results}
+```{r pooled synergy results}
 pooled_synergy_effects$`Rank 1` %>%
   kbl(caption = "Rank 1 Synergy Stochastic Intervention Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
@@ -204,7 +203,7 @@ k_fold_synergy_effects$`Rank 1` %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-Here we see that the interaction between X4 and X5 was consistently found to have the highest antagonistic interaction across the folds. Therefore, for our pooled parameter var 1 represents the pooled effects of shifting X4, var 2 represents the pooled effects of shifting X5, joint is X4 and X5 together and the interaction represents the interaction effect for these two variables. 
+Here we see that the interaction between X4 and X5 was consistently found to have the highest synergistic interaction across the folds. Therefore, for our pooled parameter var 1 represents the pooled effects of shifting X4, var 2 represents the pooled effects of shifting X5, joint is X4 and X5 together and the interaction represents the interaction effect for these two variables. 
 
 
 Next we'll look at the k-fold antagonistic interactions: 
@@ -214,9 +213,20 @@ k_fold_antagonism_effects$`Rank 1` %>%
   kbl(caption = "K-fold Antagonistic Stochastic Intervention Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
+Here, we see that in all the folds the X1-X7 has the strongest antagonistic relationship. X1-X7 was found in all the folds and therefore the oracle parameter is interpreted the same as we found in the synergy results. Which is here: 
+
+```{r pooled antagonism results}
+pooled_antagonism_effects$`Rank 1` %>%
+  kbl(caption = "Rank 1 Antagonism Stochastic Intervention Results") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+So we see the interaction effect is negative, -7.33, and represents the pooled interaction effects across the folds which are all X1-X7. 
 
 
 Overall, this package provides implementation of estimation a non-parametric definition of interaction. We define positive values as synergy meaning the expected outcome under joint shift is much larger compared to individual addivitive effects. Likewise, we define antagonism as negative effects, the joint value being lower than the additive effects. 
+
+In this NIEHS data set w correctly identify the strongest individual effects in positive and negative directions and identify exposure relationships consistently for our definition of synergy and antagonism. 
 
 
 

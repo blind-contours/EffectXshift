@@ -32,13 +32,18 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
                                      w_names,
                                      z_names,
                                      fluctuation,
-                                     n_folds) {
+                                     n_folds,
+                                     rank = TRUE) {
   # set TMLE as default estimator type
   estimator <- match.arg(estimator)
 
   names <- names(intxn_shift_results)
-  names <- gsub("^(Rank [0-9]+) :.*", "\\1", names)
 
+  if (rank == TRUE) {
+    names <- gsub("^(Rank [0-9]+) :.*", "\\1", names)
+  }else{
+    names <- gsub("^.+?:", "", names)
+  }
   k_fold_results_list <- list()
   pooled_results_list <- list()
 
