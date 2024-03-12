@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`InterXShift` <img src="man/figures/InterXshift.001.png" height="300" align="right"/>
+# R/`InterXShift` <img src="man/figures/InterXshift.001.png" align="right" height="200" style="float:right; height:200px;"/>
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/InterXShift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/InterXShift/actions)
@@ -114,7 +114,7 @@ set.seed(seed)
 We will directly use synthetic data from the NIEHS used to test new mixture methods. This data has built in strong positive and negative marginal effects and certain interactions. Found here: https://github.com/niehs-prime/2015-NIEHS-MIxtures-Workshop
 
 ```{r NIEHS example}
-data("NIEHS_data_1", package = "SuperNOVA")
+data("NIEHS_data_1", package = "InterXshift")
 ```
 
 ```{r NIEH Nodes}

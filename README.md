@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`InterXShift` <img src="man/figures/‎InterXshift.‎001.png" height="300" align="right"/>
+# R/`InterXShift` <img src="man/figures/InterXshift.001.png" align="right" height="200" style="float:right; height:200px;"/>
 
 <!-- badges: start -->
 
@@ -155,7 +155,7 @@ marginal effects and certain interactions. Found here:
 <https://github.com/niehs-prime/2015-NIEHS-MIxtures-Workshop>
 
 ``` r
-data("NIEHS_data_1", package = "SuperNOVA")
+data("NIEHS_data_1", package = "InterXshift")
 ```
 
 ``` r
@@ -647,7 +647,7 @@ sim_results <- InterXshift(
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
 #>     user   system  elapsed 
-#>   82.902    4.349 1455.498
+#>   59.519    2.792 1221.265
 
 ## marginal effects
 top_positive_effects <- sim_results$`Pos Shift Results by Rank`
