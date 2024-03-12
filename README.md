@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`InterXShift` <img src="man/figures/InterXshift.png" align="right" height="200" style="float:right; height:200px;"/>
+# R/`InterXShift` <img src="man/figures/‎InterXshift.png" align="right" height="200" style="float:right; height:200px;"/>
 
 <!-- badges: start -->
 
