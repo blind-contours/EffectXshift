@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`InterXShift` <img src="man/figures/InterXshift.001.png" align="right" height="200" style="float:right; height:200px;"/>
+# R/`InterXShift` <img src="man/figures/InterXshift.png" align="right" height="200" style="float:right; height:200px;"/>
 
 <!-- badges: start -->
 
@@ -647,7 +647,7 @@ sim_results <- InterXshift(
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
 #>     user   system  elapsed 
-#>   59.519    2.792 1221.265
+#>   73.058    3.708 1327.367
 
 ## marginal effects
 top_positive_effects <- sim_results$`Pos Shift Results by Rank`
