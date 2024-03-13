@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`InterXShift` <img src="man/figures/InterXshift.png" align="right" height="200" style="float:right; height:200px;"/>
+# R/`InterXShift` 
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/InterXShift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/InterXShift/actions)
