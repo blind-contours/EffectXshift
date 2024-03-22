@@ -10,6 +10,9 @@
     <loc>/LICENSE.html</loc>
   </url>
   <url>
+    <loc>/articles/EffectXshift-vignette.html</loc>
+  </url>
+  <url>
     <loc>/articles/InterXshift-vignette.html</loc>
   </url>
   <url>
@@ -23,6 +26,9 @@
   </url>
   <url>
     <loc>/index.html</loc>
+  </url>
+  <url>
+    <loc>/reference/EffectXshift.html</loc>
   </url>
   <url>
     <loc>/reference/InterXshift.html</loc>
@@ -107,6 +113,9 @@
   </url>
   <url>
     <loc>/reference/extract_vars_from_basis.html</loc>
+  </url>
+  <url>
+    <loc>/reference/find_max_effect_mods.html</loc>
   </url>
   <url>
     <loc>/reference/find_synergy_antagonism.html</loc>

@@ -95,13 +95,12 @@ calc_final_ind_shift_param <- function(tmle_fit, exposure, fold_k) {
 
   results <- data.table::data.table(
     condition, psi_param, variance_est, se_est,
-    Lower_CI, Upper_CI, p.value, fold_k,
-    "Indiv Shift", exposure, n
+    Lower_CI, Upper_CI, p.value, fold_k, n
   )
 
   names(results) <- c(
     "Condition", "Psi", "Variance", "SE", "Lower CI",
-    "Upper CI", "P-value", "Fold", "Type", "Variables", "N"
+    "Upper CI", "P-value", "Fold", "N"
   )
 
   return(results)

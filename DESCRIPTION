@@ -1,5 +1,5 @@
-Package: InterXshift
-Title: Semi-Parametric Identification and Estimation of Interaction using Stochastic Interventions
+Package: EffectXshift
+Title: Semi-Parametric Identification and Estimation of Effect Modification using Stochastic Interventions
 Version: 1.0.1
 Authors@R: 
     person(given = "David",
@@ -28,12 +28,10 @@ Imports:
     rlang,
     sl3,
     stringr,
-    partykit,
     furrr,
     purrr,
     polspline,
-    pracma,
-    haldensify
+    ranger
 Suggests: 
     rmarkdown,
     knitr,

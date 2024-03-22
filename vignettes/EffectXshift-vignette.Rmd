@@ -1,0 +1,257 @@
+---
+title: "Effect Modification Identification and Estimation using Data-Adaptive Stochastic Interventions"
+author: "David McCoy"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: ../inst/references.bib
+vignette: >
+  %\VignetteIndexEntry{Effect Modification Identification and Estimation using Data-Adaptive Stochastic Interventions}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r libraries, warning=FALSE}
+library(EffectXshift)
+library(devtools)
+library(kableExtra)
+library(sl3)
+
+seed <- 429153
+set.seed(seed)
+```
+
+## Motivation 
+
+The motivation behind the package EffectXshift is to answer the question, "what subpopulations of individuals" have the largest difference in impact in the even of a exposure intervention. Researchers are often interested in understanding vulnerable subpopulations, or individuals with certain characteristics like sex or age, that make them more susceptible to the impact of a drug or pollutant. 
+
+Methods like R-learners, S-learners, T-learners, and X-learners, have been pivotal in estimating Conditional Average Treatment Effects (CATE) across diverse settings. While S-learners apply a single model to the entire data, incorporating treatment as a feature, T-learners use separate models for treated and control groups to capture distinct patterns. X-learners, designed for settings with imbalanced treatment groups, first estimate treatment effects for both groups separately and then use the information from one group to refine the estimates for the other. Despite their effectiveness, these methods often act as black boxes, offering limited insights into which specific subpopulations are most affected by a treatment or exposure. Our work with EffectXshift addresses this gap by providing an interpretable framework that not only estimates the impact of interventions but also identifies subpopulations with the maximal effect difference. This approach enhances our understanding of treatment effects, facilitating targeted interventions and personalized treatment strategies.
+
+
+## Target Parameter 
+
+EffectXshift uses data-adaptive machine learning methods to identify the exposure-covariate combination that has the maximum difference in the impact of intervention. 
+
+Given a set of exposures $\boldsymbol{A}$, a covariate space $W$, and a particular outcome $Y$, our goal is to identify the exposure $A_i \in \boldsymbol{A}$ and region $V \subseteq W$ that demonstrate the maximal difference in the expected outcome with an intervention applied, compared across $V$ and its complementary region $V^c$. Our target parameter looks like:
+
+$$
+
+\begin{align*}
+&\underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\text{arg max}} \\
+&\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \, W_{\setminus j}\right] \right. \\
+&\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
+\end{align*}
+
+$$
+Here, $\delta_i$ denotes the intervention effect on exposure $A_i$, and $V^c$ represents the complementary set of $V$ within $W$.
+
+To elucidate the EffectXshift algorithm, we commence by fitting an outcome model utilizing the Super Learner ensemble methodology. This model is tasked with predicting the outcome variable, \(Y\), based on a set of exposures, \(\boldsymbol{A}\), and covariates, \(\boldsymbol{W}\). The Super Learner algorithm, a machine learning ensemble, optimally combines predictions from a pre-specified library of candidate models to minimize prediction error, thereby offering a flexible and robust approach to outcome modeling.
+
+Subsequently, for each exposure \(A_i\) within the vector of exposures \(\boldsymbol{A}\), we apply a shift, denoted by \(\delta_i\), and predict the expected outcome under this perturbation, yielding \(E[Y | A_i + \delta_i, \boldsymbol{W}]\). This process is repeated for the baseline scenario without the shift to compute \(E[Y | \boldsymbol{A}, \boldsymbol{W}]\). The difference between these two expected outcomes, \(E[Y | A_i + \delta_i, \boldsymbol{W}] - E[Y | \boldsymbol{A}, \boldsymbol{W}]\), constitutes our individual treatment effect (ITE) vectors, capturing the expected change in outcome attributable to the intervention \(\delta_i\) on exposure \(A_i\).
+
+To identify subpopulations with maximally differential responses to the intervention, we employ a custom decision tree algorithm that partitions the covariate space \(\boldsymbol{W}\) in a manner that maximizes the average difference in population intervention effects between the resulting regions. This tree-based partitioning is performed recursively, with splits chosen to greedily maximize the difference in mean ITE between subgroups defined by the covariates within \(\boldsymbol{W}\). This approach aims to approximate the oracle target parameter: the region in the covariate space where the intervention exhibits the maximal differential effect.
+
+The final output of the EffectXshift algorithm is a set of rules defining covariate-based subpopulations alongside estimates of the population intervention effect within these subpopulations. This not only provides insights into the heterogeneity of treatment effects across different segments of the population but also guides the identification of individuals who stand to benefit most from targeted interventions, thus embodying a significant stride towards personalized treatment strategies.
+
+
+## Doubly Robust Estimation 
+
+The above g-computation approach to estimation the population intervention effect which is then regressed onto covariates using our custom decision tree to find the maximal subpopulation intervention effect is the data-adaptive discovery portion of the method. What comes out is an exposure-covariate region combination for each fold. We then estimate stochastic interventions, shifting the exposure in subregions of the covariate space found and applying targeted learning to debias our initial estimates. In order to get proper inference for the subpopulation intervention effect in the covariate regions we use targeted learning. Briefly, we fit a propensity score estimator to estimate the likelihood of exposure levels given covariates under the observed exposure level and intervened level, the ratio of these likelihoods consitutes the clever covariate for the influence curve of a stochastic intervention. We use this clever covariate to update our initial estimates of the expected outcome under shift which initially is done using Super Learner. This targeting step debiases our estimates and we are able to get confidence intervals. 
+
+
+## Sample Splitting 
+
+Because we don't know which exposure-covariate regions to estimate our effect modification parameter a priori, we need to split our data and in the training fold find the exposure-covariate region, using the above g-computation framework, and in an estimation sample, efficiently estimate the subpopulation intervention effect parameter for the identified exposure in the covariate regions so that we can get valid confidence intervals for these data-adaptively identified interactions. As discussed above, is done using targeted learning. This sample splitting is through a cross-validation framework, ensuring the identification of our oracle parameter, the maximizing exposure-covariate region, is independent of the estimation, given we don't know the maximum effect modifier beforehand. 
+
+
+## Targeted Learning
+
+We use targeted minimum loss based estimation (TMLE) to debias our initial outcome estimates given a shift in exposure such that the resulting estimator is asymptotically unbiased and has the smallest variance. This procedure involves constructing a least favorable submodel which uses a ratio of conditional exposure densities under shift and now shift as a covariate to debias the initial estimates. More details of targeted learning for stochastic shifts are here @diaz2012population
+
+
+## Data Adaptive Delta
+
+For each exposure, the user inputs a respective delta, for example for exposures $M1, M2, M3$ the analyst puts in the `deltas` vector 
+
+```{r deltas, message=FALSE, warning=FALSE}
+deltas <- c("M1" = 1, "M2" = 2.3, "M3" = 1.4)
+```
+
+Which assigns a delta shift amount to each exposure. However, because the user doesn't know the underlying experimentation in the data, a delta that is too big may result in positivity violations which leads to bias and high variance of the estimator. That is, if the user asks for a shift in exposure density that is very unlikely given the data. To solve this, the analyst can also choose to set `adaptive_delta = TRUE` which then makes the shift amount a data adaptive parameter as well. The delta will be reduced until the max of the ratio of densities for each exposure is less than or equal to `hn_trunc_thresh`.
+
+## Inputs and Outputs 
+
+EffectXshift takes in covariates, exposures, an outcome, a list of deltas to shift each exposure by, the estimator (tmle or one step) number of folds for the CV procedure, parallelization parameters and if the delta should be data-adaptive. Also the user defines top_n which is the number of ranked effect modification relationships, where 1 is the max.
+
+The package then outputs K-fold specific results, the result found in each fold, and the oracle result which is the parameter that is pooled across all the folds. For example, we will get the fold specific modification results for the rank 1 exposure-covariate region found to have the highest modification. The pooled parameter is the oracle rank 1, meaning we do a pooled TMLE for all the rank 1 findings across the folds. 
+
+
+If the same exposure-covariate reguion are used across the folds, the pooled estimate is interpretable and has greater power compared to k-fold. If not, the analyst must investigate the k-fold specific results and report consistency of findings. 
+
+## NHANES Data
+
+Here we will try and replicate the analysis by Gibson et. al., 
+https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1
+
+and Mitro et. al, 
+https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4858394/
+
+Who used the NHANES 2001-2002 data to investigate 18 POP exposures on telomere length. 
+
+In this NHANES example, we will investigate if any of the included baseline covariates modify the impact of intervening on any of the persistant organic pollutants. 
+
+
+Let's first load the data and investigate the variables: 
+
+## NHANES Data 
+
+
+```{r NHANES data and variables}
+data("NHANES_eurocim")
+
+exposures <- c("LBX074LA", # PCB74 Lipid Adj (ng/g)
+               "LBX099LA", # PCB99 Lipid Adj (ng/g)
+               "LBX118LA", # PCB118 Lipid Adj (ng/g)
+               "LBX138LA", # PCB138 Lipid Adj (ng/g)
+               "LBX153LA", # PCB153 Lipid Adj (ng/g)
+               "LBX170LA", # PCB170 Lipid Adj (ng/g)
+               "LBX180LA", # PCB180 Lipid Adj (ng/g)
+               "LBX187LA", # PCB187 Lipid Adj (ng/g)
+               "LBX194LA", # PCB194 Lipid Adj (ng/g)
+               "LBXD03LA", # 1,2,3,6,7,8-hxcdd Lipid Adj (pg/g)
+               "LBXD05LA", # 1,2,3,4,6,7,8-hpcdd Lipid Adj (pg/g)
+               "LBXD07LA", # 1,2,3,4,6,7,8,9-ocdd Lipid Adj (pg/g)
+               "LBXF03LA", # 2,3,4,7,8-pncdf Lipid Adj (pg/g)
+               "LBXF04LA", # 1,2,3,4,7,8-hxcdf Lipid Adj (pg/g)
+               "LBXF05LA", # 1,2,3,6,7,8-hxcdf Lipid Adj (pg/g)
+               "LBXF08LA", # 1,2,3,4,6,7,8-hxcdf Lipid Adj (pg/g)
+               "LBXHXCLA", # 3,3',4,4',5,5'-hxcb Lipid Adj (pg/g)
+               "LBXPCBLA") # 3,3',4,4',5-pcnb Lipid Adj (pg/g)
+
+NHANES_eurocim <- NHANES_eurocim[complete.cases(NHANES_eurocim[, exposures]), ]
+
+outcome <- "TELOMEAN"
+
+covariates <- c("LBXWBCSI", # White blood cell count (SI)
+                "LBXLYPCT", # Lymphocyte percent (%)
+                "LBXMOPCT", # Monocyte percent (%)
+                "LBXEOPCT", # Eosinophils percent (%)
+                "LBXBAPCT", # Basophils percent (%)
+                "LBXNEPCT", # Segmented neutrophils percent (%)
+                "male", # Sex
+                "age_cent", # Age at Screening, centered
+                "race_cat", # race
+                "bmi_cat3", # Body Mass Index (kg/m**2)
+                "ln_lbxcot", # Cotinine (ng/mL), log-transformed
+                "edu_cat") # Education Level - Adults 20+
+
+
+```
+
+To improve consistency in the region we find to be the maximizing region, it is best to remove an exposure of highly correlated sets, we do that here: 
+
+```{r remove correlated exposures}
+# Calculate the correlation matrix for the exposures
+cor_matrix <- cor(NHANES_eurocim[, exposures], use = "complete.obs")
+
+# Set a threshold for high correlation
+threshold <- 0.8
+
+# Find pairs of highly correlated exposures
+highly_correlated_pairs <- which(abs(cor_matrix) > threshold & lower.tri(cor_matrix), arr.ind = TRUE)
+
+# Initiate a vector to keep track of exposures to remove
+exposures_to_remove <- c()
+
+# Loop through the highly correlated pairs and decide which exposure to remove
+for (pair in seq_len(nrow(highly_correlated_pairs))) {
+  row <- highly_correlated_pairs[pair, "row"]
+  col <- highly_correlated_pairs[pair, "col"]
+
+  if (!(colnames(cor_matrix)[row] %in% exposures_to_remove)) {
+    exposures_to_remove <- c(exposures_to_remove, colnames(cor_matrix)[row])
+  }
+}
+
+# Keep only uncorrelated exposures
+exposures_to_keep <- setdiff(exposures, exposures_to_remove)
+
+```
+
+
+## Run CVtreeMLE 
+
+```{r run CVtreeMLE for NHANES, warning=FALSE, message=FALSE}
+deltas <- list(
+  "LBX074LA" = 1, "LBX099LA" = 1, "LBXD03LA" = 1,
+  "LBXD05LA" = 1, "LBXF03LA" = 1, "LBXF04LA" = 1, "LBXF08LA" = 1, 
+  "LBXPCBLA" = 1
+)
+
+ptm <- proc.time()
+
+w <- NHANES_eurocim[, covariates]
+a <- NHANES_eurocim[, exposures_to_keep]
+y <- NHANES_eurocim$TELOMEAN
+
+seed <- 23432
+NIEH_results <- EffectXshift(
+  w = w,
+  a = a,
+  y = y,
+  deltas = deltas,
+  n_folds = 5,
+  outcome_type = "continuous",
+  parallel = TRUE,
+  parallel_type = "multi_session",
+  num_cores = 5,
+  seed = seed,
+  adaptive_delta = FALSE,
+  top_n = 1,
+  min_obs = 50
+)
+
+proc.time() - ptm
+```
+
+
+## Investigating Results
+
+One note is that for this example we will get more variability than normal because we only run 5 fold CV due to computational time. 
+
+Let's first look at the results for each fold: 
+
+
+```{r k-fold results, eval = TRUE}
+
+k_fold_results <- do.call(rbind, NIEH_results$`Effect Modification K-Fold Results`)
+
+k_fold_results %>%
+  kableExtra::kbl(caption = "K-Fold Effect Modification Results") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+Here, the condition column is the fold specific finding for the top ranked effect modifying exposure-covariate region. For example, in fold 1 LBXF08LA is the exposure found to have the most modification in levels of ln_lbxcot, which is log transformed values for cotinine, a measure of smoking. Covariate_region is the threshold that was found that maximizes the subpopulation intervention effect. This shows where ln_lbxcot was split to define levels 1 and 2. We get subpopulation intervention effects for a -0.5 shift in LBXF08LA in each level of ln_lbxcot.
+
+Here we see that, although the exposure that is shifted varies across folds, LBXF08LA, LBXF03LA, LBXD05LA, cotinine is always the modifier which indicates that cotinine is the maximum modifying covariate on POP exposure. 
+
+Because of the variability (due to small k fold used in this example) of the exposure that is chosen, interpretation of the oracle parameter, pooling our estimates across levels, is difficult to interpret but we show the output here: 
+
+```{r pooled results, eval = TRUE}
+pooled_results <- do.call(rbind, NIEH_results$`Effect Modification Pooled Results`)
+
+pooled_results %>%
+  kableExtra::kbl(caption = "Pooled TMLE Results") %>%
+  kable_classic(full_width = F, html_font = "Cambria")
+```
+
+Of course, pooled results are only interpretable if the same exposure-covariate region was found in the definition of level 1 and level 2. When results are consistent, this indicates a shift in the same exposure in the same region of the covariate space and we are able to leverage more data in the estimation folds to get more precise estimates. 
+
+
+In this example with fewer folds due to computational reasons, there is incosistency, however the fact that cotinine is found as a modifier for all the POPs is useful for researchers who are interested in knowing the differential impact of POP exposure - that is, people who smoke may be more impacted by POPs. 

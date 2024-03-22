@@ -31,43 +31,32 @@ calc_pooled_indiv_shifts <- function(indiv_shift_results,
   # set TMLE as default estimator type
   estimator <- match.arg(estimator)
 
-  results_list <- list()
+  k_fold_results_list <- list()
+  pooled_fold_results_list <- list()
 
   names <- names(indiv_shift_results)
 
-  if (rank == TRUE) {
-    names <- gsub("^(Rank [0-9]+) :.*", "\\1", names)
-  }else{
-    names <- gsub("^.+?:", "", names)
-  }
+  pattern <- "Fold : (\\d) \\| Rank : (\\d) \\| Exposure : ([^\\|]+) \\| Modifier : ([^\\|]+) \\| Level : (\\d)"
+  ids <- sapply(names, function(name) {
+    matches <- stringr::str_match(name, pattern)
+    if (!is.na(matches[1,2])) { # Check if there was a match
+      paste(matches[,3], matches[,6], sep="_")
+    } else {
+      NA
+    }
+  })
 
 
-  for (var_set in unique(names)) {
-    var_set_results <- indiv_shift_results[stringr::str_detect(
-      names(indiv_shift_results), var_set
-    )]
+  for (id in unique(ids)) {
+    # Filter results for the current id
+    id_results <- indiv_shift_results[ids == id]
 
-    test <- unlist(var_set_results, recursive = FALSE)
-
-    Hn <- do.call(rbind, test[stringr::str_detect(
-      names(test), "Hn"
-    )])
-
-    Qn_scaled <- do.call(rbind, test[stringr::str_detect(
-      names(test), "Qn_scaled"
-    )])
-
-    data <- do.call(rbind, test[stringr::str_detect(
-      names(test), "data"
-    )])
-
-    k_fold_results <- do.call(rbind, test[stringr::str_detect(
-      names(test), "k_fold"
-    )])
-
-    deltas <- do.call(rbind, test[stringr::str_detect(
-      names(test), "Delta"
-    )])
+    Hn <- do.call(rbind, lapply(id_results, function(x) x$Hn))
+    Qn_scaled <- do.call(rbind, lapply(id_results, function(x) x$Qn_scaled))
+    data <-  do.call(rbind, lapply(id_results, function(x) x$data))
+    k_fold_results <- do.call(rbind, lapply(id_results, function(x) x$k_fold))
+    deltas <- do.call(rbind, lapply(id_results, function(x) x$Delta))
+    rule <- do.call(rbind, lapply(id_results, function(x) x$`Effect Mod Rule`))
 
     tmle_fit <- tmle_exposhift(
       data_internal = data,
@@ -80,17 +69,69 @@ calc_pooled_indiv_shifts <- function(indiv_shift_results,
 
     indiv_shift_in_fold <- calc_final_ind_shift_param(
       tmle_fit = tmle_fit,
-      exposure = var_set,
+      exposure = id,
       fold_k = "Pooled TMLE"
     )
 
     indiv_shift_in_fold$Delta <- mean(deltas)
 
-    results_df <- rbind(k_fold_results, indiv_shift_in_fold)
+    pooled_fold_results_list[[id]] <- indiv_shift_in_fold
 
-
-    results_list[[var_set]] <- results_df
   }
 
-  return(results_list)
+
+  for (fold in names(indiv_shift_results)) {
+
+    id_results <- indiv_shift_results[fold]
+
+    Hn <- do.call(rbind, lapply(id_results, function(x) x$Hn))
+    Qn_scaled <- do.call(rbind, lapply(id_results, function(x) x$Qn_scaled))
+    data <-  do.call(rbind, lapply(id_results, function(x) x$data))
+    k_fold_results <- do.call(rbind, lapply(id_results, function(x) x$k_fold))
+    deltas <- do.call(rbind, lapply(id_results, function(x) x$Delta))
+    rule <- do.call(rbind, lapply(id_results, function(x) x$`Effect Mod Rule`))
+
+
+    tmle_fit <- tmle_exposhift(
+      data_internal = data,
+      Qn_scaled = Qn_scaled,
+      Hn = Hn,
+      fluctuation = fluctuation,
+      y = data$y,
+      delta = mean(deltas)
+    )
+
+    indiv_shift_in_fold <- calc_final_ind_shift_param(
+      tmle_fit = tmle_fit,
+      exposure = fold,
+      fold_k = "Pooled TMLE"
+    )
+
+    indiv_shift_in_fold$Delta <- mean(deltas)
+    indiv_shift_in_fold$Covariate_region <- rule
+
+    k_fold_results_list[[fold]] <- indiv_shift_in_fold
+
+  }
+
+  fold_results_list <- list()
+
+  for (fold in 1:n_folds) {
+    # This pattern matches items for the current fold
+    pattern <- sprintf("Fold : %d", fold)
+
+    # Find keys (names) that match the current fold
+    fold_keys <- names(k_fold_results_list)[grepl(pattern, names(k_fold_results_list))]
+
+    # Extract the data frames for the current fold
+    fold_data <- k_fold_results_list[fold_keys]
+
+    # Combine all data frames for the current fold into a single data frame
+    combined_fold_data <- do.call("rbind", fold_data)
+
+    # Assign the combined data frame to the fold_results_list
+    fold_results_list[[paste("Fold", fold)]] <- combined_fold_data
+  }
+
+  return(list("k_fold_results" = fold_results_list, "pooled_results" = pooled_fold_results_list))
 }
