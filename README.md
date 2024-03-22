@@ -5,14 +5,14 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/InterXShift/actions)
+[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXshift/actions)
 [![Coverage
-Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/InterXShift?branch=master)
-[![CRAN](https://www.r-pkg.org/badges/version/EffectXshift)](https://www.r-pkg.org/pkg/InterXShift)
+Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/EffectXshift?branch=master)
+[![CRAN](https://www.r-pkg.org/badges/version/EffectXshift)](https://www.r-pkg.org/pkg/EffectXshift)
 [![CRAN
-downloads](https://cranlogs.r-pkg.org/badges/InterXShift)](https://CRAN.R-project.org/package=EffectXshift)
+downloads](https://cranlogs.r-pkg.org/badges/EffectXshift)](https://CRAN.R-project.org/package=EffectXshift)
 [![CRAN total
-downloads](http://cranlogs.r-pkg.org/badges/grand-total/InterXShift)](https://CRAN.R-project.org/package=EffectXshift)
+downloads](http://cranlogs.r-pkg.org/badges/grand-total/EffectXshift)](https://CRAN.R-project.org/package=EffectXshift)
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -53,7 +53,7 @@ $$
 This finds the exposure-covariate region combination where the effect
 of an intervention is maximally diffrent.
 
-`InterXshift` builds on work described in (McCoy et al. 2023). However
+`EffectXshift` builds on work described in (McCoy et al. 2023). However
 instead of identifying interactions through an semi-parametric
 definition of an F-statistics and then estimating our interaction target
 parameter using CV-TMLE pooled across exposure sets, we provide a more
@@ -75,7 +75,7 @@ interaction target parameter using the doubly robust estimator TMLE to
 ensure asymptotic efficiency which allows us to construct confidence
 intervals for our estimates (unlike the g-comp method).
 
-By using InterXshift, users get access to a tool that offers both k-fold
+By using EffectXshift, users get access to a tool that offers both k-fold
 specific and aggregated results for the top synergistic and antagonistic
 relationships, ensuring that researchers can glean the most information
 from their data. For a more in-depth exploration, there’s an
@@ -87,14 +87,14 @@ each exposure (indicating the degree of shift) and if this delta should
 be adaptive in response to positivity violations. The `top_n` parameter
 defines the top number of synergistic, antagonistic, positive and
 negative ranked impacts to estiamte. A detailed guide is provided in the
-vignette. With these inputs, `InterXshift` processes the data and
+vignette. With these inputs, `EffectXshift` processes the data and
 delivers tables showcasing fold-specific results and aggregated
 outcomes, allowing users to glean insights effectively.
 
-`InterXshift` also incorporates features from the `sl3` package (Coyle,
+`EffectXshift` also incorporates features from the `sl3` package (Coyle,
 Hejazi, Malenica, et al. 2022), facilitating ensemble machine learning
 in the estimation process. If the user does not specify any stack
-parameters, `InterXshift` will automatically create an ensemble of
+parameters, `EffectXshift` will automatically create an ensemble of
 machine learning algorithms that strike a balance between flexibility
 and computational efficiency.
 
@@ -102,7 +102,7 @@ and computational efficiency.
 
 ## Installation
 
-*Note:* Because the `InterXshift` package (currently) depends on `sl3`
+*Note:* Because the `EffectXshift` package (currently) depends on `sl3`
 that allows ensemble machine learning to be used for nuisance parameter
 estimation and `sl3` is not on CRAN the `EffectXshift` package is not
 available on CRAN and must be downloaded here.
@@ -138,7 +138,7 @@ Make sure `sl3` installs correctly then install `EffectXshift`
 remotes::install_github("blind-contours/EffectXshift@main")
 ```
 
-`InterXshift` has some other miscellaneous dependencies that are used in
+`EffectXshift` has some other miscellaneous dependencies that are used in
 the examples as well as in the plotting functions.
 
 ``` r

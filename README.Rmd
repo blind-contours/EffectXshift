@@ -18,11 +18,11 @@ knitr::opts_chunk$set(
 # R/`EffectXshift` <img src="man/figures/EffectXshift_logo.png" style="float:right; height:200px;">
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/InterXShift/actions)
-[![Coverage Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/InterXShift?branch=master)
-[![CRAN](https://www.r-pkg.org/badges/version/EffectXshift)](https://www.r-pkg.org/pkg/InterXShift)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/InterXShift)](https://CRAN.R-project.org/package=EffectXshift)
-[![CRAN total downloads](http://cranlogs.r-pkg.org/badges/grand-total/InterXShift)](https://CRAN.R-project.org/package=EffectXshift)
+[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXShift/actions)
+[![Coverage Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/EffectXShift?branch=master)
+[![CRAN](https://www.r-pkg.org/badges/version/EffectXshift)](https://www.r-pkg.org/pkg/EffectXshift)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/EffectXShift)](https://CRAN.R-project.org/package=EffectXshift)
+[![CRAN total downloads](http://cranlogs.r-pkg.org/badges/grand-total/EffectXShift)](https://CRAN.R-project.org/package=EffectXshift)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 <!-- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4070042.svg)](https://doi.org/10.5281/zenodo.4070042) -->
@@ -49,23 +49,23 @@ $$
 $$
 This finds the exposure-covariate region combination where the effect of an intervention is maximally diffrent. 
 
-`InterXshift` builds on work described in [@mccoy2023semiparametric]. However instead of identifying interactions through an semi-parametric definition of an F-statistics and then estimating our interaction target parameter using CV-TMLE pooled across exposure sets, we provide a more streamlined approach. In this package, we identify interactions through g-computation first - evaluating the expected outcome under joint shift compared to the sum of individual shifts using Super Learner. We then rank these estimates as the highest sets of synergy and antagonism. We then use CV-TMLE and pool within the ranks. 
+`EffectXshift` builds on work described in [@mccoy2023semiparametric]. However instead of identifying interactions through an semi-parametric definition of an F-statistics and then estimating our interaction target parameter using CV-TMLE pooled across exposure sets, we provide a more streamlined approach. In this package, we identify interactions through g-computation first - evaluating the expected outcome under joint shift compared to the sum of individual shifts using Super Learner. We then rank these estimates as the highest sets of synergy and antagonism. We then use CV-TMLE and pool within the ranks. 
 
 
 The package ensures robustness by employing a k-fold cross-validation framework. This framework helps in estimating a data-adaptive parameter, which is the stochastic shift target parameters for the exposure sets identified as having synergy or antagonism. The process begins by partitioning the data into parameter-generating and estimation samples. In the parameter-generating sample, we identify our ranks of antagonistic and synergistic exposure sets through a machine learning g-computation framework. In the estimation sample we then estimate our interaction target parameter using the doubly robust estimator TMLE to ensure asymptotic efficiency which allows us to construct confidence intervals for our estimates (unlike the g-comp method). 
 
-By using InterXshift, users get access to a tool that offers both k-fold specific and aggregated results for the top synergistic and antagonistic relationships, ensuring that researchers can glean the most information from their data. For a more in-depth exploration, there's an accompanying vignette.
+By using EffectXshift, users get access to a tool that offers both k-fold specific and aggregated results for the top synergistic and antagonistic relationships, ensuring that researchers can glean the most information from their data. For a more in-depth exploration, there's an accompanying vignette.
 
-To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the respective $\delta$ for each exposure (indicating the degree of shift) and if this delta should be adaptive in response to positivity violations. The `top_n` parameter defines the top number of synergistic, antagonistic, positive and negative ranked impacts to estiamte. A detailed guide is provided in the vignette. With these inputs, `InterXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
+To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the respective $\delta$ for each exposure (indicating the degree of shift) and if this delta should be adaptive in response to positivity violations. The `top_n` parameter defines the top number of synergistic, antagonistic, positive and negative ranked impacts to estiamte. A detailed guide is provided in the vignette. With these inputs, `EffectXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
 
-`InterXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `InterXshift` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
+`EffectXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `EffectXshift` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
 
 
 ---
 
 ## Installation
 
-*Note:* Because the `InterXshift` package (currently) depends on `sl3` that
+*Note:* Because the `EffectXshift` package (currently) depends on `sl3` that
 allows ensemble machine learning to be used for nuisance parameter
 estimation and `sl3` is not on CRAN the `EffectXshift` package is not
 available on CRAN and must be downloaded here.
@@ -96,11 +96,11 @@ remotes::install_github("tlverse/sl3@devel")
 
 Make sure `sl3` installs correctly then install `EffectXshift`
 
-```{r InterXshift_install,  eval = FALSE}
+```{r EffectXshift_install,  eval = FALSE}
 remotes::install_github("blind-contours/EffectXshift@main")
 ```
 
-`InterXshift` has some other miscellaneous dependencies that are used in the examples as well as in the plotting functions. 
+`EffectXshift` has some other miscellaneous dependencies that are used in the examples as well as in the plotting functions. 
 
 ```{r msc_package,  eval = FALSE}
 install.packages(c("kableExtra", "hrbrthemes", "viridis"))
