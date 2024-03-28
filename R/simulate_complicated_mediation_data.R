@@ -1,4 +1,4 @@
-#' DGP for testing SuperNOVA with mediation (complicated!)
+#' DGP for testing EffectXshift with mediation (complicated!)
 #'
 #' @param n_obs Number of observations
 #' @param delta Delta for M1 Exposure

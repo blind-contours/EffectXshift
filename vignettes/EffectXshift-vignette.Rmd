@@ -109,8 +109,6 @@ In this NHANES example, we will investigate if any of the included baseline cova
 
 Let's first load the data and investigate the variables: 
 
-## NHANES Data 
-
 
 ```{r NHANES data and variables}
 data("NHANES_eurocim")

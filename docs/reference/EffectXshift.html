@@ -119,7 +119,7 @@ This determines where to place the auxiliary covariate in the logistic tilting r
 
 
 <dt>var_sets</dt>
-<dd><p>A list specifying variable sets for deterministic InterXshift usage.
+<dd><p>A list specifying variable sets for deterministic EffectXshift usage.
 Example: var_sets &lt;- c("A_1", "A_1-Z_2") where the analyst provides variable sets
 for exposures, exposure-mediator, or exposure-covariate relationships.</p></dd>
 
@@ -190,7 +190,7 @@ multiple mediators (optional).</p></dd>
     <h2>Value</h2>
     
 
-<p>An S3 object of class <code>SuperNOVA</code> containing the results of the
+<p>An S3 object of class <code>EffectXshift</code> containing the results of the
 procedure to compute a TML or one-step estimate of the counterfactual mean
 under a modified treatment policy that shifts a continuous-valued exposure
 by a scalar amount <code>delta</code>. These exposures are data-adaptively

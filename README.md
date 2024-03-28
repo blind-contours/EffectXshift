@@ -1,18 +1,18 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`EffectXshift` <img src="man/figures/‎EffectXshift_logo.png" style="float:right; height:200px;">
+# R/`EffectXshift` <img src="man/figures/EffectXshift.logo" style="float:right; height:200px;">
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXshift/actions)
+[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXShift/actions)
 [![Coverage
-Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/EffectXshift?branch=master)
+Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/EffectXShift?branch=master)
 [![CRAN](https://www.r-pkg.org/badges/version/EffectXshift)](https://www.r-pkg.org/pkg/EffectXshift)
 [![CRAN
-downloads](https://cranlogs.r-pkg.org/badges/EffectXshift)](https://CRAN.R-project.org/package=EffectXshift)
+downloads](https://cranlogs.r-pkg.org/badges/EffectXShift)](https://CRAN.R-project.org/package=EffectXshift)
 [![CRAN total
-downloads](http://cranlogs.r-pkg.org/badges/grand-total/EffectXshift)](https://CRAN.R-project.org/package=EffectXshift)
+downloads](http://cranlogs.r-pkg.org/badges/grand-total/EffectXShift)](https://CRAN.R-project.org/package=EffectXshift)
 [![Project Status: Active – The project has reached a stable, usable
 state and is being actively
 developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
@@ -47,10 +47,7 @@ $$
 &\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \, W_{\setminus j}\right] \right. \\
 &\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
 \end{align*}
-$$ 
-
-
-This finds the exposure-covariate region combination where the effect
+$$ This finds the exposure-covariate region combination where the effect
 of an intervention is maximally diffrent.
 
 `EffectXshift` builds on work described in (McCoy et al. 2023). However
@@ -75,10 +72,10 @@ interaction target parameter using the doubly robust estimator TMLE to
 ensure asymptotic efficiency which allows us to construct confidence
 intervals for our estimates (unlike the g-comp method).
 
-By using EffectXshift, users get access to a tool that offers both k-fold
-specific and aggregated results for the top synergistic and antagonistic
-relationships, ensuring that researchers can glean the most information
-from their data. For a more in-depth exploration, there’s an
+By using EffectXshift, users get access to a tool that offers both
+k-fold specific and aggregated results for the top synergistic and
+antagonistic relationships, ensuring that researchers can glean the most
+information from their data. For a more in-depth exploration, there’s an
 accompanying vignette.
 
 To utilize the package, users need to provide vectors for exposures,
@@ -138,8 +135,8 @@ Make sure `sl3` installs correctly then install `EffectXshift`
 remotes::install_github("blind-contours/EffectXshift@main")
 ```
 
-`EffectXshift` has some other miscellaneous dependencies that are used in
-the examples as well as in the plotting functions.
+`EffectXshift` has some other miscellaneous dependencies that are used
+in the examples as well as in the plotting functions.
 
 ``` r
 install.packages(c("kableExtra", "hrbrthemes", "viridis"))
@@ -263,7 +260,7 @@ y <- data_shifted$Y
 deltas <- list(
   "A1" = -0.5, "A2" = -0.5, "A3" = -0.5
 )
-head(data) %>%
+head(data_shifted) %>%
   kbl(caption = "Sim Data") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
@@ -274,39 +271,208 @@ Sim Data
 </caption>
 <thead>
 <tr>
-<th style="text-align:left;">
+<th style="text-align:right;">
+Sex
+</th>
+<th style="text-align:right;">
+W2
+</th>
+<th style="text-align:right;">
+A1
+</th>
+<th style="text-align:right;">
+A1_shifted
+</th>
+<th style="text-align:right;">
+A2
+</th>
+<th style="text-align:right;">
+A3
+</th>
+<th style="text-align:right;">
+Y
+</th>
+<th style="text-align:right;">
+Y_shifted
+</th>
+<th style="text-align:right;">
+Y_diff
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-function (…, list = character(), package = NULL, lib.loc = NULL,
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-0.9957987
+</td>
+<td style="text-align:right;">
+-1.4957987
+</td>
+<td style="text-align:right;">
+-0.5116037
+</td>
+<td style="text-align:right;">
+-0.1503075
+</td>
+<td style="text-align:right;">
+0.9148877
+</td>
+<td style="text-align:right;">
+-0.2758360
+</td>
+<td style="text-align:right;">
+-1.190724
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-verbose = getOption(“verbose”), envir = .GlobalEnv, overwrite = TRUE)
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+-1.0399550
+</td>
+<td style="text-align:right;">
+-1.5399550
+</td>
+<td style="text-align:right;">
+0.2369379
+</td>
+<td style="text-align:right;">
+-0.3277571
+</td>
+<td style="text-align:right;">
+-0.2168344
+</td>
+<td style="text-align:right;">
+-1.2393542
+</td>
+<td style="text-align:right;">
+-1.022520
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-{
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-0.0179802
+</td>
+<td style="text-align:right;">
+-0.5179802
+</td>
+<td style="text-align:right;">
+-0.5415892
+</td>
+<td style="text-align:right;">
+-1.4481653
+</td>
+<td style="text-align:right;">
+2.0925963
+</td>
+<td style="text-align:right;">
+-0.2253574
+</td>
+<td style="text-align:right;">
+-2.317954
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-fileExt \<- function(x) {
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+-0.1321751
+</td>
+<td style="text-align:right;">
+-0.6321751
+</td>
+<td style="text-align:right;">
+1.2192276
+</td>
+<td style="text-align:right;">
+-0.6972846
+</td>
+<td style="text-align:right;">
+0.9894737
+</td>
+<td style="text-align:right;">
+2.2546501
+</td>
+<td style="text-align:right;">
+1.265176
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-db \<- grepl(“\\\[^.\]+\\(gz\|bz2\|xz)\$”, x)
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+-2.5493428
+</td>
+<td style="text-align:right;">
+-3.0493428
+</td>
+<td style="text-align:right;">
+0.1741359
+</td>
+<td style="text-align:right;">
+2.5984902
+</td>
+<td style="text-align:right;">
+-6.8673719
+</td>
+<td style="text-align:right;">
+-5.4250711
+</td>
+<td style="text-align:right;">
+1.442301
 </td>
 </tr>
 <tr>
-<td style="text-align:left;">
-ans \<- sub(“.\*\\”, ““, x)
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.0405735
+</td>
+<td style="text-align:right;">
+0.5405735
+</td>
+<td style="text-align:right;">
+-0.6152683
+</td>
+<td style="text-align:right;">
+-0.0374150
+</td>
+<td style="text-align:right;">
+4.9307824
+</td>
+<td style="text-align:right;">
+2.5605873
+</td>
+<td style="text-align:right;">
+-2.370195
 </td>
 </tr>
 </tbody>
@@ -326,24 +492,6 @@ sim_results <- EffectXshift(
   seed = seed,
   top_n = 1
 )
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
-#> [1] "Returning base case rule at depth: 1"
 #> 
 #> Iter: 1 fn: 479.5067  Pars:  0.999994748 0.000005252
 #> Iter: 2 fn: 479.5067  Pars:  0.99999858 0.00000142
@@ -371,7 +519,7 @@ sim_results <- EffectXshift(
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
 #>    user  system elapsed 
-#>   9.484   0.602 154.696
+#>  12.117   0.727 183.695
 
 ## marginal effects
 k_fold_results <- sim_results$`Effect Modification K-Fold Results`

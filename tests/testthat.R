@@ -1,4 +1,4 @@
 library(testthat)
-library(SuperNOVA)
+library(EffectXshift)
 
-test_check("SuperNOVA")
+test_check("EffectXshift")

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Job name:
-#SBATCH --job-name=1_c_quad_mediation_supernova
+#SBATCH --job-name=1_c_quad_mediation_EffectXshift
 #
 # Partition:
 #SBATCH --partition=savio3
@@ -22,4 +22,4 @@
 module load r/4.0.3
 
 ### Run Simulation
-R CMD BATCH --no-save ../03_run_med_simulation_cont_quad_1.R supernova_mediation_cont_quad_1.Rout
+R CMD BATCH --no-save ../03_run_med_simulation_cont_quad_1.R EffectXshift_mediation_cont_quad_1.Rout

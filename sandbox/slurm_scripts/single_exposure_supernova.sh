@@ -1,6 +1,6 @@
 #!/bin/bash
 # Job name:
-#SBATCH --job-name=single_shift_supernova
+#SBATCH --job-name=single_shift_EffectXshift
 #
 # Partition:
 #SBATCH --partition=savio2

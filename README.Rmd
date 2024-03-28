@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`EffectXshift` <img src="man/figures/EffectXshift_logo.png" style="float:right; height:200px;">
+# R/`EffectXshift` <img src="man/figures/EffectXshift.logo" style="float:right; height:200px;">
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXShift/actions)

@@ -13,9 +13,6 @@
     <loc>/articles/EffectXshift-vignette.html</loc>
   </url>
   <url>
-    <loc>/articles/InterXshift-vignette.html</loc>
-  </url>
-  <url>
     <loc>/articles/index.html</loc>
   </url>
   <url>
@@ -31,7 +28,7 @@
     <loc>/reference/EffectXshift.html</loc>
   </url>
   <url>
-    <loc>/reference/InterXshift.html</loc>
+    <loc>/reference/EffectXshift.html</loc>
   </url>
   <url>
     <loc>/reference/NHANES_eurocim.html</loc>
