@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`EffectXshift` <img src="man/figures/EffectXshift.logo" style="float:right; height:200px;">
+# R/`EffectXshift` <img src="man/figures/man/figures/EffectXshift_logo.png" style="float:right; height:200px;">
 
 <!-- badges: start -->
 
@@ -47,7 +47,9 @@ $$
 &\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \, W_{\setminus j}\right] \right. \\
 &\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
 \end{align*}
-$$ This finds the exposure-covariate region combination where the effect
+$$ 
+
+This finds the exposure-covariate region combination where the effect
 of an intervention is maximally diffrent.
 
 `EffectXshift` builds on work described in (McCoy et al. 2023). However

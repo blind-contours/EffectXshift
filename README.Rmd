@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`EffectXshift` <img src="man/figures/EffectXshift.logo" style="float:right; height:200px;">
+# R/`EffectXshift` <img src="man/figures/EffectXshift_logo.png" style="float:right; height:200px;">
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXShift/actions)
@@ -47,6 +47,7 @@ $$
 &\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
 \end{align*}
 $$
+
 This finds the exposure-covariate region combination where the effect of an intervention is maximally diffrent. 
 
 `EffectXshift` builds on work described in [@mccoy2023semiparametric]. However instead of identifying interactions through an semi-parametric definition of an F-statistics and then estimating our interaction target parameter using CV-TMLE pooled across exposure sets, we provide a more streamlined approach. In this package, we identify interactions through g-computation first - evaluating the expected outcome under joint shift compared to the sum of individual shifts using Super Learner. We then rank these estimates as the highest sets of synergy and antagonism. We then use CV-TMLE and pool within the ranks. 
