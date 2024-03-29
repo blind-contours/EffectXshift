@@ -47,10 +47,10 @@ $$
 &\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \, W_{\setminus j}\right] \right. \\
 &\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
 \end{align*}
-$$ 
+$$
 
-This finds the exposure-covariate region combination where the effect
-of an intervention is maximally diffrent.
+This finds the exposure-covariate region combination where the effect of
+an intervention is maximally diffrent.
 
 `EffectXshift` builds on work described in (McCoy et al. 2023). However
 instead of identifying interactions through an semi-parametric
@@ -521,7 +521,7 @@ sim_results <- EffectXshift(
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
 #>    user  system elapsed 
-#>  12.117   0.727 183.695
+#>  12.531   0.817 248.436
 
 ## marginal effects
 k_fold_results <- sim_results$`Effect Modification K-Fold Results`

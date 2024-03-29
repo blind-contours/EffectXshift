@@ -140,7 +140,7 @@ W2 <- rbinom(n, 1, 0.5)  # Additional binary covariate
 A1 <- rnorm(n)  # Continuous exposure with significant interaction with Sex
 A2 <- rnorm(n)  # Continuous exposure without significant interaction
 A3 <- rnorm(n)  # Continuous exposure without significant interaction
-
+ 
 # Define effect sizes
 beta_A1 <- 1  # Base effect of A1 on Y
 beta_A2 <- 0.5  # Effect of A2 on Y
