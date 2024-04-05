@@ -26,7 +26,8 @@ EffectXshift(
   hn_trunc_thresh = 10,
   adaptive_delta = FALSE,
   discover_only = FALSE,
-  top_n = 1
+  top_n = 1,
+  min_obs = 20
 )
 }
 \arguments{
@@ -79,7 +80,9 @@ g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \p
 
 \item{hn_trunc_thresh}{Truncation level for the clever covariate (default: 10).}
 
-\item{adaptive_delta}{If TRUE, reduces the user-specified delta until
+\item{adaptive_delta}{If TRUE, reduces the user-specified delta until}
+
+\item{min_obs}{Minimum number of observations allowed in a covariate region
 the Hn calculated for a shift does not have any observation greater
 than hn_trunc_thresh (default: FALSE).}
 
@@ -94,8 +97,12 @@ by a scalar amount \code{delta}. These exposures are data-adaptively
 identified using the CV-TMLE procedure.
 }
 \description{
-Under a fixed shift to exposures identify using g-computation the joint shift of
-pairwise exposures in a mixed exposure compared to the additive individual shifts. Positive values indicate
-synergy and negative antagonism, get the top synergy and antagonism results and use CV-TMLE to efficiently
-estimate the interaction target parameter.
+This packages aims to find, in a mixed exposure with many covariates and a future outcome, the
+exposure-covariate region combination that maximizes the differential impact of stochastic shift intervention. In a
+training fold we find the region in the covariate space that maximizes the average difference in stochastic shift interventions,
+compared between the regions. This outputs an exposure-covariate region pairing. Then in an estimation sample, we estimate
+a stochastic shift intervention using targeted learning in each level of the covariate, shifting the discovered exposure.
+This is done in a CV-TMLE procedure where each fold is used as validation and the complementary folds are used as training.
+This package outputs the targeted estimates for the discovered exposure in the levels of the discovered covariate both at the k-fold
+specific level and pooled across folds, which estimates the overall oracle parameter.
 }

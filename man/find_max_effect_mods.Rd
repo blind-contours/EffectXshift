@@ -13,7 +13,8 @@ find_max_effect_mods(
   outcome_type,
   mu_learner,
   top_n = 3,
-  seed
+  seed,
+  min_obs
 )
 }
 \arguments{
