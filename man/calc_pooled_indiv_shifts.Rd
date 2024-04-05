@@ -40,7 +40,7 @@ the EIF without the application of such weights.
 Compute the Pooled Shift Parameter Estimate From the Fold Specific Results
 }
 \details{
-Estimate the value of the pooledcausal parameter alongside statistical
-inference for the parameter estimate based on the nuisance parameters from
-the fold specific results.
+Estimate the value of the pooledcausal parameter alongside
+statistical inference for the parameter estimate based on the nuisance
+parameters from the fold specific results.
 }

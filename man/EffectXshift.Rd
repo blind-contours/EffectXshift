@@ -44,8 +44,6 @@ maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.}
 \item{fluctuation}{Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.}
 
-\item{pi_learner}{Learners for fitting Super Learner ensembles to densities via \pkg{sl3}.}
-
 \item{mu_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}.}
 
 \item{n_folds}{Number of folds to use in cross-validation, default is 2.}
@@ -69,20 +67,8 @@ This determines where to place the auxiliary covariate in the logistic tilting r
 the Hn calculated for a shift does not have any observation greater
 than hn_trunc_thresh (default: FALSE).}
 
-\item{z}{\code{matrix}, \code{data.frame}, or similar containing individual or
-multiple mediators (optional).}
-
-\item{var_sets}{A list specifying variable sets for deterministic EffectXshift usage.
-Example: var_sets <- c("A_1", "A_1-Z_2") where the analyst provides variable sets
-for exposures, exposure-mediator, or exposure-covariate relationships.}
-
 \item{g_learner}{Learners for fitting Super Learner ensembles to the g-mechanism
 g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
-
-\item{e_learner}{Learners for fitting Super Learner ensembles to the e-mechanism
-g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
-
-\item{zeta_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}..}
 }
 \value{
 An S3 object of class \code{EffectXshift} containing the results of the
