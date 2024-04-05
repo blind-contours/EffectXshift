@@ -87,9 +87,9 @@ find_max_effect_mods <- function(data, deltas, a_names, w_names, outcome, outcom
       return(list(average = Inf, n = 0)) # Use Inf as the default for average.
     } else {
       region_data <- region[, c(w_names, var, outcome)]
-      rf <- ranger(as.formula(paste(outcome, "~.")), data = region_data)
+      # rf <- ranger(as.formula(paste(outcome, "~.")), data = region_data)
 
-      region_average <- mean(rf$predictions)
+      region_average <- mean(region_data[[outcome]])
       return(list(average = region_average, n = nrow(region)))
     }
   }
@@ -173,17 +173,19 @@ find_max_effect_mods <- function(data, deltas, a_names, w_names, outcome, outcom
 
         covars <- setdiff(w_names, var)
 
-        model <- ranger(
-          formula = as.formula(paste(
-            outcome, "~ split_indicator +",
-            paste(covars, collapse = "+")
-          )),
-          data = data, num.trees = 400
-        )
+        # model <- ranger(
+        #   formula = as.formula(paste(
+        #     outcome, "~ split_indicator +",
+        #     paste(covars, collapse = "+")
+        #   )),
+        #   data = data, num.trees = 400
+        # )
+
+
 
         # Calculate the average predictions for left and right
-        left_average <- mean(model$predictions[data$split_indicator == 1])
-        right_average <- mean(model$predictions[data$split_indicator == 0])
+        left_average <- mean(data[[outcome]][data$split_indicator == 1])
+        right_average <- mean(data[[outcome]][data$split_indicator == 0])
 
         abs_ate <- abs(right_average - left_average)
 
@@ -356,9 +358,7 @@ find_max_effect_mods <- function(data, deltas, a_names, w_names, outcome, outcom
     item$Rank <- item_index
     selected_items[[item_index]] <- item
 
-
   }
-
 
 
   # Return the results

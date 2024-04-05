@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`EffectXshift` <img src="man/figures/EffectXshift_logo.png" style="float:right; height:200px;">
+# R/`EffectXshift`
 
 <!-- badges: start -->
 
@@ -33,11 +33,11 @@ license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://open
 The `EffectXshift` R package offers an approach which identifies and
 estimates the differential impact of intervention on a mixed exposure on
 an outcome. We define effect modification as the counterfactual mean of
-the outcome under stochastic interventions in a subregion of the
-exposure space compared to the complementary region of that space.
-Stochastic interventions or exposure changes depend on naturally
-observed values, as described in past literature (Dı́az and van der Laan
-2012; Haneuse and Rotnitzky 2013).
+the outcome under stochastic interventions of an exposure in the mixture
+in a subregion of the covariate space compared to the complementary
+region of that space. Stochastic interventions or exposure changes
+depend on naturally observed values, as described in past literature
+(Dı́az and van der Laan 2012; Haneuse and Rotnitzky 2013).
 
 Our target parameter is:
 
@@ -50,45 +50,52 @@ $$
 $$
 
 This finds the exposure-covariate region combination where the effect of
-an intervention is maximally diffrent.
+an intervention is maximally different.
 
-`EffectXshift` builds on work described in (McCoy et al. 2023). However
-instead of identifying interactions through an semi-parametric
-definition of an F-statistics and then estimating our interaction target
-parameter using CV-TMLE pooled across exposure sets, we provide a more
-streamlined approach. In this package, we identify interactions through
-g-computation first - evaluating the expected outcome under joint shift
-compared to the sum of individual shifts using Super Learner. We then
-rank these estimates as the highest sets of synergy and antagonism. We
-then use CV-TMLE and pool within the ranks.
+## Under the Hood
+
+`EffectXshift` first identifies effect modification using g-computation
+through a Super Learner (ensemble of machine learning algorithms). We
+get the exposure shift for each individual for each exposure. We then
+regress these effects onto the covariate space using a custom decision
+tree algorithm that aims to find the region in the covariate space where
+the effect of shifting is maximally different. This algorithm therefore
+selects the exposure from a mixture paired with a region in the
+covariate space that maximizes the subpopulation intervention effect, or
+rather, finds the exposure-covariate region combination where the effect
+of intervention is maximally different.
+
+## K-Fold Cross-Validation
 
 The package ensures robustness by employing a k-fold cross-validation
 framework. This framework helps in estimating a data-adaptive parameter,
-which is the stochastic shift target parameters for the exposure sets
-identified as having synergy or antagonism. The process begins by
+which is the stochastic shift target parameters for the exposure
+identified as having maximal effect modification. The process begins by
 partitioning the data into parameter-generating and estimation samples.
-In the parameter-generating sample, we identify our ranks of
-antagonistic and synergistic exposure sets through a machine learning
+In the parameter-generating sample, we identify our exposure-covariate
+region with maximum effect modification using machine learning
 g-computation framework. In the estimation sample we then estimate our
-interaction target parameter using the doubly robust estimator TMLE to
-ensure asymptotic efficiency which allows us to construct confidence
-intervals for our estimates (unlike the g-comp method).
+stochastic shift target parameter in levels of the discovered covariate
+using the doubly robust estimator TMLE to ensure asymptotic efficiency
+which allows us to construct confidence intervals for our estimates
+(unlike the g-comp method).
 
 By using EffectXshift, users get access to a tool that offers both
-k-fold specific and aggregated results for the top synergistic and
-antagonistic relationships, ensuring that researchers can glean the most
-information from their data. For a more in-depth exploration, there’s an
+k-fold specific and aggregated results for the maximal effect
+modification, ensuring that researchers can glean the most information
+from their data. For a more in-depth exploration, there’s an
 accompanying vignette.
+
+## Inputs
 
 To utilize the package, users need to provide vectors for exposures,
 covariates, and outcomes. They also specify the respective $\delta$ for
-each exposure (indicating the degree of shift) and if this delta should
-be adaptive in response to positivity violations. The `top_n` parameter
-defines the top number of synergistic, antagonistic, positive and
-negative ranked impacts to estiamte. A detailed guide is provided in the
-vignette. With these inputs, `EffectXshift` processes the data and
-delivers tables showcasing fold-specific results and aggregated
-outcomes, allowing users to glean insights effectively.
+each exposure (indicating the degree of shift). The `top_n` parameter
+defines the top number of effect modification exposure-covariate pairs.
+A detailed guide is provided in the vignette. With these inputs,
+`EffectXshift` processes the data and delivers tables showcasing
+fold-specific results and aggregated outcomes, allowing users to glean
+insights effectively.
 
 `EffectXshift` also incorporates features from the `sl3` package (Coyle,
 Hejazi, Malenica, et al. 2022), facilitating ensemble machine learning
@@ -106,27 +113,6 @@ that allows ensemble machine learning to be used for nuisance parameter
 estimation and `sl3` is not on CRAN the `EffectXshift` package is not
 available on CRAN and must be downloaded here.
 
-There are many depedencies for `EffectXshift` so it’s easier to break up
-installation of the various packages to ensure proper installation.
-
-First install the basis estimators used in the data-adaptive variable
-discovery of the exposure and covariate space:
-
-``` r
-install.packages("earth")
-install.packages("hal9001")
-```
-
-`EffectXshift` uses the `sl3` package to build ensemble machine learners
-for each nuisance parameter. We have to install off the development
-branch, first download these two packages for `sl3`
-
-``` r
-install.packages(c("ranger", "arm", "xgboost", "nnls"))
-```
-
-Now install `sl3` on devel:
-
 ``` r
 remotes::install_github("tlverse/sl3@devel")
 ```
@@ -136,15 +122,6 @@ Make sure `sl3` installs correctly then install `EffectXshift`
 ``` r
 remotes::install_github("blind-contours/EffectXshift@main")
 ```
-
-`EffectXshift` has some other miscellaneous dependencies that are used
-in the examples as well as in the plotting functions.
-
-``` r
-install.packages(c("kableExtra", "hrbrthemes", "viridis"))
-```
-
-------------------------------------------------------------------------
 
 ## Example
 
@@ -193,7 +170,7 @@ W2 <- rbinom(n, 1, 0.5)  # Additional binary covariate
 A1 <- rnorm(n)  # Continuous exposure with significant interaction with Sex
 A2 <- rnorm(n)  # Continuous exposure without significant interaction
 A3 <- rnorm(n)  # Continuous exposure without significant interaction
-
+ 
 # Define effect sizes
 beta_A1 <- 1  # Base effect of A1 on Y
 beta_A2 <- 0.5  # Effect of A2 on Y
@@ -521,7 +498,7 @@ sim_results <- EffectXshift(
 #> solnp--> Completed in 2 iterations
 proc.time() - ptm
 #>    user  system elapsed 
-#>  12.531   0.817 248.436
+#>  21.973   1.425 302.154
 
 ## marginal effects
 k_fold_results <- sim_results$`Effect Modification K-Fold Results`
@@ -793,7 +770,16 @@ Sex == 1
 Above the k-fold specific results show that we find the correct
 exposure-covariate combination with max effect modification compared to
 ground truth. Our estimates are very close to ground-truth as well for a
--0.5 shift in A1 in each level of sex.
+-0.5 shift in A1 in each level of sex. Above Psi shows the expected
+outcome under a shift of -0.5 compared to the observed average outcome.
+Variance is the variance derived from the influence function for
+stochastic shift interventions. Covariate region is the level of the
+covariate that was found. So here, we are looking for the top effect
+modification (rank 1), which was found to have exposure A1 in all folds
+with effect modification by sex. So in this simple example of 3
+exposures and 2 covariates we identify the correct exposure-covariate
+combination that has modification and generate estimates that are close
+to the truth.
 
 The consistency of our results means we can look at the pooled results
 which pools estimates for the top effect modifier in each level.
@@ -913,8 +899,8 @@ Pooled TMLE
 
 This shows that in rank 1 level 1 (1_1) the pooled result which pools
 our fold estimates for level 1 for the top modifier. 1_2 is the rank 1
-and second level of modifier. These correspond to sex = 0, and sex = 1
-in this simulated case.
+and second level of modifier. These correspond to shifting A1 in levels
+of sex = 0, and sex = 1 in this simulated case.
 
 ------------------------------------------------------------------------
 
@@ -969,8 +955,8 @@ After using the `EffectXshift` R package, please cite the following:
 
 ## Funding
 
-The development of this software was supported in part through grants
-from the
+The development of this software was supported in part through NIH grant
+P42ES004705 from NIEHS
 
 ------------------------------------------------------------------------
 
@@ -982,7 +968,7 @@ The contents of this repository are distributed under the MIT license.
 See below for details:
 
     MIT License
-    Copyright (c) 2020-2022 David B. McCoy
+    Copyright (c) 2020-2024 David B. McCoy
     Permission is hereby granted, free of charge, to any person obtaining a copy
     of this software and associated documentation files (the "Software"), to deal
     in the Software without restriction, including without limitation the rights
@@ -1061,15 +1047,6 @@ Hejazi, Nima S, Jeremy R Coyle, and Mark J van der Laan. 2020.
 “<span class="nocase">hal9001</span>: Scalable Highly Adaptive Lasso
 Regression in R.” *Journal of Open Source Software* 5 (53): 2526.
 <https://doi.org/10.21105/joss.02526>.
-
-</div>
-
-<div id="ref-mccoy2023semiparametric" class="csl-entry">
-
-McCoy, David B., Alan E. Hubbard, Alejandro Schuler, and Mark J. van der
-Laan. 2023. “Semi-Parametric Identification and Estimation of
-Interaction and Effect Modification in Mixed Exposures Using Stochastic
-Interventions.” <https://arxiv.org/abs/2305.01849>.
 
 </div>
 

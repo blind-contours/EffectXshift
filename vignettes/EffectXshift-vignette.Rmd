@@ -29,9 +29,13 @@ set.seed(seed)
 
 ## Motivation 
 
-The motivation behind the package EffectXshift is to answer the question, "what subpopulations of individuals" have the largest difference in impact in the even of a exposure intervention. Researchers are often interested in understanding vulnerable subpopulations, or individuals with certain characteristics like sex or age, that make them more susceptible to the impact of a drug or pollutant. 
+The motivation behind the package EffectXshift is to answer the question, "what subpopulations of individuals have the largest difference in impact in the event of an exposure intervention". Researchers are often interested in understanding vulnerable subpopulations, or individuals with certain characteristics like sex or age, that make them more susceptible to the impact of a drug or pollutant. 
 
-Methods like R-learners, S-learners, T-learners, and X-learners, have been pivotal in estimating Conditional Average Treatment Effects (CATE) across diverse settings. While S-learners apply a single model to the entire data, incorporating treatment as a feature, T-learners use separate models for treated and control groups to capture distinct patterns. X-learners, designed for settings with imbalanced treatment groups, first estimate treatment effects for both groups separately and then use the information from one group to refine the estimates for the other. Despite their effectiveness, these methods often act as black boxes, offering limited insights into which specific subpopulations are most affected by a treatment or exposure. Our work with EffectXshift addresses this gap by providing an interpretable framework that not only estimates the impact of interventions but also identifies subpopulations with the maximal effect difference. This approach enhances our understanding of treatment effects, facilitating targeted interventions and personalized treatment strategies.
+## Background 
+
+Methods like R-learners, S-learners, T-learners, and X-learners, have been pivotal in estimating Conditional Average Treatment Effects (CATE) across diverse settings. While S-learners apply a single model to the entire data, incorporating treatment as a feature, T-learners use separate models for treated and control groups to capture distinct patterns. X-learners, designed for settings with imbalanced treatment groups, first estimate treatment effects for both groups separately and then use the information from one group to refine the estimates for the other. 
+
+Despite their effectiveness, these methods often act as black boxes, offering limited insights into which specific subpopulations are most affected by a treatment or exposure. Additionally, many of these methods are limited to only estimating the differential effects of a binary treatment/exposure. Our work with EffectXshift addresses this gap by providing an interpretable framework that not only estimates the impact of interventions but also identifies subpopulations with the maximal effect difference. This approach enhances our understanding of treatment effects, facilitating targeted interventions and personalized treatment strategies.
 
 
 ## Target Parameter 
@@ -51,7 +55,7 @@ $$
 $$
 Here, $\delta_i$ denotes the intervention effect on exposure $A_i$, and $V^c$ represents the complementary set of $V$ within $W$.
 
-To elucidate the EffectXshift algorithm, we commence by fitting an outcome model utilizing the Super Learner ensemble methodology. This model is tasked with predicting the outcome variable, \(Y\), based on a set of exposures, \(\boldsymbol{A}\), and covariates, \(\boldsymbol{W}\). The Super Learner algorithm, a machine learning ensemble, optimally combines predictions from a pre-specified library of candidate models to minimize prediction error, thereby offering a flexible and robust approach to outcome modeling.
+To elucidate the EffectXshift algorithm, we start by fitting an outcome model utilizing the Super Learner ensemble methodology. This model is tasked with predicting the outcome variable, \(Y\), based on a set of exposures, \(\boldsymbol{A}\), and covariates, \(\boldsymbol{W}\). The Super Learner algorithm, a machine learning ensemble, optimally combines predictions from a pre-specified library of candidate models to minimize prediction error, thereby offering a flexible and robust approach to outcome modeling.
 
 Subsequently, for each exposure \(A_i\) within the vector of exposures \(\boldsymbol{A}\), we apply a shift, denoted by \(\delta_i\), and predict the expected outcome under this perturbation, yielding \(E[Y | A_i + \delta_i, \boldsymbol{W}]\). This process is repeated for the baseline scenario without the shift to compute \(E[Y | \boldsymbol{A}, \boldsymbol{W}]\). The difference between these two expected outcomes, \(E[Y | A_i + \delta_i, \boldsymbol{W}] - E[Y | \boldsymbol{A}, \boldsymbol{W}]\), constitutes our individual treatment effect (ITE) vectors, capturing the expected change in outcome attributable to the intervention \(\delta_i\) on exposure \(A_i\).
 
@@ -96,7 +100,8 @@ If the same exposure-covariate reguion are used across the folds, the pooled est
 
 ## NHANES Data
 
-Here we will try and replicate the analysis by Gibson et. al., 
+Here we will try and replicate the analysis by Gibson et. al.:
+
 https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1
 
 and Mitro et. al, 
@@ -183,7 +188,7 @@ exposures_to_keep <- setdiff(exposures, exposures_to_remove)
 ```
 
 
-## Run CVtreeMLE 
+## Run EffectXshift 
 
 ```{r run CVtreeMLE for NHANES, warning=FALSE, message=FALSE}
 deltas <- list(
@@ -199,7 +204,7 @@ a <- NHANES_eurocim[, exposures_to_keep]
 y <- NHANES_eurocim$TELOMEAN
 
 seed <- 23432
-NIEH_results <- EffectXshift(
+NHANES_results <- EffectXshift(
   w = w,
   a = a,
   y = y,
@@ -228,28 +233,39 @@ Let's first look at the results for each fold:
 
 ```{r k-fold results, eval = TRUE}
 
-k_fold_results <- do.call(rbind, NIEH_results$`Effect Modification K-Fold Results`)
+k_fold_results <- do.call(rbind, NHANES_results$`Effect Modification K-Fold Results`)
 
 k_fold_results %>%
   kableExtra::kbl(caption = "K-Fold Effect Modification Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-Here, the condition column is the fold specific finding for the top ranked effect modifying exposure-covariate region. For example, in fold 1 LBXF08LA is the exposure found to have the most modification in levels of ln_lbxcot, which is log transformed values for cotinine, a measure of smoking. Covariate_region is the threshold that was found that maximizes the subpopulation intervention effect. This shows where ln_lbxcot was split to define levels 1 and 2. We get subpopulation intervention effects for a -0.5 shift in LBXF08LA in each level of ln_lbxcot.
+Here, the condition column is the fold specific finding for the top ranked effect modifying exposure-covariate region. 
 
-Here we see that, although the exposure that is shifted varies across folds, LBXF08LA, LBXF03LA, LBXD05LA, cotinine is always the modifier which indicates that cotinine is the maximum modifying covariate on POP exposure. 
+For example, if condition looks like: Fold : 1 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level : 1
 
-Because of the variability (due to small k fold used in this example) of the exposure that is chosen, interpretation of the oracle parameter, pooling our estimates across levels, is difficult to interpret but we show the output here: 
+This indicates that the results are for fold 1, for the top ranked exposure-covariate region combination. The exposure is LBXF03LA and the modifier is ln_lbxcot (smoking) in level 1 of smoking. Levels are given in the Covariate_region column. 
+
+For interpretability, a tree depth of only one is supported in partitioning the covariate space which results in two levels of the determined covariate. 
+
+For example, if Covariate_Region has two levels: n_lbxcot <= 5.6 and ln_lbxcot > 5.6, this is where the covariate was partitioned to create the maximum difference in intervention effect for the found exposure. 
+
+Psi is the comparison of the expected outcome under shift intervention compared to the mean outcome in each strata of the covariate, that is level 1 and level 2. Variance estimates are from the influence function for stochastic interventions. 
+
+The fact that smoking is found as an effect modifier in 4 of 5 folds indicates there may be modification of POP exposure due to smoking. 
+
+Because of the variability (due to small k fold used in this example) of the exposure-covariate that is chosen, interpretation of the oracle parameter, pooling our estimates across levels, is difficult to interpret but we show the output here: 
 
 ```{r pooled results, eval = TRUE}
-pooled_results <- do.call(rbind, NIEH_results$`Effect Modification Pooled Results`)
+pooled_results <- do.call(rbind, NHANES_results$`Effect Modification Pooled Results`)
 
 pooled_results %>%
   kableExtra::kbl(caption = "Pooled TMLE Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
+This results show the TMLE pooling in each level of the rank. In this example we are only interested in the top effect modifier so the rank is 1 and we have two levels of the discovered covariate region. So 1_1 indicates the pooled estimates for the top rank exposure-covariate in level 1 and 1_2 indicates the top rank in level 2. 
+
 Of course, pooled results are only interpretable if the same exposure-covariate region was found in the definition of level 1 and level 2. When results are consistent, this indicates a shift in the same exposure in the same region of the covariate space and we are able to leverage more data in the estimation folds to get more precise estimates. 
 
 
-In this example with fewer folds due to computational reasons, there is incosistency, however the fact that cotinine is found as a modifier for all the POPs is useful for researchers who are interested in knowing the differential impact of POP exposure - that is, people who smoke may be more impacted by POPs. 

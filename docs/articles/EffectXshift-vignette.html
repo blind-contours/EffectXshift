@@ -74,7 +74,7 @@ Estimation using Data-Adaptive Stochastic Interventions</h1>
                         <h4 data-toc-skip class="author">David
 McCoy</h4>
             
-            <h4 data-toc-skip class="date">2024-03-28</h4>
+            <h4 data-toc-skip class="date">2024-04-04</h4>
       
       
       <div class="hidden name"><code>EffectXshift-vignette.Rmd</code></div>
@@ -96,11 +96,16 @@ McCoy</h4>
 <h2 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
 </h2>
 <p>The motivation behind the package EffectXshift is to answer the
-question, “what subpopulations of individuals” have the largest
-difference in impact in the even of a exposure intervention. Researchers
-are often interested in understanding vulnerable subpopulations, or
-individuals with certain characteristics like sex or age, that make them
-more susceptible to the impact of a drug or pollutant.</p>
+question, “what subpopulations of individuals have the largest
+difference in impact in the event of an exposure intervention”.
+Researchers are often interested in understanding vulnerable
+subpopulations, or individuals with certain characteristics like sex or
+age, that make them more susceptible to the impact of a drug or
+pollutant.</p>
+</div>
+<div class="section level2">
+<h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
+</h2>
 <p>Methods like R-learners, S-learners, T-learners, and X-learners, have
 been pivotal in estimating Conditional Average Treatment Effects (CATE)
 across diverse settings. While S-learners apply a single model to the
@@ -109,14 +114,17 @@ separate models for treated and control groups to capture distinct
 patterns. X-learners, designed for settings with imbalanced treatment
 groups, first estimate treatment effects for both groups separately and
 then use the information from one group to refine the estimates for the
-other. Despite their effectiveness, these methods often act as black
-boxes, offering limited insights into which specific subpopulations are
-most affected by a treatment or exposure. Our work with EffectXshift
-addresses this gap by providing an interpretable framework that not only
-estimates the impact of interventions but also identifies subpopulations
-with the maximal effect difference. This approach enhances our
-understanding of treatment effects, facilitating targeted interventions
-and personalized treatment strategies.</p>
+other.</p>
+<p>Despite their effectiveness, these methods often act as black boxes,
+offering limited insights into which specific subpopulations are most
+affected by a treatment or exposure. Additionally, many of these methods
+are limited to only estimating the differential effects of a binary
+treatment/exposure. Our work with EffectXshift addresses this gap by
+providing an interpretable framework that not only estimates the impact
+of interventions but also identifies subpopulations with the maximal
+effect difference. This approach enhances our understanding of treatment
+effects, facilitating targeted interventions and personalized treatment
+strategies.</p>
 </div>
 <div class="section level2">
 <h2 id="target-parameter">Target Parameter<a class="anchor" aria-label="anchor" href="#target-parameter"></a>
@@ -143,7 +151,7 @@ W_{\setminus j}\right] \, \right].
 <p>$$ Here, <span class="math inline">\(\delta_i\)</span> denotes the
 intervention effect on exposure <span class="math inline">\(A_i\)</span>, and <span class="math inline">\(V^c\)</span> represents the complementary set of
 <span class="math inline">\(V\)</span> within <span class="math inline">\(W\)</span>.</p>
-<p>To elucidate the EffectXshift algorithm, we commence by fitting an
+<p>To elucidate the EffectXshift algorithm, we start by fitting an
 outcome model utilizing the Super Learner ensemble methodology. This
 model is tasked with predicting the outcome variable, <span class="math inline">\(Y\)</span>, based on a set of exposures, <span class="math inline">\(\boldsymbol{A}\)</span>, and covariates, <span class="math inline">\(\boldsymbol{W}\)</span>. The Super Learner
 algorithm, a machine learning ensemble, optimally combines predictions
@@ -270,7 +278,8 @@ and report consistency of findings.</p>
 <div class="section level2">
 <h2 id="nhanes-data">NHANES Data<a class="anchor" aria-label="anchor" href="#nhanes-data"></a>
 </h2>
-<p>Here we will try and replicate the analysis by Gibson et. al., <a href="https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1" class="external-link uri">https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1</a></p>
+<p>Here we will try and replicate the analysis by Gibson et. al.:</p>
+<p><a href="https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1" class="external-link uri">https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1</a></p>
 <p>and Mitro et. al, <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4858394/" class="external-link uri">https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4858394/</a></p>
 <p>Who used the NHANES 2001-2002 data to investigate 18 POP exposures on
 telomere length.</p>
@@ -346,7 +355,7 @@ do that here:</p>
 <span><span class="va">exposures_to_keep</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://generics.r-lib.org/reference/setops.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="va">exposures</span>, <span class="va">exposures_to_remove</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="run-cvtreemle">Run CVtreeMLE<a class="anchor" aria-label="anchor" href="#run-cvtreemle"></a>
+<h2 id="run-effectxshift">Run EffectXshift<a class="anchor" aria-label="anchor" href="#run-effectxshift"></a>
 </h2>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deltas</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
@@ -362,7 +371,7 @@ do that here:</p>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">NHANES_eurocim</span><span class="op">$</span><span class="va">TELOMEAN</span></span>
 <span></span>
 <span><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fl">23432</span></span>
-<span><span class="va">NIEH_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/EffectXshift.html">EffectXshift</a></span><span class="op">(</span></span>
+<span><span class="va">NHANES_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/EffectXshift.html">EffectXshift</a></span><span class="op">(</span></span>
 <span>  w <span class="op">=</span> <span class="va">w</span>,</span>
 <span>  a <span class="op">=</span> <span class="va">a</span>,</span>
 <span>  y <span class="op">=</span> <span class="va">y</span>,</span>
@@ -378,12 +387,12 @@ do that here:</p>
 <span>  min_obs <span class="op">=</span> <span class="fl">50</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 249.9542  Pars:  0.38578 0.61422</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 249.9542  Pars:  0.38578 0.61422</span></span>
+<span><span class="co">#&gt; Iter: 1 fn: 1800.9222     Pars:  0.13141 0.86859</span></span>
+<span><span class="co">#&gt; Iter: 2 fn: 1800.9222     Pars:  0.13141 0.86859</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 3013.4960     Pars:  0.01173 0.98827</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 3013.4960     Pars:  0.01173 0.98827</span></span>
+<span><span class="co">#&gt; Iter: 1 fn: 1e+24     Pars:  0.19738 0.80262</span></span>
+<span><span class="co">#&gt; Iter: 2 fn: 1e+24     Pars:  0.19738 0.80262</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Iter: 1 fn: 2100.1514     Pars:  0.22464 0.77536</span></span>
@@ -394,33 +403,33 @@ do that here:</p>
 <span><span class="co">#&gt; Iter: 2 fn: 170.9128  Pars:  0.69333 0.30667</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 636.1335  Pars:  0.92099 0.07901</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 636.1335  Pars:  0.92102 0.07898</span></span>
+<span><span class="co">#&gt; Iter: 1 fn: 1985.8092     Pars:  0.04868 0.95132</span></span>
+<span><span class="co">#&gt; Iter: 2 fn: 1985.8092     Pars:  0.04868 0.95132</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 6916.5201     Pars:  0.06420 0.93580</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 6916.5201     Pars:  0.06420 0.93580</span></span>
+<span><span class="co">#&gt; Iter: 1 fn: 170.7114  Pars:  0.74797 0.25203</span></span>
+<span><span class="co">#&gt; Iter: 2 fn: 170.7114  Pars:  0.74797 0.25203</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 2542.1744     Pars:  0.83160 0.16840</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 2542.1744     Pars:  0.83160 0.16840</span></span>
+<span><span class="co">#&gt; Iter: 1 fn: 1362.5297     Pars:  0.08522 0.91478</span></span>
+<span><span class="co">#&gt; Iter: 2 fn: 1362.5297     Pars:  0.08522 0.91478</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 208.5135  Pars:  0.76866 0.23134</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 208.5135  Pars:  0.76866 0.23134</span></span>
+<span><span class="co">#&gt; Iter: 1 fn: 155.6196  Pars:  0.89193 0.10807</span></span>
+<span><span class="co">#&gt; Iter: 2 fn: 155.6196  Pars:  0.89193 0.10807</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 172.4584  Pars:  0.92920 0.07080</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 172.4584  Pars:  0.92920 0.07080</span></span>
+<span><span class="co">#&gt; Iter: 1 fn: 2149.3957     Pars:  0.33704 0.66296</span></span>
+<span><span class="co">#&gt; Iter: 2 fn: 2149.3957     Pars:  0.33704 0.66296</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 1897.1991     Pars:  0.29675 0.70325</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 1897.1991     Pars:  0.29675 0.70325</span></span>
+<span><span class="co">#&gt; Iter: 1 fn: 190.3189  Pars:  0.57399 0.42601</span></span>
+<span><span class="co">#&gt; Iter: 2 fn: 190.3189  Pars:  0.57400 0.42600</span></span>
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
-<span><span class="co">#&gt;     user   system  elapsed </span></span>
-<span><span class="co">#&gt;  221.944   11.976 3627.412</span></span></code></pre></div>
+<span><span class="co">#&gt;    user  system elapsed </span></span>
+<span><span class="co">#&gt;  42.812   6.375 688.355</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="investigating-results">Investigating Results<a class="anchor" aria-label="anchor" href="#investigating-results"></a>
@@ -430,7 +439,7 @@ normal because we only run 5 fold CV due to computational time.</p>
 <p>Let’s first look at the results for each fold:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="va">k_fold_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">NIEH_results</span><span class="op">$</span><span class="va">`Effect Modification K-Fold Results`</span><span class="op">)</span></span>
+<span><span class="va">k_fold_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">NHANES_results</span><span class="op">$</span><span class="va">`Effect Modification K-Fold Results`</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">k_fold_results</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"K-Fold Effect Modification Results"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -477,74 +486,74 @@ Covariate_region
 <tbody>
 <tr>
 <td style="text-align:left;">
-Fold : 1 | Rank : 1 | Exposure : LBXPCBLA | Modifier : LBXMOPCT | Level
+Fold : 1 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
 : 1
 </td>
 <td style="text-align:right;">
-0.3363805
+0.0188475
 </td>
 <td style="text-align:right;">
-0.0035258
+0.0001931
 </td>
 <td style="text-align:right;">
-0.0593789
+0.0138970
 </td>
 <td style="text-align:right;">
-0.2200
+-0.0084
 </td>
 <td style="text-align:right;">
-0.4528
+0.0461
 </td>
 <td style="text-align:right;">
-0.0000000
+0.1750250
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
 <td style="text-align:right;">
-8
+186
 </td>
 <td style="text-align:right;">
 1
 </td>
 <td style="text-align:left;">
-LBXMOPCT &lt;= 4.9
+ln_lbxcot &lt;= 5.6131281064
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 1 | Rank : 1 | Exposure : LBXPCBLA | Modifier : LBXMOPCT | Level
+Fold : 1 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
 : 2
 </td>
 <td style="text-align:right;">
-0.0955148
+0.0448855
 </td>
 <td style="text-align:right;">
-0.0002571
+0.0007922
 </td>
 <td style="text-align:right;">
-0.0160340
+0.0281463
 </td>
 <td style="text-align:right;">
-0.0641
+-0.0103
 </td>
 <td style="text-align:right;">
-0.1269
+0.1001
 </td>
 <td style="text-align:right;">
-0.0000000
+0.1107750
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
 <td style="text-align:right;">
-193
+16
 </td>
 <td style="text-align:right;">
 1
 </td>
 <td style="text-align:left;">
-LBXMOPCT &gt; 4.9
+ln_lbxcot &gt; 5.6131281064
 </td>
 </tr>
 <tr>
@@ -621,104 +630,32 @@ ln_lbxcot &gt; 5.6131281064
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 3 | Rank : 1 | Exposure : LBX099LA | Modifier : LBXNEPCT | Level
+Fold : 3 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
 : 1
 </td>
 <td style="text-align:right;">
-0.1028096
+0.0204625
 </td>
 <td style="text-align:right;">
-0.0020189
+0.0001889
 </td>
 <td style="text-align:right;">
-0.0449320
+0.0137455
 </td>
 <td style="text-align:right;">
-0.0147
+-0.0065
 </td>
 <td style="text-align:right;">
-0.1909
+0.0474
 </td>
 <td style="text-align:right;">
-0.0221309
+0.1365764
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
 <td style="text-align:right;">
-21
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-LBXNEPCT &lt;= 45.1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Fold : 3 | Rank : 1 | Exposure : LBX099LA | Modifier : LBXNEPCT | Level
-: 2
-</td>
-<td style="text-align:right;">
-0.6989927
-</td>
-<td style="text-align:right;">
-0.0002954
-</td>
-<td style="text-align:right;">
-0.0171873
-</td>
-<td style="text-align:right;">
-0.6653
-</td>
-<td style="text-align:right;">
-0.7327
-</td>
-<td style="text-align:right;">
-0.0000000
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:right;">
-178
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:left;">
-LBXNEPCT &gt; 45.1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-Fold : 4 | Rank : 1 | Exposure : LBXF08LA | Modifier : ln_lbxcot | Level
-: 1
-</td>
-<td style="text-align:right;">
--0.0913682
-</td>
-<td style="text-align:right;">
-0.0003323
-</td>
-<td style="text-align:right;">
-0.0182299
-</td>
-<td style="text-align:right;">
--0.1271
-</td>
-<td style="text-align:right;">
--0.0556
-</td>
-<td style="text-align:right;">
-0.0000005
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:right;">
-189
+186
 </td>
 <td style="text-align:right;">
 1
@@ -729,32 +666,32 @@ ln_lbxcot &lt;= 5.6131281064
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 4 | Rank : 1 | Exposure : LBXF08LA | Modifier : ln_lbxcot | Level
+Fold : 3 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
 : 2
 </td>
 <td style="text-align:right;">
-0.1969147
+0.0652753
 </td>
 <td style="text-align:right;">
-0.0090394
+0.0012279
 </td>
 <td style="text-align:right;">
-0.0950756
+0.0350408
 </td>
 <td style="text-align:right;">
-0.0106
+-0.0034
 </td>
 <td style="text-align:right;">
-0.3833
+0.1340
 </td>
 <td style="text-align:right;">
-0.0383459
+0.0624851
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
 <td style="text-align:right;">
-12
+15
 </td>
 <td style="text-align:right;">
 1
@@ -765,96 +702,177 @@ ln_lbxcot &gt; 5.6131281064
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 5 | Rank : 1 | Exposure : LBXF04LA | Modifier : LBXMOPCT | Level
+Fold : 4 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
 : 1
 </td>
 <td style="text-align:right;">
--0.0618278
+0.0075051
 </td>
 <td style="text-align:right;">
-0.0028011
+0.0000889
 </td>
 <td style="text-align:right;">
-0.0529257
+0.0094311
 </td>
 <td style="text-align:right;">
--0.1656
+-0.0110
 </td>
 <td style="text-align:right;">
-0.0419
+0.0260
 </td>
 <td style="text-align:right;">
-0.2427261
+0.4261593
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
 <td style="text-align:right;">
-22
+191
 </td>
 <td style="text-align:right;">
 1
 </td>
 <td style="text-align:left;">
-LBXMOPCT &lt;= 5.4
+ln_lbxcot &lt;= 5.6594822158
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 5 | Rank : 1 | Exposure : LBXF04LA | Modifier : LBXMOPCT | Level
+Fold : 4 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
 : 2
 </td>
 <td style="text-align:right;">
-0.0048994
+-0.0048228
 </td>
 <td style="text-align:right;">
-0.0003625
+0.0012926
 </td>
 <td style="text-align:right;">
-0.0190394
+0.0359528
 </td>
 <td style="text-align:right;">
--0.0324
+-0.0753
 </td>
 <td style="text-align:right;">
-0.0422
+0.0656
 </td>
 <td style="text-align:right;">
-0.7969249
+0.8932907
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
 <td style="text-align:right;">
-178
+10
 </td>
 <td style="text-align:right;">
 1
 </td>
 <td style="text-align:left;">
-LBXMOPCT &gt; 5.4
+ln_lbxcot &gt; 5.6594822158
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fold : 5 | Rank : 1 | Exposure : LBXF03LA | Modifier : LBXNEPCT | Level
+: 1
+</td>
+<td style="text-align:right;">
+0.0127558
+</td>
+<td style="text-align:right;">
+0.0001469
+</td>
+<td style="text-align:right;">
+0.0121184
+</td>
+<td style="text-align:right;">
+-0.0110
+</td>
+<td style="text-align:right;">
+0.0365
+</td>
+<td style="text-align:right;">
+0.2925243
+</td>
+<td style="text-align:left;">
+Pooled TMLE
+</td>
+<td style="text-align:right;">
+186
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+LBXNEPCT &lt;= 71.7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Fold : 5 | Rank : 1 | Exposure : LBXF03LA | Modifier : LBXNEPCT | Level
+: 2
+</td>
+<td style="text-align:right;">
+-0.1527094
+</td>
+<td style="text-align:right;">
+0.0012443
+</td>
+<td style="text-align:right;">
+0.0352746
+</td>
+<td style="text-align:right;">
+-0.2218
+</td>
+<td style="text-align:right;">
+-0.0836
+</td>
+<td style="text-align:right;">
+0.0000150
+</td>
+<td style="text-align:left;">
+Pooled TMLE
+</td>
+<td style="text-align:right;">
+14
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+LBXNEPCT &gt; 71.7
 </td>
 </tr>
 </tbody>
 </table>
 <p>Here, the condition column is the fold specific finding for the top
-ranked effect modifying exposure-covariate region. For example, in fold
-1 LBXF08LA is the exposure found to have the most modification in levels
-of ln_lbxcot, which is log transformed values for cotinine, a measure of
-smoking. Covariate_region is the threshold that was found that maximizes
-the subpopulation intervention effect. This shows where ln_lbxcot was
-split to define levels 1 and 2. We get subpopulation intervention
-effects for a -0.5 shift in LBXF08LA in each level of ln_lbxcot.</p>
-<p>Here we see that, although the exposure that is shifted varies across
-folds, LBXF08LA, LBXF03LA, LBXD05LA, cotinine is always the modifier
-which indicates that cotinine is the maximum modifying covariate on POP
+ranked effect modifying exposure-covariate region.</p>
+<p>For example, if condition looks like: Fold : 1 | Rank : 1 | Exposure
+: LBXF03LA | Modifier : ln_lbxcot | Level : 1</p>
+<p>This indicates that the results are for fold 1, for the top ranked
+exposure-covariate region combination. The exposure is LBXF03LA and the
+modifier is ln_lbxcot (smoking) in level 1 of smoking. Levels are given
+in the Covariate_region column.</p>
+<p>For interpretability, a tree depth of only one is supported in
+partitioning the covariate space which results in two levels of the
+determined covariate.</p>
+<p>For example, if Covariate_Region has two levels: n_lbxcot &lt;= 5.6
+and ln_lbxcot &gt; 5.6, this is where the covariate was partitioned to
+create the maximum difference in intervention effect for the found
 exposure.</p>
+<p>Psi is the comparison of the expected outcome under shift
+intervention compared to the mean outcome in each strata of the
+covariate, that is level 1 and level 2. Variance estimates are from the
+influence function for stochastic interventions.</p>
+<p>The fact that smoking is found as an effect modifier in 4 of 5 folds
+indicates there may be modification of POP exposure due to smoking.</p>
 <p>Because of the variability (due to small k fold used in this example)
-of the exposure that is chosen, interpretation of the oracle parameter,
-pooling our estimates across levels, is difficult to interpret but we
-show the output here:</p>
+of the exposure-covariate that is chosen, interpretation of the oracle
+parameter, pooling our estimates across levels, is difficult to
+interpret but we show the output here:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pooled_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">NIEH_results</span><span class="op">$</span><span class="va">`Effect Modification Pooled Results`</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">pooled_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">NHANES_results</span><span class="op">$</span><span class="va">`Effect Modification Pooled Results`</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">pooled_results</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"Pooled TMLE Results"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -901,28 +919,28 @@ Delta
 1_1
 </td>
 <td style="text-align:right;">
--0.0715748
+0.0013276
 </td>
 <td style="text-align:right;">
-0.0001415
+0.0000615
 </td>
 <td style="text-align:right;">
-0.0118947
+0.0078395
 </td>
 <td style="text-align:right;">
--0.0949
+-0.0140
 </td>
 <td style="text-align:right;">
--0.0483
+0.0167
 </td>
 <td style="text-align:right;">
-0
+0.8655211
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
 <td style="text-align:right;">
-431
+940
 </td>
 <td style="text-align:right;">
 1
@@ -933,28 +951,28 @@ Pooled TMLE
 1_2
 </td>
 <td style="text-align:right;">
-0.3357667
+-0.0653196
 </td>
 <td style="text-align:right;">
-0.0003416
+0.0002805
 </td>
 <td style="text-align:right;">
-0.0184822
+0.0167467
 </td>
 <td style="text-align:right;">
-0.2995
+-0.0981
 </td>
 <td style="text-align:right;">
-0.3720
+-0.0325
 </td>
 <td style="text-align:right;">
-0
+0.0000960
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
 <td style="text-align:right;">
-572
+66
 </td>
 <td style="text-align:right;">
 1
@@ -962,17 +980,17 @@ Pooled TMLE
 </tr>
 </tbody>
 </table>
+<p>This results show the TMLE pooling in each level of the rank. In this
+example we are only interested in the top effect modifier so the rank is
+1 and we have two levels of the discovered covariate region. So 1_1
+indicates the pooled estimates for the top rank exposure-covariate in
+level 1 and 1_2 indicates the top rank in level 2.</p>
 <p>Of course, pooled results are only interpretable if the same
 exposure-covariate region was found in the definition of level 1 and
 level 2. When results are consistent, this indicates a shift in the same
 exposure in the same region of the covariate space and we are able to
 leverage more data in the estimation folds to get more precise
 estimates.</p>
-<p>In this example with fewer folds due to computational reasons, there
-is incosistency, however the fact that cotinine is found as a modifier
-for all the POPs is useful for researchers who are interested in knowing
-the differential impact of POP exposure - that is, people who smoke may
-be more impacted by POPs.</p>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-diaz2012population" class="csl-entry">
 Dı́az, Iván, and Mark J van der Laan. 2012. <span>“Population

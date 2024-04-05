@@ -69,7 +69,8 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="reffectxshift-">R/<code>EffectXshift</code> <img src="reference/figures/EffectXshift_logo.png" style="float:right; height:200px;"><a class="anchor" aria-label="anchor" href="#reffectxshift-"></a>
+<div class="page-header"><h1 id="reffectxshift">R/<code>EffectXshift</code>
+<a class="anchor" aria-label="anchor" href="#reffectxshift"></a>
 </h1></div>
 <!-- badges: start -->
 
@@ -80,7 +81,7 @@
 <div class="section level2">
 <h2 id="whats-effectxshift">What’s <code>EffectXshift</code>?<a class="anchor" aria-label="anchor" href="#whats-effectxshift"></a>
 </h2>
-<p>The <code>EffectXshift</code> R package offers an approach which identifies and estimates the differential impact of intervention on a mixed exposure on an outcome. We define effect modification as the counterfactual mean of the outcome under stochastic interventions in a subregion of the exposure space compared to the complementary region of that space. Stochastic interventions or exposure changes depend on naturally observed values, as described in past literature (Dı́az and van der Laan 2012; Haneuse and Rotnitzky 2013).</p>
+<p>The <code>EffectXshift</code> R package offers an approach which identifies and estimates the differential impact of intervention on a mixed exposure on an outcome. We define effect modification as the counterfactual mean of the outcome under stochastic interventions of an exposure in the mixture in a subregion of the covariate space compared to the complementary region of that space. Stochastic interventions or exposure changes depend on naturally observed values, as described in past literature (Dı́az and van der Laan 2012; Haneuse and Rotnitzky 2013).</p>
 <p>Our target parameter is:</p>
 <p><span class="math display">$$
 \begin{align*}
@@ -89,11 +90,23 @@
 &amp;\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
 \end{align*}
 $$</span></p>
-<p>This finds the exposure-covariate region combination where the effect of an intervention is maximally diffrent.</p>
-<p><code>EffectXshift</code> builds on work described in (McCoy et al. 2023). However instead of identifying interactions through an semi-parametric definition of an F-statistics and then estimating our interaction target parameter using CV-TMLE pooled across exposure sets, we provide a more streamlined approach. In this package, we identify interactions through g-computation first - evaluating the expected outcome under joint shift compared to the sum of individual shifts using Super Learner. We then rank these estimates as the highest sets of synergy and antagonism. We then use CV-TMLE and pool within the ranks.</p>
-<p>The package ensures robustness by employing a k-fold cross-validation framework. This framework helps in estimating a data-adaptive parameter, which is the stochastic shift target parameters for the exposure sets identified as having synergy or antagonism. The process begins by partitioning the data into parameter-generating and estimation samples. In the parameter-generating sample, we identify our ranks of antagonistic and synergistic exposure sets through a machine learning g-computation framework. In the estimation sample we then estimate our interaction target parameter using the doubly robust estimator TMLE to ensure asymptotic efficiency which allows us to construct confidence intervals for our estimates (unlike the g-comp method).</p>
-<p>By using EffectXshift, users get access to a tool that offers both k-fold specific and aggregated results for the top synergistic and antagonistic relationships, ensuring that researchers can glean the most information from their data. For a more in-depth exploration, there’s an accompanying vignette.</p>
-<p>To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the respective <span class="math inline"><em>δ</em></span> for each exposure (indicating the degree of shift) and if this delta should be adaptive in response to positivity violations. The <code>top_n</code> parameter defines the top number of synergistic, antagonistic, positive and negative ranked impacts to estiamte. A detailed guide is provided in the vignette. With these inputs, <code>EffectXshift</code> processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.</p>
+<p>This finds the exposure-covariate region combination where the effect of an intervention is maximally different.</p>
+</div>
+<div class="section level2">
+<h2 id="under-the-hood">Under the Hood<a class="anchor" aria-label="anchor" href="#under-the-hood"></a>
+</h2>
+<p><code>EffectXshift</code> first identifies effect modification using g-computation through a Super Learner (ensemble of machine learning algorithms). We get the exposure shift for each individual for each exposure. We then regress these effects onto the covariate space using a custom decision tree algorithm that aims to find the region in the covariate space where the effect of shifting is maximally different. This algorithm therefore selects the exposure from a mixture paired with a region in the covariate space that maximizes the subpopulation intervention effect, or rather, finds the exposure-covariate region combination where the effect of intervention is maximally different.</p>
+</div>
+<div class="section level2">
+<h2 id="k-fold-cross-validation">K-Fold Cross-Validation<a class="anchor" aria-label="anchor" href="#k-fold-cross-validation"></a>
+</h2>
+<p>The package ensures robustness by employing a k-fold cross-validation framework. This framework helps in estimating a data-adaptive parameter, which is the stochastic shift target parameters for the exposure identified as having maximal effect modification. The process begins by partitioning the data into parameter-generating and estimation samples. In the parameter-generating sample, we identify our exposure-covariate region with maximum effect modification using machine learning g-computation framework. In the estimation sample we then estimate our stochastic shift target parameter in levels of the discovered covariate using the doubly robust estimator TMLE to ensure asymptotic efficiency which allows us to construct confidence intervals for our estimates (unlike the g-comp method).</p>
+<p>By using EffectXshift, users get access to a tool that offers both k-fold specific and aggregated results for the maximal effect modification, ensuring that researchers can glean the most information from their data. For a more in-depth exploration, there’s an accompanying vignette.</p>
+</div>
+<div class="section level2">
+<h2 id="inputs">Inputs<a class="anchor" aria-label="anchor" href="#inputs"></a>
+</h2>
+<p>To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the respective <span class="math inline"><em>δ</em></span> for each exposure (indicating the degree of shift). The <code>top_n</code> parameter defines the top number of effect modification exposure-covariate pairs. A detailed guide is provided in the vignette. With these inputs, <code>EffectXshift</code> processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.</p>
 <p><code>EffectXshift</code> also incorporates features from the <code>sl3</code> package (Coyle, Hejazi, Malenica, et al. 2022), facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, <code>EffectXshift</code> will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.</p>
 <hr>
 </div>
@@ -101,30 +114,17 @@ $$</span></p>
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <p><em>Note:</em> Because the <code>EffectXshift</code> package (currently) depends on <code>sl3</code> that allows ensemble machine learning to be used for nuisance parameter estimation and <code>sl3</code> is not on CRAN the <code>EffectXshift</code> package is not available on CRAN and must be downloaded here.</p>
-<p>There are many depedencies for <code>EffectXshift</code> so it’s easier to break up installation of the various packages to ensure proper installation.</p>
-<p>First install the basis estimators used in the data-adaptive variable discovery of the exposure and covariate space:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"earth"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"hal9001"</span><span class="op">)</span></span></code></pre></div>
-<p><code>EffectXshift</code> uses the <code>sl3</code> package to build ensemble machine learners for each nuisance parameter. We have to install off the development branch, first download these two packages for <code>sl3</code></p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ranger"</span>, <span class="st">"arm"</span>, <span class="st">"xgboost"</span>, <span class="st">"nnls"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>Now install <code>sl3</code> on devel:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"tlverse/sl3@devel"</span><span class="op">)</span></span></code></pre></div>
 <p>Make sure <code>sl3</code> installs correctly then install <code>EffectXshift</code></p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"blind-contours/EffectXshift@main"</span><span class="op">)</span></span></code></pre></div>
-<p><code>EffectXshift</code> has some other miscellaneous dependencies that are used in the examples as well as in the plotting functions.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"kableExtra"</span>, <span class="st">"hrbrthemes"</span>, <span class="st">"viridis"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<hr>
 </div>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
 <p>To illustrate how <code>EffectXshift</code> may be used to ascertain the effect of a mixed exposure, consider the following example:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">EffectXshift</span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
 <span><span class="co">#&gt; Loading required package: usethis</span></span>
@@ -147,7 +147,7 @@ $$</span></p>
 <span><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fl">429153</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span></code></pre></div>
 <p>We will simulate some data with effect modification to see if we both find the correct exposure-covariate combination that has the maximum effect modification and compare our estimates in each level of the modifier for an intervention on the exposure.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span>  <span class="co"># Ensure reproducibility</span></span>
 <span></span>
 <span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">1000</span>  <span class="co"># Number of observations</span></span>
@@ -160,7 +160,7 @@ $$</span></p>
 <span><span class="va">A1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>  <span class="co"># Continuous exposure with significant interaction with Sex</span></span>
 <span><span class="va">A2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>  <span class="co"># Continuous exposure without significant interaction</span></span>
 <span><span class="va">A3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>  <span class="co"># Continuous exposure without significant interaction</span></span>
-<span></span>
+<span> </span>
 <span><span class="co"># Define effect sizes</span></span>
 <span><span class="va">beta_A1</span> <span class="op">&lt;-</span> <span class="fl">1</span>  <span class="co"># Base effect of A1 on Y</span></span>
 <span><span class="va">beta_A2</span> <span class="op">&lt;-</span> <span class="fl">0.5</span>  <span class="co"># Effect of A2 on Y</span></span>
@@ -218,7 +218,7 @@ $$</span></p>
 <span><span class="co">#&gt;   W2     Y_diff</span></span>
 <span><span class="co">#&gt; 1  0 -0.9507121</span></span>
 <span><span class="co">#&gt; 2  1 -0.9016993</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">w</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W2"</span>, <span class="st">"Sex"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">a</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A1"</span>, <span class="st">"A2"</span>, <span class="st">"A3"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span><span class="op">$</span><span class="va">Y</span></span>
@@ -440,7 +440,7 @@ Y_diff
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">ptm</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">sim_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/EffectXshift.html">EffectXshift</a></span><span class="op">(</span></span>
@@ -481,12 +481,12 @@ Y_diff
 <span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  12.531   0.817 248.436</span></span>
+<span><span class="co">#&gt;  21.973   1.425 302.154</span></span>
 <span></span>
 <span><span class="co">## marginal effects</span></span>
 <span><span class="va">k_fold_results</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`Effect Modification K-Fold Results`</span></span>
 <span><span class="va">pooled_results</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`Effect Modification Pooled Results`</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">k_fold_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">k_fold_results</span><span class="op">)</span></span>
 <span><span class="va">k_fold_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"K Fold Effect Modification Results"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -743,9 +743,9 @@ Sex == 1
 </tr>
 </tbody>
 </table>
-<p>Above the k-fold specific results show that we find the correct exposure-covariate combination with max effect modification compared to ground truth. Our estimates are very close to ground-truth as well for a -0.5 shift in A1 in each level of sex.</p>
+<p>Above the k-fold specific results show that we find the correct exposure-covariate combination with max effect modification compared to ground truth. Our estimates are very close to ground-truth as well for a -0.5 shift in A1 in each level of sex. Above Psi shows the expected outcome under a shift of -0.5 compared to the observed average outcome. Variance is the variance derived from the influence function for stochastic shift interventions. Covariate region is the level of the covariate that was found. So here, we are looking for the top effect modification (rank 1), which was found to have exposure A1 in all folds with effect modification by sex. So in this simple example of 3 exposures and 2 covariates we identify the correct exposure-covariate combination that has modification and generate estimates that are close to the truth.</p>
 <p>The consistency of our results means we can look at the pooled results which pools estimates for the top effect modifier in each level.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pooled_results_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">pooled_results</span><span class="op">)</span></span>
 <span><span class="va">pooled_results_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"Pooled TMLE Results by Level"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -853,7 +853,7 @@ Pooled TMLE
 </tr>
 </tbody>
 </table>
-<p>This shows that in rank 1 level 1 (1_1) the pooled result which pools our fold estimates for level 1 for the top modifier. 1_2 is the rank 1 and second level of modifier. These correspond to sex = 0, and sex = 1 in this simulated case.</p>
+<p>This shows that in rank 1 level 1 (1_1) the pooled result which pools our fold estimates for level 1 for the top modifier. 1_2 is the rank 1 and second level of modifier. These correspond to shifting A1 in levels of sex = 0, and sex = 1 in this simulated case.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -887,7 +887,7 @@ Pooled TMLE
 <div class="section level2">
 <h2 id="funding">Funding<a class="anchor" aria-label="anchor" href="#funding"></a>
 </h2>
-<p>The development of this software was supported in part through grants from the</p>
+<p>The development of this software was supported in part through NIH grant P42ES004705 from NIEHS</p>
 <hr>
 </div>
 <div class="section level2">
@@ -895,23 +895,23 @@ Pooled TMLE
 </h2>
 <p>© 2020-2022 <a href="https://davidmccoy.org" class="external-link">David B. McCoy</a></p>
 <p>The contents of this repository are distributed under the MIT license. See below for details:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a>MIT License</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">Copyright</span> (c) <span class="dv">2020-2022</span> David B. McCoy</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>of this software and associated documentation <span class="fu">files</span> (the <span class="st">"Software"</span>), to deal</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="cf">in</span> the Software without restriction, including without limitation the rights</span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>to use, copy, modify, merge, publish, distribute, sublicense, and<span class="sc">/</span>or sell</span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>copies of the Software, and to permit persons to whom the Software is</span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a>furnished to do so, subject to the following conditions<span class="sc">:</span></span>
-<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a>The above copyright notice and this permission notice shall be included <span class="cf">in</span> all</span>
-<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a>copies or substantial portions of the Software.</span>
-<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a>THE SOFTWARE IS PROVIDED <span class="st">"AS IS"</span>, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
-<span id="cb12-12"><a href="#cb12-12" tabindex="-1"></a>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
-<span id="cb12-13"><a href="#cb12-13" tabindex="-1"></a>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
-<span id="cb12-14"><a href="#cb12-14" tabindex="-1"></a>AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
-<span id="cb12-15"><a href="#cb12-15" tabindex="-1"></a>LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
-<span id="cb12-16"><a href="#cb12-16" tabindex="-1"></a>OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
-<span id="cb12-17"><a href="#cb12-17" tabindex="-1"></a>SOFTWARE.</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>MIT License</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">Copyright</span> (c) <span class="dv">2020-2024</span> David B. McCoy</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>of this software and associated documentation <span class="fu">files</span> (the <span class="st">"Software"</span>), to deal</span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="cf">in</span> the Software without restriction, including without limitation the rights</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>to use, copy, modify, merge, publish, distribute, sublicense, and<span class="sc">/</span>or sell</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>copies of the Software, and to permit persons to whom the Software is</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>furnished to do so, subject to the following conditions<span class="sc">:</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>The above copyright notice and this permission notice shall be included <span class="cf">in</span> all</span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>copies or substantial portions of the Software.</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>THE SOFTWARE IS PROVIDED <span class="st">"AS IS"</span>, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>SOFTWARE.</span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -938,9 +938,6 @@ Haneuse, Sebastian, and Andrea Rotnitzky. 2013. “Estimation of the Effect of I
 </div>
 <div id="ref-hejazi2020hal9001-joss" class="csl-entry">
 Hejazi, Nima S, Jeremy R Coyle, and Mark J van der Laan. 2020. “<span class="nocase">hal9001</span>: Scalable Highly Adaptive Lasso Regression in R.” <em>Journal of Open Source Software</em> 5 (53): 2526. <a href="https://doi.org/10.21105/joss.02526" class="external-link uri">https://doi.org/10.21105/joss.02526</a>.
-</div>
-<div id="ref-mccoy2023semiparametric" class="csl-entry">
-McCoy, David B., Alan E. Hubbard, Alejandro Schuler, and Mark J. van der Laan. 2023. “Semi-Parametric Identification and Estimation of Interaction and Effect Modification in Mixed Exposures Using Stochastic Interventions.” <a href="https://arxiv.org/abs/2305.01849" class="external-link uri">https://arxiv.org/abs/2305.01849</a>.
 </div>
 </div>
 </div>

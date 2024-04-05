@@ -31,7 +31,7 @@ Imports:
     furrr,
     purrr,
     polspline,
-    ranger
+    ranger,
 Suggests: 
     rmarkdown,
     knitr,
