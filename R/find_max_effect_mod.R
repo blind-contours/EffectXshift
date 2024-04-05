@@ -1,6 +1,6 @@
 #' @title Data-adaptive Discovery of Interactions Based on Joint vs. Individual Shift Interventions
 #'
-#' @description The `find_synergy_antagonism` function provides a g-computation approach to finding interactions.
+#' @description The `find_max_effect_mods` function provides a g-computation approach to finding interactions.
 #' This implementation fits an SL and then predicts two way joint shifts in exposures and compares this to individual shifts,
 #' ranks the interactions based on the difference and then this becomes the interactions we want to estimate
 #' using CV-TMLE.

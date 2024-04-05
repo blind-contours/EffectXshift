@@ -32,6 +32,7 @@ Imports:
     purrr,
     polspline,
     ranger,
+    glmnet
 Suggests: 
     rmarkdown,
     knitr,
