@@ -81,7 +81,7 @@ calculatePooledEstimate <- function(results_df, n_folds, delta = NULL) {
 #' @export
 calc_final_ind_shift_param <- function(tmle_fit, exposure, fold_k) {
   condition <- exposure
-  psi_param <-  tmle_fit$psi - tmle_fit$noshift_psi
+  psi_param <- tmle_fit$psi - tmle_fit$noshift_psi
   variance_est <- var(tmle_fit$eif - tmle_fit$noshift_eif) /
     length(tmle_fit$eif)
   se_est <- sqrt(variance_est)
@@ -95,12 +95,13 @@ calc_final_ind_shift_param <- function(tmle_fit, exposure, fold_k) {
 
   results <- data.table::data.table(
     condition, psi_param, variance_est, se_est,
-    Lower_CI, Upper_CI, p.value, fold_k, n
+    Lower_CI, Upper_CI, p.value, fold_k,
+    "Indiv Shift", exposure, n
   )
 
   names(results) <- c(
     "Condition", "Psi", "Variance", "SE", "Lower CI",
-    "Upper CI", "P-value", "Fold", "N"
+    "Upper CI", "P-value", "Fold", "Type", "Variables", "N"
   )
 
   return(results)

@@ -47,7 +47,6 @@
 #'
 #' @importFrom data.table as.data.table setnames set copy
 #' @importFrom stats predict
-#' @importFrom haldensify haldensify
 #' @importFrom assertthat assert_that
 #' @import sl3
 #'

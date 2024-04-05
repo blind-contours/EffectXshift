@@ -108,30 +108,28 @@ set.seed(seed)
 We will simulate some data with effect modification to see if we both find the correct exposure-covariate combination that has the maximum effect modification and compare our estimates in each level of the modifier for an intervention on the exposure. 
 
 ```{r simple example}
-set.seed(123)  # Ensure reproducibility
-
-n <- 1000  # Number of observations
+n <- 1000 # Number of observations
 
 # Generate binary covariates
-Sex <- rbinom(n, 1, 0.5)  # 0 for one sex, 1 for another
-W2 <- rbinom(n, 1, 0.5)  # Additional binary covariate
+Sex <- rbinom(n, 1, 0.5) # 0 for one sex, 1 for another
+W2 <- rbinom(n, 1, 0.5) # Additional binary covariate
 
 # Generate exposures
-A1 <- rnorm(n)  # Continuous exposure with significant interaction with Sex
-A2 <- rnorm(n)  # Continuous exposure without significant interaction
-A3 <- rnorm(n)  # Continuous exposure without significant interaction
- 
+A1 <- rnorm(n) # Continuous exposure with significant interaction with Sex
+A2 <- rnorm(n) # Continuous exposure without significant interaction
+A3 <- rnorm(n) # Continuous exposure without significant interaction
+
 # Define effect sizes
-beta_A1 <- 1  # Base effect of A1 on Y
-beta_A2 <- 0.5  # Effect of A2 on Y
-beta_A3 <- 0.2  # Effect of A3 on Y
-beta_Sex <- 0.5  # Effect of Sex on Y
-beta_W2 <- -0.3  # Effect of W2 on Y
-interaction_A1_Sex <- 2  # Interaction effect between A1 and Sex, ensuring maximal impact difference
+beta_A1 <- 1 # Base effect of A1 on Y
+beta_A2 <- 0.5 # Effect of A2 on Y
+beta_A3 <- 0.2 # Effect of A3 on Y
+beta_Sex <- 0.5 # Effect of Sex on Y
+beta_W2 <- -0.3 # Effect of W2 on Y
+interaction_A1_Sex <- 2 # Interaction effect between A1 and Sex, ensuring maximal impact difference
 
 # Simulate outcome Y
-Y <- 2 + beta_A1*A1 + beta_A2*A2 + beta_A3*A3 + beta_Sex*Sex + beta_W2*W2 +
-     interaction_A1_Sex*A1*Sex + rnorm(n)  # Include noise
+Y <- 2 + beta_A1 * A1 + beta_A2 * A2 + beta_A3 * A3 + beta_Sex * Sex + beta_W2 * W2 +
+  interaction_A1_Sex * A1 * Sex + rnorm(n) # Include noise
 
 
 # Assume an intervention that reduces A1 by a fixed amount for the shift analysis
@@ -139,8 +137,8 @@ shift_amount <- -0.5
 A1_shifted <- A1 + shift_amount
 
 # Recalculate Y assuming the shift in A1
-Y_shifted <- 2 + beta_A1*A1_shifted + beta_A2*A2 + beta_A3*A3 + beta_Sex*Sex + beta_W2*W2 +
-             interaction_A1_Sex*A1_shifted*Sex + rnorm(n)
+Y_shifted <- 2 + beta_A1 * A1_shifted + beta_A2 * A2 + beta_A3 * A3 + beta_Sex * Sex + beta_W2 * W2 +
+  interaction_A1_Sex * A1_shifted * Sex + rnorm(n)
 
 # Data frame with shifted outcomes
 data_shifted <- data.frame(Sex, W2, A1, A1_shifted, A2, A3, Y, Y_shifted)
@@ -150,12 +148,12 @@ effect_summary <- data_shifted %>%
   group_by(Sex, W2) %>%
   summarise(
     Avg_Difference = mean(Difference),
-    .groups = 'drop'
+    .groups = "drop"
   )
 
 effect_summary
 
-data_shifted$Y_diff = data_shifted$Y_shifted - data_shifted$Y
+data_shifted$Y_diff <- data_shifted$Y_shifted - data_shifted$Y
 
 # Aggregate differences by levels of Sex
 avg_diff_sex <- aggregate(Y_diff ~ Sex, data = data_shifted, mean)
@@ -165,7 +163,6 @@ avg_diff_W2 <- aggregate(Y_diff ~ W2, data = data_shifted, mean)
 
 avg_diff_sex
 avg_diff_W2
-
 ```
 
 ```{r NIEH Nodes}
@@ -191,7 +188,7 @@ sim_results <- EffectXshift(
   w = w,
   a = a,
   y = y,
-  delta = deltas,
+  deltas = deltas,
   n_folds = 3,
   num_cores = 6,
   outcome_type = "continuous",
@@ -203,7 +200,6 @@ proc.time() - ptm
 ## marginal effects
 k_fold_results <- sim_results$`Effect Modification K-Fold Results`
 pooled_results <- sim_results$`Effect Modification Pooled Results`
-
 ```
 
 

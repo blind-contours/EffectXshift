@@ -11,12 +11,8 @@ EffectXshift(
   deltas,
   estimator = "tmle",
   fluctuation = "standard",
-  var_sets = NULL,
   pi_learner = NULL,
   mu_learner = NULL,
-  g_learner = NULL,
-  e_learner = NULL,
-  zeta_learner = NULL,
   n_folds = 2,
   outcome_type = "continuous",
   parallel = TRUE,
@@ -25,7 +21,6 @@ EffectXshift(
   seed = seed,
   hn_trunc_thresh = 10,
   adaptive_delta = FALSE,
-  discover_only = FALSE,
   top_n = 1,
   min_obs = 20
 )
@@ -49,21 +44,9 @@ maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.}
 \item{fluctuation}{Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.}
 
-\item{var_sets}{A list specifying variable sets for deterministic EffectXshift usage.
-Example: var_sets <- c("A_1", "A_1-Z_2") where the analyst provides variable sets
-for exposures, exposure-mediator, or exposure-covariate relationships.}
-
 \item{pi_learner}{Learners for fitting Super Learner ensembles to densities via \pkg{sl3}.}
 
 \item{mu_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}.}
-
-\item{g_learner}{Learners for fitting Super Learner ensembles to the g-mechanism
-g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
-
-\item{e_learner}{Learners for fitting Super Learner ensembles to the e-mechanism
-g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
-
-\item{zeta_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}..}
 
 \item{n_folds}{Number of folds to use in cross-validation, default is 2.}
 
@@ -88,13 +71,25 @@ than hn_trunc_thresh (default: FALSE).}
 
 \item{z}{\code{matrix}, \code{data.frame}, or similar containing individual or
 multiple mediators (optional).}
+
+\item{var_sets}{A list specifying variable sets for deterministic EffectXshift usage.
+Example: var_sets <- c("A_1", "A_1-Z_2") where the analyst provides variable sets
+for exposures, exposure-mediator, or exposure-covariate relationships.}
+
+\item{g_learner}{Learners for fitting Super Learner ensembles to the g-mechanism
+g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
+
+\item{e_learner}{Learners for fitting Super Learner ensembles to the e-mechanism
+g(A|Z,W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
+
+\item{zeta_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}..}
 }
 \value{
 An S3 object of class \code{EffectXshift} containing the results of the
 procedure to compute a TML or one-step estimate of the counterfactual mean
 under a modified treatment policy that shifts a continuous-valued exposure
-by a scalar amount \code{delta}. These exposures are data-adaptively
-identified using the CV-TMLE procedure.
+by a scalar amount \code{delta} in subregions of the exposure space.
+These exposures are data-adaptively identified using the CV-TMLE procedure.
 }
 \description{
 This packages aims to find, in a mixed exposure with many covariates and a future outcome, the

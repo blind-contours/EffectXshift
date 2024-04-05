@@ -51,7 +51,7 @@ find_max_effect_mods <- function(data, deltas, a_names, w_names, outcome, outcom
 
   # we need to impute any covariates before beginning the search algorithm
   data <- data %>%
-    mutate(across(all_of(w_names), ~ifelse(is.na(.), mean(., na.rm = TRUE), .)))
+    mutate(across(all_of(w_names), ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)))
 
   # Prepare Super Learner Task with specified data, exposures, and outcome
   task <- sl3::make_sl3_Task(
@@ -357,7 +357,6 @@ find_max_effect_mods <- function(data, deltas, a_names, w_names, outcome, outcom
     item <- selected_items[[item_index]]
     item$Rank <- item_index
     selected_items[[item_index]] <- item
-
   }
 
 

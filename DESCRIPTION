@@ -8,7 +8,7 @@ Authors@R:
            email = "david_mccoy@berkeley.edu",
            comment = c(ORCID = "0000-0002-5515-6307"))
 Description: A methodology for mixed exposure analysis that leverages
-    data-adaptive target parameters, CV-TMLE, stochastic interventions and basis function decomposition.
+    data-adaptive target parameters, CV-TMLE, stochastic interventions and decision trees to find maximum effect modifiers.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

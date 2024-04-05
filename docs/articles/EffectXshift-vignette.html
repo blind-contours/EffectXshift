@@ -74,7 +74,7 @@ Estimation using Data-Adaptive Stochastic Interventions</h1>
                         <h4 data-toc-skip class="author">David
 McCoy</h4>
             
-            <h4 data-toc-skip class="date">2024-04-04</h4>
+            <h4 data-toc-skip class="date">2024-04-05</h4>
       
       
       <div class="hidden name"><code>EffectXshift-vignette.Rmd</code></div>
@@ -290,41 +290,45 @@ persistant organic pollutants.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"NHANES_eurocim"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">exposures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"LBX074LA"</span>, <span class="co"># PCB74 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBX099LA"</span>, <span class="co"># PCB99 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBX118LA"</span>, <span class="co"># PCB118 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBX138LA"</span>, <span class="co"># PCB138 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBX153LA"</span>, <span class="co"># PCB153 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBX170LA"</span>, <span class="co"># PCB170 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBX180LA"</span>, <span class="co"># PCB180 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBX187LA"</span>, <span class="co"># PCB187 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBX194LA"</span>, <span class="co"># PCB194 Lipid Adj (ng/g)</span></span>
-<span>               <span class="st">"LBXD03LA"</span>, <span class="co"># 1,2,3,6,7,8-hxcdd Lipid Adj (pg/g)</span></span>
-<span>               <span class="st">"LBXD05LA"</span>, <span class="co"># 1,2,3,4,6,7,8-hpcdd Lipid Adj (pg/g)</span></span>
-<span>               <span class="st">"LBXD07LA"</span>, <span class="co"># 1,2,3,4,6,7,8,9-ocdd Lipid Adj (pg/g)</span></span>
-<span>               <span class="st">"LBXF03LA"</span>, <span class="co"># 2,3,4,7,8-pncdf Lipid Adj (pg/g)</span></span>
-<span>               <span class="st">"LBXF04LA"</span>, <span class="co"># 1,2,3,4,7,8-hxcdf Lipid Adj (pg/g)</span></span>
-<span>               <span class="st">"LBXF05LA"</span>, <span class="co"># 1,2,3,6,7,8-hxcdf Lipid Adj (pg/g)</span></span>
-<span>               <span class="st">"LBXF08LA"</span>, <span class="co"># 1,2,3,4,6,7,8-hxcdf Lipid Adj (pg/g)</span></span>
-<span>               <span class="st">"LBXHXCLA"</span>, <span class="co"># 3,3',4,4',5,5'-hxcb Lipid Adj (pg/g)</span></span>
-<span>               <span class="st">"LBXPCBLA"</span><span class="op">)</span> <span class="co"># 3,3',4,4',5-pcnb Lipid Adj (pg/g)</span></span>
+<span><span class="va">exposures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"LBX074LA"</span>, <span class="co"># PCB74 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBX099LA"</span>, <span class="co"># PCB99 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBX118LA"</span>, <span class="co"># PCB118 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBX138LA"</span>, <span class="co"># PCB138 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBX153LA"</span>, <span class="co"># PCB153 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBX170LA"</span>, <span class="co"># PCB170 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBX180LA"</span>, <span class="co"># PCB180 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBX187LA"</span>, <span class="co"># PCB187 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBX194LA"</span>, <span class="co"># PCB194 Lipid Adj (ng/g)</span></span>
+<span>  <span class="st">"LBXD03LA"</span>, <span class="co"># 1,2,3,6,7,8-hxcdd Lipid Adj (pg/g)</span></span>
+<span>  <span class="st">"LBXD05LA"</span>, <span class="co"># 1,2,3,4,6,7,8-hpcdd Lipid Adj (pg/g)</span></span>
+<span>  <span class="st">"LBXD07LA"</span>, <span class="co"># 1,2,3,4,6,7,8,9-ocdd Lipid Adj (pg/g)</span></span>
+<span>  <span class="st">"LBXF03LA"</span>, <span class="co"># 2,3,4,7,8-pncdf Lipid Adj (pg/g)</span></span>
+<span>  <span class="st">"LBXF04LA"</span>, <span class="co"># 1,2,3,4,7,8-hxcdf Lipid Adj (pg/g)</span></span>
+<span>  <span class="st">"LBXF05LA"</span>, <span class="co"># 1,2,3,6,7,8-hxcdf Lipid Adj (pg/g)</span></span>
+<span>  <span class="st">"LBXF08LA"</span>, <span class="co"># 1,2,3,4,6,7,8-hxcdf Lipid Adj (pg/g)</span></span>
+<span>  <span class="st">"LBXHXCLA"</span>, <span class="co"># 3,3',4,4',5,5'-hxcb Lipid Adj (pg/g)</span></span>
+<span>  <span class="st">"LBXPCBLA"</span></span>
+<span><span class="op">)</span> <span class="co"># 3,3',4,4',5-pcnb Lipid Adj (pg/g)</span></span>
 <span></span>
 <span><span class="va">NHANES_eurocim</span> <span class="op">&lt;-</span> <span class="va">NHANES_eurocim</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/stats/complete.cases.html" class="external-link">complete.cases</a></span><span class="op">(</span><span class="va">NHANES_eurocim</span><span class="op">[</span>, <span class="va">exposures</span><span class="op">]</span><span class="op">)</span>, <span class="op">]</span></span>
 <span></span>
 <span><span class="va">outcome</span> <span class="op">&lt;-</span> <span class="st">"TELOMEAN"</span></span>
 <span></span>
-<span><span class="va">covariates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"LBXWBCSI"</span>, <span class="co"># White blood cell count (SI)</span></span>
-<span>                <span class="st">"LBXLYPCT"</span>, <span class="co"># Lymphocyte percent (%)</span></span>
-<span>                <span class="st">"LBXMOPCT"</span>, <span class="co"># Monocyte percent (%)</span></span>
-<span>                <span class="st">"LBXEOPCT"</span>, <span class="co"># Eosinophils percent (%)</span></span>
-<span>                <span class="st">"LBXBAPCT"</span>, <span class="co"># Basophils percent (%)</span></span>
-<span>                <span class="st">"LBXNEPCT"</span>, <span class="co"># Segmented neutrophils percent (%)</span></span>
-<span>                <span class="st">"male"</span>, <span class="co"># Sex</span></span>
-<span>                <span class="st">"age_cent"</span>, <span class="co"># Age at Screening, centered</span></span>
-<span>                <span class="st">"race_cat"</span>, <span class="co"># race</span></span>
-<span>                <span class="st">"bmi_cat3"</span>, <span class="co"># Body Mass Index (kg/m**2)</span></span>
-<span>                <span class="st">"ln_lbxcot"</span>, <span class="co"># Cotinine (ng/mL), log-transformed</span></span>
-<span>                <span class="st">"edu_cat"</span><span class="op">)</span> <span class="co"># Education Level - Adults 20+</span></span></code></pre></div>
+<span><span class="va">covariates</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"LBXWBCSI"</span>, <span class="co"># White blood cell count (SI)</span></span>
+<span>  <span class="st">"LBXLYPCT"</span>, <span class="co"># Lymphocyte percent (%)</span></span>
+<span>  <span class="st">"LBXMOPCT"</span>, <span class="co"># Monocyte percent (%)</span></span>
+<span>  <span class="st">"LBXEOPCT"</span>, <span class="co"># Eosinophils percent (%)</span></span>
+<span>  <span class="st">"LBXBAPCT"</span>, <span class="co"># Basophils percent (%)</span></span>
+<span>  <span class="st">"LBXNEPCT"</span>, <span class="co"># Segmented neutrophils percent (%)</span></span>
+<span>  <span class="st">"male"</span>, <span class="co"># Sex</span></span>
+<span>  <span class="st">"age_cent"</span>, <span class="co"># Age at Screening, centered</span></span>
+<span>  <span class="st">"race_cat"</span>, <span class="co"># race</span></span>
+<span>  <span class="st">"bmi_cat3"</span>, <span class="co"># Body Mass Index (kg/m**2)</span></span>
+<span>  <span class="st">"ln_lbxcot"</span>, <span class="co"># Cotinine (ng/mL), log-transformed</span></span>
+<span>  <span class="st">"edu_cat"</span></span>
+<span><span class="op">)</span> <span class="co"># Education Level - Adults 20+</span></span></code></pre></div>
 <p>To improve consistency in the region we find to be the maximizing
 region, it is best to remove an exposure of highly correlated sets, we
 do that here:</p>
@@ -360,7 +364,7 @@ do that here:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deltas</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  <span class="st">"LBX074LA"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"LBX099LA"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"LBXD03LA"</span> <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  <span class="st">"LBXD05LA"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"LBXF03LA"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"LBXF04LA"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"LBXF08LA"</span> <span class="op">=</span> <span class="fl">1</span>, </span>
+<span>  <span class="st">"LBXD05LA"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"LBXF03LA"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"LBXF04LA"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"LBXF08LA"</span> <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  <span class="st">"LBXPCBLA"</span> <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -429,7 +433,7 @@ do that here:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  42.812   6.375 688.355</span></span></code></pre></div>
+<span><span class="co">#&gt;  47.667  10.554 673.404</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="investigating-results">Investigating Results<a class="anchor" aria-label="anchor" href="#investigating-results"></a>
@@ -473,6 +477,12 @@ P-value
 <th style="text-align:left;">
 Fold
 </th>
+<th style="text-align:left;">
+Type
+</th>
+<th style="text-align:left;">
+Variables
+</th>
 <th style="text-align:right;">
 N
 </th>
@@ -508,7 +518,14 @@ Fold : 1 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
 0.1750250
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 1 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
+: 1
 </td>
 <td style="text-align:right;">
 186
@@ -544,7 +561,14 @@ Fold : 1 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
 0.1107750
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 1 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
+: 2
 </td>
 <td style="text-align:right;">
 16
@@ -580,7 +604,14 @@ Fold : 2 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
 0.4525977
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 2 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
+: 1
 </td>
 <td style="text-align:right;">
 191
@@ -616,7 +647,14 @@ Fold : 2 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
 0.0680653
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 2 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
+: 2
 </td>
 <td style="text-align:right;">
 11
@@ -652,7 +690,14 @@ Fold : 3 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
 0.1365764
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 3 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
+: 1
 </td>
 <td style="text-align:right;">
 186
@@ -688,7 +733,14 @@ Fold : 3 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
 0.0624851
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 3 | Rank : 1 | Exposure : LBXF03LA | Modifier : ln_lbxcot | Level
+: 2
 </td>
 <td style="text-align:right;">
 15
@@ -724,7 +776,14 @@ Fold : 4 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
 0.4261593
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 4 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
+: 1
 </td>
 <td style="text-align:right;">
 191
@@ -760,7 +819,14 @@ Fold : 4 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
 0.8932907
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 4 | Rank : 1 | Exposure : LBXF04LA | Modifier : ln_lbxcot | Level
+: 2
 </td>
 <td style="text-align:right;">
 10
@@ -796,7 +862,14 @@ Fold : 5 | Rank : 1 | Exposure : LBXF03LA | Modifier : LBXNEPCT | Level
 0.2925243
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 5 | Rank : 1 | Exposure : LBXF03LA | Modifier : LBXNEPCT | Level
+: 1
 </td>
 <td style="text-align:right;">
 186
@@ -832,7 +905,14 @@ Fold : 5 | Rank : 1 | Exposure : LBXF03LA | Modifier : LBXNEPCT | Level
 0.0000150
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+K-fold TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+Fold : 5 | Rank : 1 | Exposure : LBXF03LA | Modifier : LBXNEPCT | Level
+: 2
 </td>
 <td style="text-align:right;">
 14
@@ -906,6 +986,12 @@ P-value
 <th style="text-align:left;">
 Fold
 </th>
+<th style="text-align:left;">
+Type
+</th>
+<th style="text-align:left;">
+Variables
+</th>
 <th style="text-align:right;">
 N
 </th>
@@ -939,6 +1025,12 @@ Delta
 <td style="text-align:left;">
 Pooled TMLE
 </td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+1_1
+</td>
 <td style="text-align:right;">
 940
 </td>
@@ -970,6 +1062,12 @@ Pooled TMLE
 </td>
 <td style="text-align:left;">
 Pooled TMLE
+</td>
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+1_2
 </td>
 <td style="text-align:right;">
 66

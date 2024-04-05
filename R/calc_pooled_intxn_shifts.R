@@ -41,7 +41,7 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
 
   if (rank == TRUE) {
     names <- gsub("^(Rank [0-9]+) :.*", "\\1", names)
-  }else{
+  } else {
     names <- gsub("^.+?:", "", names)
   }
   k_fold_results_list <- list()
@@ -129,7 +129,7 @@ calc_pooled_intxn_shifts <- function(intxn_shift_results,
       rank = var_set,
       fold_k = "Pooled TMLE",
       deltas_updated = deltas,
-      exposures = c("Var 1","Var 2","Joint","Interaction")
+      exposures = c("Var 1", "Var 2", "Joint", "Interaction")
     )
 
     rownames(k_fold_results) <- NULL
