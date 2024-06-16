@@ -15,6 +15,7 @@
 #'  procedure, as given by \code{\link{fit_fluctuation}}.
 #' @param fluctuation Type of fluctuation to use
 #' @param n_folds Number of folds used in the CV.
+#' @param rank If we are pooling by rank
 #'
 #' @importFrom stats var
 #'

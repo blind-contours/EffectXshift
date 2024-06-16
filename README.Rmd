@@ -111,62 +111,68 @@ We will simulate some data with effect modification to see if we both find the c
 n <- 1000 # Number of observations
 
 # Generate binary covariates
-Sex <- rbinom(n, 1, 0.5) # 0 for one sex, 1 for another
+W3 <- rbinom(n, 1, 0.5) # 0 for one sex, 1 for another
 W2 <- rbinom(n, 1, 0.5) # Additional binary covariate
 
-# Generate exposures
-A1 <- rnorm(n) # Continuous exposure with significant interaction with Sex
-A2 <- rnorm(n) # Continuous exposure without significant interaction
-A3 <- rnorm(n) # Continuous exposure without significant interaction
+# Generate confounders
+W1 <- rbinom(n, 1, 0.5)
+
+# Generate exposures influenced by confounders
+A1 <- rnorm(n, mean = 0.5 * W3 + 0.3 * W2 + 0.4 * W1) # Continuous exposure with significant interaction with Sex
+A2 <- rnorm(n, mean = 0.3 * W2 + 0.3 * W1) # Continuous exposure without significant interaction
+A3 <- rnorm(n, mean = 0.2 * W1) # Continuous exposure without significant interaction
 
 # Define effect sizes
 beta_A1 <- 1 # Base effect of A1 on Y
 beta_A2 <- 0.5 # Effect of A2 on Y
 beta_A3 <- 0.2 # Effect of A3 on Y
-beta_Sex <- 0.5 # Effect of Sex on Y
+beta_W3 <- 0.5 # Effect of Sex on Y
 beta_W2 <- -0.3 # Effect of W2 on Y
-interaction_A1_Sex <- 2 # Interaction effect between A1 and Sex, ensuring maximal impact difference
+beta_W1 <- 0.4 # Effect of W1 on Y
+interaction_A1_W3 <- 2 # Interaction effect between A1 and Sex, ensuring maximal impact difference
 
 # Simulate outcome Y
-Y <- 2 + beta_A1 * A1 + beta_A2 * A2 + beta_A3 * A3 + beta_Sex * Sex + beta_W2 * W2 +
-  interaction_A1_Sex * A1 * Sex + rnorm(n) # Include noise
-
+Y <- 2 + beta_A1 * A1 + beta_A2 * A2 + beta_A3 * A3 + beta_W3 * W3 + beta_W2 * W2 + beta_W1 * W1 +
+  interaction_A1_W3 * A1 * W3 + rnorm(n) # Include noise
 
 # Assume an intervention that reduces A1 by a fixed amount for the shift analysis
 shift_amount <- -0.5
 A1_shifted <- A1 + shift_amount
 
 # Recalculate Y assuming the shift in A1
-Y_shifted <- 2 + beta_A1 * A1_shifted + beta_A2 * A2 + beta_A3 * A3 + beta_Sex * Sex + beta_W2 * W2 +
-  interaction_A1_Sex * A1_shifted * Sex + rnorm(n)
+Y_shifted <- 2 + beta_A1 * A1_shifted + beta_A2 * A2 + beta_A3 * A3 + beta_W3 * W3 + beta_W2 * W2 + beta_W1 * W1 + interaction_A1_W3 * A1_shifted * W3 + rnorm(n)
 
 # Data frame with shifted outcomes
-data_shifted <- data.frame(Sex, W2, A1, A1_shifted, A2, A3, Y, Y_shifted)
+data_shifted <- data.frame(W3, W2, W1, A1, A1_shifted, A2, A3, Y, Y_shifted)
 
 effect_summary <- data_shifted %>%
   mutate(Difference = Y_shifted - Y) %>%
-  group_by(Sex, W2) %>%
+  group_by(W3, W2, W1) %>%
   summarise(
     Avg_Difference = mean(Difference),
     .groups = "drop"
   )
 
-effect_summary
+print(effect_summary)
 
 data_shifted$Y_diff <- data_shifted$Y_shifted - data_shifted$Y
 
 # Aggregate differences by levels of Sex
-avg_diff_sex <- aggregate(Y_diff ~ Sex, data = data_shifted, mean)
+avg_diff_W3 <- aggregate(Y_diff ~ W3, data = data_shifted, mean)
 
 # Aggregate differences by levels of W2
 avg_diff_W2 <- aggregate(Y_diff ~ W2, data = data_shifted, mean)
 
-avg_diff_sex
-avg_diff_W2
+# Aggregate differences by levels of W1
+avg_diff_W1 <- aggregate(Y_diff ~ W1, data = data_shifted, mean)
+
+print(avg_diff_W3)
+print(avg_diff_W2)
+print(avg_diff_W1)
 ```
 
 ```{r NIEH Nodes}
-w <- data_shifted[, c("W2", "Sex")]
+w <- data_shifted[, c("W1", "W2", "W3")]
 a <- data_shifted[, c("A1", "A2", "A3")]
 y <- data_shifted$Y
 
@@ -189,22 +195,24 @@ sim_results <- EffectXshift(
   a = a,
   y = y,
   deltas = deltas,
-  n_folds = 3,
+  n_folds = 5,
   num_cores = 6,
   outcome_type = "continuous",
   seed = seed,
-  top_n = 1
+  top_n = 1,
+  density_classification = TRUE
 )
 proc.time() - ptm
 
 ## marginal effects
 k_fold_results <- sim_results$`Effect Modification K-Fold Results`
-pooled_results <- sim_results$`Effect Modification Pooled Results`
+pooled_results_v <- sim_results$`Effect Modification Region V Pooled Results`
+pooled_results_vc <- sim_results$`Effect Modification Region V^c Pooled Results`
 ```
 
 
 ```{r pos shift results}
-k_fold_df <- do.call(rbind, k_fold_results)
+k_fold_df <- k_fold_results
 k_fold_df %>%
   kbl(caption = "K Fold Effect Modification Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
@@ -216,13 +224,13 @@ Above the k-fold specific results show that we find the correct exposure-covaria
 The consistency of our results means we can look at the pooled results which pools estimates for the top effect modifier in each level. 
 
 ```{r top negative results}
-pooled_results_df <- do.call(rbind, pooled_results)
+pooled_results_df <- rbind(pooled_results_v, pooled_results_vc)
 pooled_results_df %>%
-  kbl(caption = "Pooled TMLE Results by Level") %>%
+  kbl(caption = "Pooled TMLE Results by Region") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
-This shows that in rank 1 level 1 (1_1) the pooled result which pools our fold estimates for level 1 for the top modifier. 1_2 is the rank 1 and second level of modifier. These correspond to shifting A1 in levels of sex = 0, and sex = 1 in this simulated case. 
+This shows the pooled results for the region v and its compliment.
 
 
 ---

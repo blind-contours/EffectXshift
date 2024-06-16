@@ -21,7 +21,6 @@ Imports:
     dplyr,
     foreach,
     future,
-    ggplot2,
     magrittr,
     MASS,
     Rdpack,
@@ -38,6 +37,7 @@ Suggests:
     knitr,
     testthat (>= 3.0.0),
     kableExtra,
+    devtools
 VignetteBuilder: knitr
 Depends: 
     R (>= 2.10)

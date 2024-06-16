@@ -158,80 +158,91 @@ effect modification and compare our estimates in each level of the
 modifier for an intervention on the exposure.
 
 ``` r
-set.seed(123)  # Ensure reproducibility
-
-n <- 1000  # Number of observations
+n <- 1000 # Number of observations
 
 # Generate binary covariates
-Sex <- rbinom(n, 1, 0.5)  # 0 for one sex, 1 for another
-W2 <- rbinom(n, 1, 0.5)  # Additional binary covariate
+W3 <- rbinom(n, 1, 0.5) # 0 for one sex, 1 for another
+W2 <- rbinom(n, 1, 0.5) # Additional binary covariate
 
-# Generate exposures
-A1 <- rnorm(n)  # Continuous exposure with significant interaction with Sex
-A2 <- rnorm(n)  # Continuous exposure without significant interaction
-A3 <- rnorm(n)  # Continuous exposure without significant interaction
- 
+# Generate confounders
+W1 <- rbinom(n, 1, 0.5)
+
+# Generate exposures influenced by confounders
+A1 <- rnorm(n, mean = 0.5 * W3 + 0.3 * W2 + 0.4 * W1) # Continuous exposure with significant interaction with Sex
+A2 <- rnorm(n, mean = 0.3 * W2 + 0.3 * W1) # Continuous exposure without significant interaction
+A3 <- rnorm(n, mean = 0.2 * W1) # Continuous exposure without significant interaction
+
 # Define effect sizes
-beta_A1 <- 1  # Base effect of A1 on Y
-beta_A2 <- 0.5  # Effect of A2 on Y
-beta_A3 <- 0.2  # Effect of A3 on Y
-beta_Sex <- 0.5  # Effect of Sex on Y
-beta_W2 <- -0.3  # Effect of W2 on Y
-interaction_A1_Sex <- 2  # Interaction effect between A1 and Sex, ensuring maximal impact difference
+beta_A1 <- 1 # Base effect of A1 on Y
+beta_A2 <- 0.5 # Effect of A2 on Y
+beta_A3 <- 0.2 # Effect of A3 on Y
+beta_W3 <- 0.5 # Effect of Sex on Y
+beta_W2 <- -0.3 # Effect of W2 on Y
+beta_W1 <- 0.4 # Effect of W1 on Y
+interaction_A1_W3 <- 2 # Interaction effect between A1 and Sex, ensuring maximal impact difference
 
 # Simulate outcome Y
-Y <- 2 + beta_A1*A1 + beta_A2*A2 + beta_A3*A3 + beta_Sex*Sex + beta_W2*W2 +
-     interaction_A1_Sex*A1*Sex + rnorm(n)  # Include noise
-
+Y <- 2 + beta_A1 * A1 + beta_A2 * A2 + beta_A3 * A3 + beta_W3 * W3 + beta_W2 * W2 + beta_W1 * W1 +
+  interaction_A1_W3 * A1 * W3 + rnorm(n) # Include noise
 
 # Assume an intervention that reduces A1 by a fixed amount for the shift analysis
 shift_amount <- -0.5
 A1_shifted <- A1 + shift_amount
 
 # Recalculate Y assuming the shift in A1
-Y_shifted <- 2 + beta_A1*A1_shifted + beta_A2*A2 + beta_A3*A3 + beta_Sex*Sex + beta_W2*W2 +
-             interaction_A1_Sex*A1_shifted*Sex + rnorm(n)
+Y_shifted <- 2 + beta_A1 * A1_shifted + beta_A2 * A2 + beta_A3 * A3 + beta_W3 * W3 + beta_W2 * W2 + beta_W1 * W1 + interaction_A1_W3 * A1_shifted * W3 + rnorm(n)
 
 # Data frame with shifted outcomes
-data_shifted <- data.frame(Sex, W2, A1, A1_shifted, A2, A3, Y, Y_shifted)
+data_shifted <- data.frame(W3, W2, W1, A1, A1_shifted, A2, A3, Y, Y_shifted)
 
 effect_summary <- data_shifted %>%
   mutate(Difference = Y_shifted - Y) %>%
-  group_by(Sex, W2) %>%
+  group_by(W3, W2, W1) %>%
   summarise(
     Avg_Difference = mean(Difference),
-    .groups = 'drop'
+    .groups = "drop"
   )
 
-effect_summary
-#> # A tibble: 4 × 3
-#>     Sex    W2 Avg_Difference
-#>   <int> <int>          <dbl>
-#> 1     0     0         -0.466
-#> 2     0     1         -0.367
-#> 3     1     0         -1.40 
-#> 4     1     1         -1.52
+print(effect_summary)
+#> # A tibble: 8 × 4
+#>      W3    W2    W1 Avg_Difference
+#>   <int> <int> <int>          <dbl>
+#> 1     0     0     0         -0.523
+#> 2     0     0     1         -0.501
+#> 3     0     1     0         -0.449
+#> 4     0     1     1         -0.893
+#> 5     1     0     0         -1.83 
+#> 6     1     0     1         -1.58 
+#> 7     1     1     0         -1.43 
+#> 8     1     1     1         -1.35
 
-data_shifted$Y_diff = data_shifted$Y_shifted - data_shifted$Y
+data_shifted$Y_diff <- data_shifted$Y_shifted - data_shifted$Y
 
 # Aggregate differences by levels of Sex
-avg_diff_sex <- aggregate(Y_diff ~ Sex, data = data_shifted, mean)
+avg_diff_W3 <- aggregate(Y_diff ~ W3, data = data_shifted, mean)
 
 # Aggregate differences by levels of W2
 avg_diff_W2 <- aggregate(Y_diff ~ W2, data = data_shifted, mean)
 
-avg_diff_sex
-#>   Sex     Y_diff
-#> 1   0 -0.4138098
-#> 2   1 -1.4534507
-avg_diff_W2
-#>   W2     Y_diff
-#> 1  0 -0.9507121
-#> 2  1 -0.9016993
+# Aggregate differences by levels of W1
+avg_diff_W1 <- aggregate(Y_diff ~ W1, data = data_shifted, mean)
+
+print(avg_diff_W3)
+#>   W3     Y_diff
+#> 1  0 -0.5845702
+#> 2  1 -1.5486749
+print(avg_diff_W2)
+#>   W2    Y_diff
+#> 1  0 -1.108985
+#> 2  1 -1.051339
+print(avg_diff_W1)
+#>   W1    Y_diff
+#> 1  0 -1.081664
+#> 2  1 -1.080522
 ```
 
 ``` r
-w <- data_shifted[, c("W2", "Sex")]
+w <- data_shifted[, c("W1", "W2", "W3")]
 a <- data_shifted[, c("A1", "A2", "A3")]
 y <- data_shifted$Y
 
@@ -251,10 +262,13 @@ Sim Data
 <thead>
 <tr>
 <th style="text-align:right;">
-Sex
+W3
 </th>
 <th style="text-align:right;">
 W2
+</th>
+<th style="text-align:right;">
+W1
 </th>
 <th style="text-align:right;">
 A1
@@ -282,31 +296,66 @@ Y_diff
 <tbody>
 <tr>
 <td style="text-align:right;">
-0
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1.8251942
+</td>
+<td style="text-align:right;">
+1.3251942
+</td>
+<td style="text-align:right;">
+-0.0451165
+</td>
+<td style="text-align:right;">
+0.3677981
+</td>
+<td style="text-align:right;">
+9.6444070
+</td>
+<td style="text-align:right;">
+6.4087359
+</td>
+<td style="text-align:right;">
+-3.2356710
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:right;">
--0.9957987
+0
 </td>
 <td style="text-align:right;">
--1.4957987
+1.4355733
 </td>
 <td style="text-align:right;">
--0.5116037
+0.9355733
 </td>
 <td style="text-align:right;">
--0.1503075
+-0.5961851
 </td>
 <td style="text-align:right;">
-0.9148877
+-0.1900499
 </td>
 <td style="text-align:right;">
--0.2758360
+6.7776261
 </td>
 <td style="text-align:right;">
--1.190724
+3.9907013
+</td>
+<td style="text-align:right;">
+-2.7869247
 </td>
 </tr>
 <tr>
@@ -317,25 +366,28 @@ Y_diff
 1
 </td>
 <td style="text-align:right;">
--1.0399550
+1
 </td>
 <td style="text-align:right;">
--1.5399550
+-0.3597802
 </td>
 <td style="text-align:right;">
-0.2369379
+-0.8597802
 </td>
 <td style="text-align:right;">
--0.3277571
+0.2278567
 </td>
 <td style="text-align:right;">
--0.2168344
+0.4210997
 </td>
 <td style="text-align:right;">
--1.2393542
+0.8195058
 </td>
 <td style="text-align:right;">
--1.022520
+0.2503849
+</td>
+<td style="text-align:right;">
+-0.5691209
 </td>
 </tr>
 <tr>
@@ -346,112 +398,92 @@ Y_diff
 0
 </td>
 <td style="text-align:right;">
--0.0179802
-</td>
-<td style="text-align:right;">
--0.5179802
-</td>
-<td style="text-align:right;">
--0.5415892
-</td>
-<td style="text-align:right;">
--1.4481653
-</td>
-<td style="text-align:right;">
-2.0925963
-</td>
-<td style="text-align:right;">
--0.2253574
-</td>
-<td style="text-align:right;">
--2.317954
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.1321751
-</td>
-<td style="text-align:right;">
--0.6321751
-</td>
-<td style="text-align:right;">
-1.2192276
-</td>
-<td style="text-align:right;">
--0.6972846
-</td>
-<td style="text-align:right;">
-0.9894737
-</td>
-<td style="text-align:right;">
-2.2546501
-</td>
-<td style="text-align:right;">
-1.265176
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--2.5493428
-</td>
-<td style="text-align:right;">
--3.0493428
-</td>
-<td style="text-align:right;">
-0.1741359
-</td>
-<td style="text-align:right;">
-2.5984902
-</td>
-<td style="text-align:right;">
--6.8673719
-</td>
-<td style="text-align:right;">
--5.4250711
-</td>
-<td style="text-align:right;">
-1.442301
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
 0
+</td>
+<td style="text-align:right;">
+-0.1521016
+</td>
+<td style="text-align:right;">
+-0.6521016
+</td>
+<td style="text-align:right;">
+-0.5440319
+</td>
+<td style="text-align:right;">
+-0.0723255
+</td>
+<td style="text-align:right;">
+2.3289856
+</td>
+<td style="text-align:right;">
+1.2345317
+</td>
+<td style="text-align:right;">
+-1.0944539
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:right;">
-1.0405735
+0.5522047
 </td>
 <td style="text-align:right;">
-0.5405735
+0.0522047
 </td>
 <td style="text-align:right;">
--0.6152683
+3.3883258
 </td>
 <td style="text-align:right;">
--0.0374150
+1.1761818
 </td>
 <td style="text-align:right;">
-4.9307824
+7.5480306
 </td>
 <td style="text-align:right;">
-2.5605873
+2.8384768
 </td>
 <td style="text-align:right;">
--2.370195
+-4.7095538
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1.2299938
+</td>
+<td style="text-align:right;">
+0.7299938
+</td>
+<td style="text-align:right;">
+2.4612301
+</td>
+<td style="text-align:right;">
+0.5439224
+</td>
+<td style="text-align:right;">
+5.7973901
+</td>
+<td style="text-align:right;">
+5.1828397
+</td>
+<td style="text-align:right;">
+-0.6145505
 </td>
 </tr>
 </tbody>
@@ -464,49 +496,26 @@ sim_results <- EffectXshift(
   w = w,
   a = a,
   y = y,
-  delta = deltas,
-  n_folds = 3,
+  deltas = deltas,
+  n_folds = 5,
   num_cores = 6,
   outcome_type = "continuous",
   seed = seed,
-  top_n = 1
+  top_n = 1,
+  density_classification = TRUE
 )
-#> 
-#> Iter: 1 fn: 479.5067  Pars:  0.999994748 0.000005252
-#> Iter: 2 fn: 479.5067  Pars:  0.99999858 0.00000142
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 482.2148  Pars:  0.99998925 0.00001075
-#> Iter: 2 fn: 482.2148  Pars:  0.999997737 0.000002263
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 491.5928  Pars:  0.00001227 0.99998773
-#> Iter: 2 fn: 491.5928  Pars:  0.000005372 0.999994628
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 468.9115  Pars:  0.55287 0.44713
-#> Iter: 2 fn: 468.9106  Pars:  0.50547 0.49453
-#> Iter: 3 fn: 468.9106  Pars:  0.50547 0.49453
-#> solnp--> Completed in 3 iterations
-#> 
-#> Iter: 1 fn: 477.9934  Pars:  0.999993554 0.000006445
-#> Iter: 2 fn: 477.9934  Pars:  0.999998444 0.000001556
-#> solnp--> Completed in 2 iterations
-#> 
-#> Iter: 1 fn: 485.8838  Pars:  0.99997075 0.00002925
-#> Iter: 2 fn: 485.8838  Pars:  0.999991334 0.000008666
-#> solnp--> Completed in 2 iterations
 proc.time() - ptm
 #>    user  system elapsed 
-#>  21.973   1.425 302.154
+#>   6.770   0.454  87.132
 
 ## marginal effects
 k_fold_results <- sim_results$`Effect Modification K-Fold Results`
-pooled_results <- sim_results$`Effect Modification Pooled Results`
+pooled_results_v <- sim_results$`Effect Modification Region V Pooled Results`
+pooled_results_vc <- sim_results$`Effect Modification Region V^c Pooled Results`
 ```
 
 ``` r
-k_fold_df <- do.call(rbind, k_fold_results)
+k_fold_df <- k_fold_results
 k_fold_df %>%
   kbl(caption = "K Fold Effect Modification Results") %>%
   kable_classic(full_width = F, html_font = "Cambria")
@@ -519,249 +528,257 @@ K Fold Effect Modification Results
 <thead>
 <tr>
 <th style="text-align:left;">
-Condition
+Exposure
 </th>
 <th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
+Effect
 </th>
 <th style="text-align:right;">
 SE
 </th>
 <th style="text-align:right;">
-Lower CI
+Lower.CI
 </th>
 <th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
+Upper.CI
 </th>
 <th style="text-align:left;">
+Modifier
+</th>
+<th style="text-align:right;">
 Fold
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta
-</th>
-<th style="text-align:left;">
-Covariate_region
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
-Fold : 1 \| Rank : 1 \| Exposure : A1 \| Modifier : Sex \| Level : 1
+A1
 </td>
 <td style="text-align:right;">
--0.5917534
+-0.4607403
 </td>
 <td style="text-align:right;">
-0.0098075
+0.1716025
 </td>
 <td style="text-align:right;">
-0.0990326
+-0.7971
 </td>
 <td style="text-align:right;">
--0.7859
-</td>
-<td style="text-align:right;">
--0.3977
-</td>
-<td style="text-align:right;">
-0e+00
+-0.1244
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 0
 </td>
 <td style="text-align:right;">
-170
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 0
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 1 \| Rank : 1 \| Exposure : A1 \| Modifier : Sex \| Level : 2
+A1
 </td>
 <td style="text-align:right;">
--1.4752810
+-0.9372819
 </td>
 <td style="text-align:right;">
-0.0555699
+0.3293086
 </td>
 <td style="text-align:right;">
-0.2357326
+-1.5827
 </td>
 <td style="text-align:right;">
--1.9373
-</td>
-<td style="text-align:right;">
--1.0133
-</td>
-<td style="text-align:right;">
-0e+00
+-0.2918
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 1
 </td>
 <td style="text-align:right;">
-164
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 1
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 2 \| Rank : 1 \| Exposure : A1 \| Modifier : Sex \| Level : 1
+A1
 </td>
 <td style="text-align:right;">
--0.5428111
+-0.4312649
 </td>
 <td style="text-align:right;">
-0.0094160
+0.1520413
 </td>
 <td style="text-align:right;">
-0.0970359
+-0.7293
 </td>
 <td style="text-align:right;">
--0.7330
-</td>
-<td style="text-align:right;">
--0.3526
-</td>
-<td style="text-align:right;">
-0e+00
+-0.1333
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 0
 </td>
 <td style="text-align:right;">
-161
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 0
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 2 \| Rank : 1 \| Exposure : A1 \| Modifier : Sex \| Level : 2
+A1
 </td>
 <td style="text-align:right;">
--1.5179830
+-0.9259123
 </td>
 <td style="text-align:right;">
-0.0602319
+0.4038112
 </td>
 <td style="text-align:right;">
-0.2454219
+-1.7174
 </td>
 <td style="text-align:right;">
--1.9990
-</td>
-<td style="text-align:right;">
--1.0370
-</td>
-<td style="text-align:right;">
-0e+00
+-0.1345
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 1
 </td>
 <td style="text-align:right;">
-172
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 1
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 3 \| Rank : 1 \| Exposure : A1 \| Modifier : Sex \| Level : 1
+A1
 </td>
 <td style="text-align:right;">
--0.5477520
+-0.9851225
 </td>
 <td style="text-align:right;">
-0.0114864
+0.1663141
 </td>
 <td style="text-align:right;">
-0.1071745
+-1.3111
 </td>
 <td style="text-align:right;">
--0.7578
-</td>
-<td style="text-align:right;">
--0.3377
-</td>
-<td style="text-align:right;">
-3e-07
+-0.6592
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 0
 </td>
 <td style="text-align:right;">
-176
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 0
+3
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 3 \| Rank : 1 \| Exposure : A1 \| Modifier : Sex \| Level : 2
+A1
 </td>
 <td style="text-align:right;">
--1.4742615
+-1.7650811
 </td>
 <td style="text-align:right;">
-0.0704286
+0.2966523
 </td>
 <td style="text-align:right;">
-0.2653839
+-2.3465
 </td>
 <td style="text-align:right;">
--1.9944
-</td>
-<td style="text-align:right;">
--0.9541
-</td>
-<td style="text-align:right;">
-0e+00
+-1.1837
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 1
 </td>
 <td style="text-align:right;">
-157
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A1
 </td>
 <td style="text-align:right;">
--0.5
+-0.3049075
+</td>
+<td style="text-align:right;">
+0.2336208
+</td>
+<td style="text-align:right;">
+-0.7628
+</td>
+<td style="text-align:right;">
+0.1530
 </td>
 <td style="text-align:left;">
-Sex == 1
+W3 == 0
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A1
+</td>
+<td style="text-align:right;">
+-0.8764155
+</td>
+<td style="text-align:right;">
+0.3151982
+</td>
+<td style="text-align:right;">
+-1.4942
+</td>
+<td style="text-align:right;">
+-0.2586
+</td>
+<td style="text-align:left;">
+W3 == 1
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A1
+</td>
+<td style="text-align:right;">
+-0.1232804
+</td>
+<td style="text-align:right;">
+0.1321311
+</td>
+<td style="text-align:right;">
+-0.3823
+</td>
+<td style="text-align:right;">
+0.1357
+</td>
+<td style="text-align:left;">
+W3 == 0
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A1
+</td>
+<td style="text-align:right;">
+-0.7886600
+</td>
+<td style="text-align:right;">
+0.5435316
+</td>
+<td style="text-align:right;">
+-1.8540
+</td>
+<td style="text-align:right;">
+0.2766
+</td>
+<td style="text-align:left;">
+W3 == 1
+</td>
+<td style="text-align:right;">
+5
 </td>
 </tr>
 </tbody>
@@ -785,15 +802,15 @@ The consistency of our results means we can look at the pooled results
 which pools estimates for the top effect modifier in each level.
 
 ``` r
-pooled_results_df <- do.call(rbind, pooled_results)
+pooled_results_df <- rbind(pooled_results_v, pooled_results_vc)
 pooled_results_df %>%
-  kbl(caption = "Pooled TMLE Results by Level") %>%
+  kbl(caption = "Pooled TMLE Results by Region") %>%
   kable_classic(full_width = F, html_font = "Cambria")
 ```
 
 <table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
 <caption>
-Pooled TMLE Results by Level
+Pooled TMLE Results by Region
 </caption>
 <thead>
 <tr>
@@ -821,86 +838,92 @@ P-value
 <th style="text-align:left;">
 Fold
 </th>
-<th style="text-align:right;">
-N
+<th style="text-align:left;">
+Type
+</th>
+<th style="text-align:left;">
+Variables
 </th>
 <th style="text-align:right;">
-Delta
+N
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
-1_1
+v
 </td>
 <td style="text-align:right;">
--0.5632749
+0.1985276
 </td>
 <td style="text-align:right;">
-0.0038986
+0.0048664
 </td>
 <td style="text-align:right;">
-0.0624389
+0.0697597
 </td>
 <td style="text-align:right;">
--0.6857
+0.0618
 </td>
 <td style="text-align:right;">
--0.4409
+0.3353
 </td>
 <td style="text-align:right;">
-0
+0.0044289
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
-<td style="text-align:right;">
-507
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+v
 </td>
 <td style="text-align:right;">
--0.5
+485
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-1_2
+vc
 </td>
 <td style="text-align:right;">
--1.5033988
+-1.4408420
 </td>
 <td style="text-align:right;">
-0.0211669
+0.0220128
 </td>
 <td style="text-align:right;">
-0.1454886
+0.1483672
 </td>
 <td style="text-align:right;">
--1.7886
+-1.7316
 </td>
 <td style="text-align:right;">
--1.2182
+-1.1500
 </td>
 <td style="text-align:right;">
-0
+0.0000000
 </td>
 <td style="text-align:left;">
 Pooled TMLE
 </td>
-<td style="text-align:right;">
-493
+<td style="text-align:left;">
+Indiv Shift
+</td>
+<td style="text-align:left;">
+vc
 </td>
 <td style="text-align:right;">
--0.5
+515
 </td>
 </tr>
 </tbody>
 </table>
 
-This shows that in rank 1 level 1 (1_1) the pooled result which pools
-our fold estimates for level 1 for the top modifier. 1_2 is the rank 1
-and second level of modifier. These correspond to shifting A1 in levels
-of sex = 0, and sex = 1 in this simulated case.
+This shows the pooled results for the region v and its compliment.
 
 ------------------------------------------------------------------------
 

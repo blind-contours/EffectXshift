@@ -29,6 +29,8 @@ procedure, as given by \code{\link{fit_fluctuation}}.}
 \item{fluctuation}{Type of fluctuation to use}
 
 \item{n_folds}{Number of folds used in the CV.}
+
+\item{rank}{If we are pooling by rank}
 }
 \value{
 A \code{list} containing the parameter estimate, estimated variance

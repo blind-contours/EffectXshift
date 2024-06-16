@@ -166,7 +166,7 @@ To improve consistency in the region we find to be the maximizing region, it is 
 cor_matrix <- cor(NHANES_eurocim[, exposures], use = "complete.obs")
 
 # Set a threshold for high correlation
-threshold <- 0.8
+threshold <- 0.75
 
 # Find pairs of highly correlated exposures
 highly_correlated_pairs <- which(abs(cor_matrix) > threshold & lower.tri(cor_matrix), arr.ind = TRUE)
@@ -192,11 +192,6 @@ exposures_to_keep <- setdiff(exposures, exposures_to_remove)
 ## Run EffectXshift 
 
 ```{r run EffectXshift for NHANES, warning=FALSE, message=FALSE}
-deltas <- list(
-  "LBX074LA" = 1, "LBX099LA" = 1, "LBXD03LA" = 1,
-  "LBXD05LA" = 1, "LBXF03LA" = 1, "LBXF04LA" = 1, "LBXF08LA" = 1,
-  "LBXPCBLA" = 1
-)
 
 ptm <- proc.time()
 
@@ -204,7 +199,18 @@ w <- NHANES_eurocim[, covariates]
 a <- NHANES_eurocim[, exposures_to_keep]
 y <- NHANES_eurocim$TELOMEAN
 
-seed <- 23432
+deltas <- a %>%
+  summarise(across(everything(), sd, na.rm = TRUE)) %>%
+  as.list()
+
+# Make the deltas negative
+deltas <- lapply(deltas, function(x) -x)
+
+# Assign the names to the list
+names(deltas) <- names(a)
+
+
+seed <- 23444
 NHANES_results <- EffectXshift(
   w = w,
   a = a,
@@ -214,11 +220,12 @@ NHANES_results <- EffectXshift(
   outcome_type = "continuous",
   parallel = TRUE,
   parallel_type = "multi_session",
-  num_cores = 5,
+  num_cores = 6,
   seed = seed,
   adaptive_delta = FALSE,
   top_n = 1,
-  min_obs = 50
+  min_obs = 300,
+  density_classification = TRUE
 )
 
 proc.time() - ptm

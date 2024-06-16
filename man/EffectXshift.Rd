@@ -11,7 +11,7 @@ EffectXshift(
   deltas,
   estimator = "tmle",
   fluctuation = "standard",
-  pi_learner = NULL,
+  g_learner = NULL,
   mu_learner = NULL,
   n_folds = 2,
   outcome_type = "continuous",
@@ -22,7 +22,8 @@ EffectXshift(
   hn_trunc_thresh = 10,
   adaptive_delta = FALSE,
   top_n = 1,
-  min_obs = 20
+  min_obs = 20,
+  density_classification = FALSE
 )
 }
 \arguments{
@@ -63,11 +64,13 @@ This determines where to place the auxiliary covariate in the logistic tilting r
 
 \item{adaptive_delta}{If TRUE, reduces the user-specified delta until}
 
+\item{top_n}{top number of effect modifier-exposure pairs to estimate}
+
 \item{min_obs}{Minimum number of observations allowed in a covariate region
 the Hn calculated for a shift does not have any observation greater
 than hn_trunc_thresh (default: FALSE).}
 
-\item{g_learner}{Learners for fitting Super Learner ensembles to the g-mechanism
+\item{pi_learner}{Learners for fitting Super Learner ensembles to the g-mechanism density estimation
 g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
 }
 \value{

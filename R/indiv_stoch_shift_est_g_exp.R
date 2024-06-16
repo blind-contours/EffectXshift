@@ -76,21 +76,6 @@ indiv_stoch_shift_est_g_exp <- function(exposure,
                                         max_degree) {
   future::plan(future::sequential, gc = TRUE)
 
-  # Function to create shifted data
-  create_shifted_data <- function(data, exposure, delta, lower_bound, upper_bound) {
-    shifted_data <- data.table::copy(data)
-    data.table::set(shifted_data,
-      j = exposure,
-      value = shift_additive(
-        a = data[[exposure]],
-        delta = delta,
-        lower_bound = lower_bound,
-        upper_bound = upper_bound
-      )
-    )
-    return(shifted_data)
-  }
-
   # Creating shifted data
   av_downshifted <- create_shifted_data(av, exposure, -delta, lower_bound, upper_bound)
   at_downshifted <- create_shifted_data(at, exposure, -delta, lower_bound, upper_bound)

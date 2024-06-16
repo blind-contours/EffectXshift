@@ -48,7 +48,7 @@ eif <- function(y,
   }
 
   psi <- mean(qn_shift)
-  noshift_psi <- mean(y)
+  noshift_psi <- mean(qn_noshift)
 
   # compute the efficient influence function (EIF)
   eif <- rep(0, length(qn_shift))

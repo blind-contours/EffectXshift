@@ -144,12 +144,12 @@ create_sls <- function() {
   learners <- c(
     lrnr_glm_basic,
     # lrnr_ridge,
-    # lrnr_lasso,
+    lrnr_lasso,
     lrnr_ranger_100,
-    lrnr_xgboost_50
+    lrnr_xgboost_50,
     # lrnr_xgboost_100,
-    # lrnr_xgboost_200
-    # lrnr_xgboost_300
+    lrnr_xgboost_200,
+    lrnr_xgboost_300
   )
 
   mu_learner <- make_learner(Stack, learners)
@@ -186,11 +186,7 @@ create_sls <- function() {
   )
 
   return(list(
-    "pi_learner" = pi_learner,
-    "zeta_learner" = zeta_learner,
-    "mu_learner" = mu_learner,
-    "e_learner" = e_learner,
-    "g_learner" = g_learner,
-    "quant_learner" = quant_lrnr
+    "g_learner" = pi_learner,
+    "mu_learner" = mu_learner
   ))
 }

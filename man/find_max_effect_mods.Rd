@@ -2,28 +2,27 @@
 % Please edit documentation in R/find_max_effect_mod.R
 \name{find_max_effect_mods}
 \alias{find_max_effect_mods}
-\title{Data-adaptive Discovery of Interactions Based on Joint vs. Individual Shift Interventions}
+\title{Identification of Maximal Effect Modifiers Using Stochastic Shift Interventions}
 \usage{
 find_max_effect_mods(
-  data,
+  at,
+  av,
   deltas,
   a_names,
   w_names,
   outcome,
   outcome_type,
   mu_learner,
+  g_learner,
   top_n = 3,
   seed,
-  min_obs
+  min_obs,
+  fold,
+  density_classification = FALSE
 )
 }
 \arguments{
-\item{data}{A \code{data.frame} containing all the variables needed for the analysis, including
-baseline covariates, exposures, and the outcome.}
-
-\item{deltas}{A named \code{list} or \code{vector} specifying the shift in exposures to define the target parameter.
-Each element should correspond to an exposure variable specified in \code{a_names}, detailing the amount
-by which that exposure is to be shifted.}
+\item{deltas}{A named \code{list} or \code{vector} specifying the shift in exposures to define the target parameter. Each element should correspond to an exposure variable specified in \code{a_names}, detailing the amount by which that exposure is to be shifted.}
 
 \item{a_names}{A \code{character} vector specifying the names of the exposure variables within \code{data}.}
 
@@ -31,25 +30,26 @@ by which that exposure is to be shifted.}
 
 \item{outcome}{The name of the outcome variable in \code{data}.}
 
-\item{outcome_type}{A \code{character} string indicating the type of the outcome variable; either "continuous",
-"binary", or "count".}
+\item{outcome_type}{A \code{character} string indicating the type of the outcome variable; either "continuous", "binary", or "count".}
 
-\item{mu_learner}{A list of \code{\link[sl3]{Lrnr_sl}} learners specifying the ensemble machine learning models to be used
-for outcome prediction within the Super Learner framework.}
+\item{mu_learner}{A list of \code{\link[sl3]{Lrnr_sl}} learners specifying the ensemble machine learning models to be used for outcome prediction within the Super Learner framework.}
+
+\item{g_learner}{A list of \code{\link[sl3]{Lrnr_sl}} learners specifying the ensemble machine learning models to be used for estimating the conditional density of the exposures.}
 
 \item{top_n}{An \code{integer} specifying the number of top positive and negative effects to return.}
 
 \item{seed}{An \code{integer} value to set the seed for reproducibility.}
+
+\item{min_obs}{Minimum number of observations in a region to warrant a split.}
+
+\item{data}{A \code{data.frame} containing all the variables needed for the analysis, including baseline covariates, exposures, and the outcome.}
 }
 \value{
-A list containing the top effects and interactions identified and estimated by the function.
-It includes elements for top positive and negative individual effects as well as top synergistic and antagonistic interactions.
+A list containing the top effects and interactions identified and estimated by the function. It includes elements for top positive and negative individual effects as well as top synergistic and antagonistic interactions.
 }
 \description{
-The \code{find_max_effect_mods} function provides a g-computation approach to finding interactions.
-This implementation fits an SL and then predicts two way joint shifts in exposures and compares this to individual shifts,
-ranks the interactions based on the difference and then this becomes the interactions we want to estimate
-using CV-TMLE.
+The \code{find_max_effect_mods} function identifies subpopulations with the maximum differential impact of stochastic shift interventions on exposures within a mixture. The method estimates the individual effects of shifting each exposure while controlling for other exposures and covariates, using ensemble machine learning and targeted maximum likelihood estimation (TMLE).
+Once the individual intervention effects and influence curve estimates given an intervention on each exposure are derived, we then use a simple t-statistic partitioning algorithm to find the region with the maximum significant difference in intervention effects.
 }
 \examples{
 \dontrun{
@@ -64,7 +64,7 @@ mu_learner <- list(sl3::Lrnr_mean$new(), sl3::Lrnr_glm$new())
 top_n <- 3
 seed <- 123
 
-results <- find_synergy_antagonism(data, deltas, a_names, w_names, outcome, outcome_type, mu_learner, top_n, seed)
+results <- find_max_effect_mods(data, deltas, a_names, w_names, outcome, outcome_type, mu_learner, g_learner, top_n, seed, min_obs = 10)
 print(results)
 }
 
