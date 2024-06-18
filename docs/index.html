@@ -148,78 +148,89 @@ $$</span></p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span></code></pre></div>
 <p>We will simulate some data with effect modification to see if we both find the correct exposure-covariate combination that has the maximum effect modification and compare our estimates in each level of the modifier for an intervention on the exposure.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span>  <span class="co"># Ensure reproducibility</span></span>
-<span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">1000</span>  <span class="co"># Number of observations</span></span>
+<code class="sourceCode R"><span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">2000</span> <span class="co"># Number of observations</span></span>
 <span></span>
 <span><span class="co"># Generate binary covariates</span></span>
-<span><span class="va">Sex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span>  <span class="co"># 0 for one sex, 1 for another</span></span>
-<span><span class="va">W2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span>  <span class="co"># Additional binary covariate</span></span>
+<span><span class="va">W3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span> <span class="co"># 0 for one sex, 1 for another</span></span>
+<span><span class="va">W2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span> <span class="co"># Additional binary covariate</span></span>
 <span></span>
-<span><span class="co"># Generate exposures</span></span>
-<span><span class="va">A1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>  <span class="co"># Continuous exposure with significant interaction with Sex</span></span>
-<span><span class="va">A2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>  <span class="co"># Continuous exposure without significant interaction</span></span>
-<span><span class="va">A3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>  <span class="co"># Continuous exposure without significant interaction</span></span>
-<span> </span>
+<span><span class="co"># Generate confounders</span></span>
+<span><span class="va">W1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Generate exposures influenced by confounders</span></span>
+<span><span class="va">A1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">W3</span> <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> <span class="va">W2</span> <span class="op">+</span> <span class="fl">0.4</span> <span class="op">*</span> <span class="va">W1</span><span class="op">)</span> <span class="co"># Continuous exposure with significant interaction with Sex</span></span>
+<span><span class="va">A2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fl">0.3</span> <span class="op">*</span> <span class="va">W2</span> <span class="op">+</span> <span class="fl">0.3</span> <span class="op">*</span> <span class="va">W1</span><span class="op">)</span> <span class="co"># Continuous exposure without significant interaction</span></span>
+<span><span class="va">A3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, mean <span class="op">=</span> <span class="fl">0.2</span> <span class="op">*</span> <span class="va">W1</span><span class="op">)</span> <span class="co"># Continuous exposure without significant interaction</span></span>
+<span></span>
 <span><span class="co"># Define effect sizes</span></span>
-<span><span class="va">beta_A1</span> <span class="op">&lt;-</span> <span class="fl">1</span>  <span class="co"># Base effect of A1 on Y</span></span>
-<span><span class="va">beta_A2</span> <span class="op">&lt;-</span> <span class="fl">0.5</span>  <span class="co"># Effect of A2 on Y</span></span>
-<span><span class="va">beta_A3</span> <span class="op">&lt;-</span> <span class="fl">0.2</span>  <span class="co"># Effect of A3 on Y</span></span>
-<span><span class="va">beta_Sex</span> <span class="op">&lt;-</span> <span class="fl">0.5</span>  <span class="co"># Effect of Sex on Y</span></span>
-<span><span class="va">beta_W2</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">0.3</span>  <span class="co"># Effect of W2 on Y</span></span>
-<span><span class="va">interaction_A1_Sex</span> <span class="op">&lt;-</span> <span class="fl">2</span>  <span class="co"># Interaction effect between A1 and Sex, ensuring maximal impact difference</span></span>
+<span><span class="va">beta_A1</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="co"># Base effect of A1 on Y</span></span>
+<span><span class="va">beta_A2</span> <span class="op">&lt;-</span> <span class="fl">0.5</span> <span class="co"># Effect of A2 on Y</span></span>
+<span><span class="va">beta_A3</span> <span class="op">&lt;-</span> <span class="fl">0.2</span> <span class="co"># Effect of A3 on Y</span></span>
+<span><span class="va">beta_W3</span> <span class="op">&lt;-</span> <span class="fl">0.5</span> <span class="co"># Effect of Sex on Y</span></span>
+<span><span class="va">beta_W2</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">0.3</span> <span class="co"># Effect of W2 on Y</span></span>
+<span><span class="va">beta_W1</span> <span class="op">&lt;-</span> <span class="fl">0.4</span> <span class="co"># Effect of W1 on Y</span></span>
+<span><span class="va">interaction_A1_W3</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="co"># Interaction effect between A1 and Sex, ensuring maximal impact difference</span></span>
 <span></span>
 <span><span class="co"># Simulate outcome Y</span></span>
-<span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">+</span> <span class="va">beta_A1</span><span class="op">*</span><span class="va">A1</span> <span class="op">+</span> <span class="va">beta_A2</span><span class="op">*</span><span class="va">A2</span> <span class="op">+</span> <span class="va">beta_A3</span><span class="op">*</span><span class="va">A3</span> <span class="op">+</span> <span class="va">beta_Sex</span><span class="op">*</span><span class="va">Sex</span> <span class="op">+</span> <span class="va">beta_W2</span><span class="op">*</span><span class="va">W2</span> <span class="op">+</span></span>
-<span>     <span class="va">interaction_A1_Sex</span><span class="op">*</span><span class="va">A1</span><span class="op">*</span><span class="va">Sex</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span>  <span class="co"># Include noise</span></span>
-<span></span>
+<span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">+</span> <span class="va">beta_A1</span> <span class="op">*</span> <span class="va">A1</span> <span class="op">+</span> <span class="va">beta_A2</span> <span class="op">*</span> <span class="va">A2</span> <span class="op">+</span> <span class="va">beta_A3</span> <span class="op">*</span> <span class="va">A3</span> <span class="op">+</span> <span class="va">beta_W3</span> <span class="op">*</span> <span class="va">W3</span> <span class="op">+</span> <span class="va">beta_W2</span> <span class="op">*</span> <span class="va">W2</span> <span class="op">+</span> <span class="va">beta_W1</span> <span class="op">*</span> <span class="va">W1</span> <span class="op">+</span></span>
+<span>  <span class="va">interaction_A1_W3</span> <span class="op">*</span> <span class="va">A1</span> <span class="op">*</span> <span class="va">W3</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="co"># Include noise</span></span>
 <span></span>
 <span><span class="co"># Assume an intervention that reduces A1 by a fixed amount for the shift analysis</span></span>
 <span><span class="va">shift_amount</span> <span class="op">&lt;-</span> <span class="op">-</span><span class="fl">0.5</span></span>
 <span><span class="va">A1_shifted</span> <span class="op">&lt;-</span> <span class="va">A1</span> <span class="op">+</span> <span class="va">shift_amount</span></span>
 <span></span>
 <span><span class="co"># Recalculate Y assuming the shift in A1</span></span>
-<span><span class="va">Y_shifted</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">+</span> <span class="va">beta_A1</span><span class="op">*</span><span class="va">A1_shifted</span> <span class="op">+</span> <span class="va">beta_A2</span><span class="op">*</span><span class="va">A2</span> <span class="op">+</span> <span class="va">beta_A3</span><span class="op">*</span><span class="va">A3</span> <span class="op">+</span> <span class="va">beta_Sex</span><span class="op">*</span><span class="va">Sex</span> <span class="op">+</span> <span class="va">beta_W2</span><span class="op">*</span><span class="va">W2</span> <span class="op">+</span></span>
-<span>             <span class="va">interaction_A1_Sex</span><span class="op">*</span><span class="va">A1_shifted</span><span class="op">*</span><span class="va">Sex</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span><span class="va">Y_shifted</span> <span class="op">&lt;-</span> <span class="fl">2</span> <span class="op">+</span> <span class="va">beta_A1</span> <span class="op">*</span> <span class="va">A1_shifted</span> <span class="op">+</span> <span class="va">beta_A2</span> <span class="op">*</span> <span class="va">A2</span> <span class="op">+</span> <span class="va">beta_A3</span> <span class="op">*</span> <span class="va">A3</span> <span class="op">+</span> <span class="va">beta_W3</span> <span class="op">*</span> <span class="va">W3</span> <span class="op">+</span> <span class="va">beta_W2</span> <span class="op">*</span> <span class="va">W2</span> <span class="op">+</span> <span class="va">beta_W1</span> <span class="op">*</span> <span class="va">W1</span> <span class="op">+</span> <span class="va">interaction_A1_W3</span> <span class="op">*</span> <span class="va">A1_shifted</span> <span class="op">*</span> <span class="va">W3</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Data frame with shifted outcomes</span></span>
-<span><span class="va">data_shifted</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">Sex</span>, <span class="va">W2</span>, <span class="va">A1</span>, <span class="va">A1_shifted</span>, <span class="va">A2</span>, <span class="va">A3</span>, <span class="va">Y</span>, <span class="va">Y_shifted</span><span class="op">)</span></span>
+<span><span class="va">data_shifted</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="va">W3</span>, <span class="va">W2</span>, <span class="va">W1</span>, <span class="va">A1</span>, <span class="va">A1_shifted</span>, <span class="va">A2</span>, <span class="va">A3</span>, <span class="va">Y</span>, <span class="va">Y_shifted</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">effect_summary</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>Difference <span class="op">=</span> <span class="va">Y_shifted</span> <span class="op">-</span> <span class="va">Y</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">Sex</span>, <span class="va">W2</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">W3</span>, <span class="va">W2</span>, <span class="va">W1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span></span>
 <span>    Avg_Difference <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">Difference</span><span class="op">)</span>,</span>
-<span>    .groups <span class="op">=</span> <span class="st">'drop'</span></span>
+<span>    .groups <span class="op">=</span> <span class="st">"drop"</span></span>
 <span>  <span class="op">)</span></span>
 <span></span>
-<span><span class="va">effect_summary</span></span>
-<span><span class="co">#&gt; # A tibble: 4 × 3</span></span>
-<span><span class="co">#&gt;     Sex    W2 Avg_Difference</span></span>
-<span><span class="co">#&gt;   &lt;int&gt; &lt;int&gt;          &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1     0     0         -0.466</span></span>
-<span><span class="co">#&gt; 2     0     1         -0.367</span></span>
-<span><span class="co">#&gt; 3     1     0         -1.40 </span></span>
-<span><span class="co">#&gt; 4     1     1         -1.52</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">effect_summary</span><span class="op">)</span></span>
+<span><span class="co">#&gt; # A tibble: 8 × 4</span></span>
+<span><span class="co">#&gt;      W3    W2    W1 Avg_Difference</span></span>
+<span><span class="co">#&gt;   &lt;int&gt; &lt;int&gt; &lt;int&gt;          &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1     0     0     0         -0.549</span></span>
+<span><span class="co">#&gt; 2     0     0     1         -0.388</span></span>
+<span><span class="co">#&gt; 3     0     1     0         -0.362</span></span>
+<span><span class="co">#&gt; 4     0     1     1         -0.606</span></span>
+<span><span class="co">#&gt; 5     1     0     0         -1.43 </span></span>
+<span><span class="co">#&gt; 6     1     0     1         -1.60 </span></span>
+<span><span class="co">#&gt; 7     1     1     0         -1.56 </span></span>
+<span><span class="co">#&gt; 8     1     1     1         -1.57</span></span>
 <span></span>
-<span><span class="va">data_shifted</span><span class="op">$</span><span class="va">Y_diff</span> <span class="op">=</span> <span class="va">data_shifted</span><span class="op">$</span><span class="va">Y_shifted</span> <span class="op">-</span> <span class="va">data_shifted</span><span class="op">$</span><span class="va">Y</span></span>
+<span><span class="va">data_shifted</span><span class="op">$</span><span class="va">Y_diff</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span><span class="op">$</span><span class="va">Y_shifted</span> <span class="op">-</span> <span class="va">data_shifted</span><span class="op">$</span><span class="va">Y</span></span>
 <span></span>
 <span><span class="co"># Aggregate differences by levels of Sex</span></span>
-<span><span class="va">avg_diff_sex</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">Y_diff</span> <span class="op">~</span> <span class="va">Sex</span>, data <span class="op">=</span> <span class="va">data_shifted</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span><span class="va">avg_diff_W3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">Y_diff</span> <span class="op">~</span> <span class="va">W3</span>, data <span class="op">=</span> <span class="va">data_shifted</span>, <span class="va">mean</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Aggregate differences by levels of W2</span></span>
 <span><span class="va">avg_diff_W2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">Y_diff</span> <span class="op">~</span> <span class="va">W2</span>, data <span class="op">=</span> <span class="va">data_shifted</span>, <span class="va">mean</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">avg_diff_sex</span></span>
-<span><span class="co">#&gt;   Sex     Y_diff</span></span>
-<span><span class="co">#&gt; 1   0 -0.4138098</span></span>
-<span><span class="co">#&gt; 2   1 -1.4534507</span></span>
-<span><span class="va">avg_diff_W2</span></span>
+<span><span class="co"># Aggregate differences by levels of W1</span></span>
+<span><span class="va">avg_diff_W1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/aggregate.html" class="external-link">aggregate</a></span><span class="op">(</span><span class="va">Y_diff</span> <span class="op">~</span> <span class="va">W1</span>, data <span class="op">=</span> <span class="va">data_shifted</span>, <span class="va">mean</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">avg_diff_W3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   W3     Y_diff</span></span>
+<span><span class="co">#&gt; 1  0 -0.4745651</span></span>
+<span><span class="co">#&gt; 2  1 -1.5385141</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">avg_diff_W2</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   W2     Y_diff</span></span>
-<span><span class="co">#&gt; 1  0 -0.9507121</span></span>
-<span><span class="co">#&gt; 2  1 -0.9016993</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  0 -0.9881843</span></span>
+<span><span class="co">#&gt; 2  1 -1.0236184</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">avg_diff_W1</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   W1     Y_diff</span></span>
+<span><span class="co">#&gt; 1  0 -0.9980014</span></span>
+<span><span class="co">#&gt; 2  1 -1.0147684</span></span></code></pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">w</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W2"</span>, <span class="st">"Sex"</span><span class="op">)</span><span class="op">]</span></span>
+<code class="sourceCode R"><span><span class="va">w</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"W1"</span>, <span class="st">"W2"</span>, <span class="st">"W3"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">a</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A1"</span>, <span class="st">"A2"</span>, <span class="st">"A3"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="va">data_shifted</span><span class="op">$</span><span class="va">Y</span></span>
 <span></span>
@@ -236,10 +247,13 @@ Sim Data
 </caption>
 <thead><tr>
 <th style="text-align:right;">
-Sex
+W3
 </th>
 <th style="text-align:right;">
 W2
+</th>
+<th style="text-align:right;">
+W1
 </th>
 <th style="text-align:right;">
 A1
@@ -266,31 +280,66 @@ Y_diff
 <tbody>
 <tr>
 <td style="text-align:right;">
-0
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.6561885
+</td>
+<td style="text-align:right;">
+0.1561885
+</td>
+<td style="text-align:right;">
+1.2513750
+</td>
+<td style="text-align:right;">
+-0.0302229
+</td>
+<td style="text-align:right;">
+5.7034805
+</td>
+<td style="text-align:right;">
+4.5714986
+</td>
+<td style="text-align:right;">
+-1.1319819
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:right;">
--0.9957987
+0
 </td>
 <td style="text-align:right;">
--1.4957987
+-0.0663319
 </td>
 <td style="text-align:right;">
--0.5116037
+-0.5663319
 </td>
 <td style="text-align:right;">
--0.1503075
+-0.7459642
 </td>
 <td style="text-align:right;">
-0.9148877
+-0.2913230
 </td>
 <td style="text-align:right;">
--0.2758360
+1.1732674
 </td>
 <td style="text-align:right;">
--1.190724
+0.1622237
+</td>
+<td style="text-align:right;">
+-1.0110437
 </td>
 </tr>
 <tr>
@@ -301,25 +350,28 @@ Y_diff
 1
 </td>
 <td style="text-align:right;">
--1.0399550
+1
 </td>
 <td style="text-align:right;">
--1.5399550
+-0.7725338
 </td>
 <td style="text-align:right;">
-0.2369379
+-1.2725338
 </td>
 <td style="text-align:right;">
--0.3277571
+-1.7225836
 </td>
 <td style="text-align:right;">
--0.2168344
+-0.4569841
 </td>
 <td style="text-align:right;">
--1.2393542
+-0.4378984
 </td>
 <td style="text-align:right;">
--1.022520
+-2.3417960
+</td>
+<td style="text-align:right;">
+-1.9038976
 </td>
 </tr>
 <tr>
@@ -330,86 +382,34 @@ Y_diff
 0
 </td>
 <td style="text-align:right;">
--0.0179802
+1
 </td>
 <td style="text-align:right;">
--0.5179802
+2.1282690
 </td>
 <td style="text-align:right;">
--0.5415892
+1.6282690
 </td>
 <td style="text-align:right;">
--1.4481653
+0.9214369
 </td>
 <td style="text-align:right;">
-2.0925963
+0.1985388
 </td>
 <td style="text-align:right;">
--0.2253574
+5.8853582
 </td>
 <td style="text-align:right;">
--2.317954
+5.6776743
+</td>
+<td style="text-align:right;">
+-0.2076839
 </td>
 </tr>
 <tr>
 <td style="text-align:right;">
 1
 </td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.1321751
-</td>
-<td style="text-align:right;">
--0.6321751
-</td>
-<td style="text-align:right;">
-1.2192276
-</td>
-<td style="text-align:right;">
--0.6972846
-</td>
-<td style="text-align:right;">
-0.9894737
-</td>
-<td style="text-align:right;">
-2.2546501
-</td>
-<td style="text-align:right;">
-1.265176
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--2.5493428
-</td>
-<td style="text-align:right;">
--3.0493428
-</td>
-<td style="text-align:right;">
-0.1741359
-</td>
-<td style="text-align:right;">
-2.5984902
-</td>
-<td style="text-align:right;">
--6.8673719
-</td>
-<td style="text-align:right;">
--5.4250711
-</td>
-<td style="text-align:right;">
-1.442301
-</td>
-</tr>
-<tr>
 <td style="text-align:right;">
 0
 </td>
@@ -417,25 +417,57 @@ Y_diff
 0
 </td>
 <td style="text-align:right;">
-1.0405735
+0.8980677
 </td>
 <td style="text-align:right;">
-0.5405735
+0.3980677
 </td>
 <td style="text-align:right;">
--0.6152683
+-1.1049424
 </td>
 <td style="text-align:right;">
--0.0374150
+-0.2965051
 </td>
 <td style="text-align:right;">
-4.9307824
+4.7532763
 </td>
 <td style="text-align:right;">
-2.5605873
+4.1622951
 </td>
 <td style="text-align:right;">
--2.370195
+-0.5909812
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-1.3723133
+</td>
+<td style="text-align:right;">
+-1.8723133
+</td>
+<td style="text-align:right;">
+0.9265418
+</td>
+<td style="text-align:right;">
+-0.2643861
+</td>
+<td style="text-align:right;">
+-0.7917697
+</td>
+<td style="text-align:right;">
+-3.5744031
+</td>
+<td style="text-align:right;">
+-2.7826334
 </td>
 </tr>
 </tbody>
@@ -447,47 +479,24 @@ Y_diff
 <span>  w <span class="op">=</span> <span class="va">w</span>,</span>
 <span>  a <span class="op">=</span> <span class="va">a</span>,</span>
 <span>  y <span class="op">=</span> <span class="va">y</span>,</span>
-<span>  delta <span class="op">=</span> <span class="va">deltas</span>,</span>
-<span>  n_folds <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>  deltas <span class="op">=</span> <span class="va">deltas</span>,</span>
+<span>  n_folds <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>  num_cores <span class="op">=</span> <span class="fl">6</span>,</span>
 <span>  outcome_type <span class="op">=</span> <span class="st">"continuous"</span>,</span>
 <span>  seed <span class="op">=</span> <span class="va">seed</span>,</span>
-<span>  top_n <span class="op">=</span> <span class="fl">1</span></span>
+<span>  top_n <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  density_classification <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 479.5067  Pars:  0.999994748 0.000005252</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 479.5067  Pars:  0.99999858 0.00000142</span></span>
-<span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 482.2148  Pars:  0.99998925 0.00001075</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 482.2148  Pars:  0.999997737 0.000002263</span></span>
-<span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 491.5928  Pars:  0.00001227 0.99998773</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 491.5928  Pars:  0.000005372 0.999994628</span></span>
-<span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 468.9115  Pars:  0.55287 0.44713</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 468.9106  Pars:  0.50547 0.49453</span></span>
-<span><span class="co">#&gt; Iter: 3 fn: 468.9106  Pars:  0.50547 0.49453</span></span>
-<span><span class="co">#&gt; solnp--&gt; Completed in 3 iterations</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 477.9934  Pars:  0.999993554 0.000006445</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 477.9934  Pars:  0.999998444 0.000001556</span></span>
-<span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Iter: 1 fn: 485.8838  Pars:  0.99997075 0.00002925</span></span>
-<span><span class="co">#&gt; Iter: 2 fn: 485.8838  Pars:  0.999991334 0.000008666</span></span>
-<span><span class="co">#&gt; solnp--&gt; Completed in 2 iterations</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  21.973   1.425 302.154</span></span>
+<span><span class="co">#&gt;  27.683   1.113 578.345</span></span>
 <span></span>
 <span><span class="co">## marginal effects</span></span>
 <span><span class="va">k_fold_results</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`Effect Modification K-Fold Results`</span></span>
-<span><span class="va">pooled_results</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`Effect Modification Pooled Results`</span></span></code></pre></div>
+<span><span class="va">pooled_results_v</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`Effect Modification Region V Pooled Results`</span></span>
+<span><span class="va">pooled_results_vc</span> <span class="op">&lt;-</span> <span class="va">sim_results</span><span class="op">$</span><span class="va">`Effect Modification Region V^c Pooled Results`</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">k_fold_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">k_fold_results</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">k_fold_df</span> <span class="op">&lt;-</span> <span class="va">k_fold_results</span></span>
 <span><span class="va">k_fold_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"K Fold Effect Modification Results"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_classic</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">F</span>, html_font <span class="op">=</span> <span class="st">"Cambria"</span><span class="op">)</span></span></code></pre></div>
@@ -497,363 +506,261 @@ K Fold Effect Modification Results
 </caption>
 <thead><tr>
 <th style="text-align:left;">
-Condition
+Exposure
 </th>
 <th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
+Effect
 </th>
 <th style="text-align:right;">
 SE
 </th>
 <th style="text-align:right;">
-Lower CI
+Lower.CI
 </th>
 <th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
+Upper.CI
 </th>
 <th style="text-align:left;">
+Modifier
+</th>
+<th style="text-align:right;">
 Fold
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta
-</th>
-<th style="text-align:left;">
-Covariate_region
 </th>
 </tr></thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
-Fold : 1 | Rank : 1 | Exposure : A1 | Modifier : Sex | Level : 1
+A1
 </td>
 <td style="text-align:right;">
--0.5917534
+-0.7579587
 </td>
 <td style="text-align:right;">
-0.0098075
+0.1690658
 </td>
 <td style="text-align:right;">
-0.0990326
+-1.0893
 </td>
 <td style="text-align:right;">
--0.7859
-</td>
-<td style="text-align:right;">
--0.3977
-</td>
-<td style="text-align:right;">
-0e+00
+-0.4266
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 0
 </td>
 <td style="text-align:right;">
-170
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 0
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 1 | Rank : 1 | Exposure : A1 | Modifier : Sex | Level : 2
+A1
 </td>
 <td style="text-align:right;">
--1.4752810
+-1.3879808
 </td>
 <td style="text-align:right;">
-0.0555699
+0.3151326
 </td>
 <td style="text-align:right;">
-0.2357326
+-2.0056
 </td>
 <td style="text-align:right;">
--1.9373
-</td>
-<td style="text-align:right;">
--1.0133
-</td>
-<td style="text-align:right;">
-0e+00
+-0.7703
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 1
 </td>
 <td style="text-align:right;">
-164
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 1
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 2 | Rank : 1 | Exposure : A1 | Modifier : Sex | Level : 1
+A1
 </td>
 <td style="text-align:right;">
--0.5428111
+-0.5919865
 </td>
 <td style="text-align:right;">
-0.0094160
+0.1293933
 </td>
 <td style="text-align:right;">
-0.0970359
+-0.8456
 </td>
 <td style="text-align:right;">
--0.7330
-</td>
-<td style="text-align:right;">
--0.3526
-</td>
-<td style="text-align:right;">
-0e+00
+-0.3384
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 0
 </td>
 <td style="text-align:right;">
-161
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 0
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 2 | Rank : 1 | Exposure : A1 | Modifier : Sex | Level : 2
+A1
 </td>
 <td style="text-align:right;">
--1.5179830
+-1.0801027
 </td>
 <td style="text-align:right;">
-0.0602319
+0.2593741
 </td>
 <td style="text-align:right;">
-0.2454219
+-1.5885
 </td>
 <td style="text-align:right;">
--1.9990
-</td>
-<td style="text-align:right;">
--1.0370
-</td>
-<td style="text-align:right;">
-0e+00
+-0.5717
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 1
 </td>
 <td style="text-align:right;">
-172
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 1
+2
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 3 | Rank : 1 | Exposure : A1 | Modifier : Sex | Level : 1
+A1
 </td>
 <td style="text-align:right;">
--0.5477520
+-0.4721210
 </td>
 <td style="text-align:right;">
-0.0114864
+0.1139173
 </td>
 <td style="text-align:right;">
-0.1071745
+-0.6954
 </td>
 <td style="text-align:right;">
--0.7578
-</td>
-<td style="text-align:right;">
--0.3377
-</td>
-<td style="text-align:right;">
-3e-07
+-0.2488
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 0
 </td>
 <td style="text-align:right;">
-176
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-<td style="text-align:left;">
-Sex == 0
+3
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-Fold : 3 | Rank : 1 | Exposure : A1 | Modifier : Sex | Level : 2
+A1
 </td>
 <td style="text-align:right;">
--1.4742615
+-1.1524121
 </td>
 <td style="text-align:right;">
-0.0704286
+0.2181057
 </td>
 <td style="text-align:right;">
-0.2653839
+-1.5799
 </td>
 <td style="text-align:right;">
--1.9944
-</td>
-<td style="text-align:right;">
--0.9541
-</td>
-<td style="text-align:right;">
-0e+00
+-0.7249
 </td>
 <td style="text-align:left;">
-Pooled TMLE
+W3 == 1
 </td>
 <td style="text-align:right;">
-157
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A1
 </td>
 <td style="text-align:right;">
--0.5
+-0.4892525
+</td>
+<td style="text-align:right;">
+0.0949592
+</td>
+<td style="text-align:right;">
+-0.6754
+</td>
+<td style="text-align:right;">
+-0.3031
 </td>
 <td style="text-align:left;">
-Sex == 1
+W3 == 0
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A1
+</td>
+<td style="text-align:right;">
+-1.1872886
+</td>
+<td style="text-align:right;">
+0.2231328
+</td>
+<td style="text-align:right;">
+-1.6246
+</td>
+<td style="text-align:right;">
+-0.7500
+</td>
+<td style="text-align:left;">
+W3 == 1
+</td>
+<td style="text-align:right;">
+4
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A1
+</td>
+<td style="text-align:right;">
+-0.2172513
+</td>
+<td style="text-align:right;">
+0.0988232
+</td>
+<td style="text-align:right;">
+-0.4109
+</td>
+<td style="text-align:right;">
+-0.0236
+</td>
+<td style="text-align:left;">
+W3 == 0
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+A1
+</td>
+<td style="text-align:right;">
+-0.7606050
+</td>
+<td style="text-align:right;">
+0.2169844
+</td>
+<td style="text-align:right;">
+-1.1859
+</td>
+<td style="text-align:right;">
+-0.3353
+</td>
+<td style="text-align:left;">
+W3 == 1
+</td>
+<td style="text-align:right;">
+5
 </td>
 </tr>
 </tbody>
 </table>
 <p>Above the k-fold specific results show that we find the correct exposure-covariate combination with max effect modification compared to ground truth. Our estimates are very close to ground-truth as well for a -0.5 shift in A1 in each level of sex. Above Psi shows the expected outcome under a shift of -0.5 compared to the observed average outcome. Variance is the variance derived from the influence function for stochastic shift interventions. Covariate region is the level of the covariate that was found. So here, we are looking for the top effect modification (rank 1), which was found to have exposure A1 in all folds with effect modification by sex. So in this simple example of 3 exposures and 2 covariates we identify the correct exposure-covariate combination that has modification and generate estimates that are close to the truth.</p>
-<p>The consistency of our results means we can look at the pooled results which pools estimates for the top effect modifier in each level.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">pooled_results_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">pooled_results</span><span class="op">)</span></span>
-<span><span class="va">pooled_results_df</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"Pooled TMLE Results by Level"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_classic</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">F</span>, html_font <span class="op">=</span> <span class="st">"Cambria"</span><span class="op">)</span></span></code></pre></div>
-<table class="table  lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-Pooled TMLE Results by Level
-</caption>
-<thead><tr>
-<th style="text-align:left;">
-Condition
-</th>
-<th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower CI
-</th>
-<th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
-</th>
-<th style="text-align:left;">
-Fold
-</th>
-<th style="text-align:right;">
-N
-</th>
-<th style="text-align:right;">
-Delta
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-1_1
-</td>
-<td style="text-align:right;">
--0.5632749
-</td>
-<td style="text-align:right;">
-0.0038986
-</td>
-<td style="text-align:right;">
-0.0624389
-</td>
-<td style="text-align:right;">
--0.6857
-</td>
-<td style="text-align:right;">
--0.4409
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:right;">
-507
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-1_2
-</td>
-<td style="text-align:right;">
--1.5033988
-</td>
-<td style="text-align:right;">
-0.0211669
-</td>
-<td style="text-align:right;">
-0.1454886
-</td>
-<td style="text-align:right;">
--1.7886
-</td>
-<td style="text-align:right;">
--1.2182
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:right;">
-493
-</td>
-<td style="text-align:right;">
--0.5
-</td>
-</tr>
-</tbody>
-</table>
-<p>This shows that in rank 1 level 1 (1_1) the pooled result which pools our fold estimates for level 1 for the top modifier. 1_2 is the rank 1 and second level of modifier. These correspond to shifting A1 in levels of sex = 0, and sex = 1 in this simulated case.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -895,23 +802,23 @@ Pooled TMLE
 </h2>
 <p>© 2020-2022 <a href="https://davidmccoy.org" class="external-link">David B. McCoy</a></p>
 <p>The contents of this repository are distributed under the MIT license. See below for details:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>MIT License</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">Copyright</span> (c) <span class="dv">2020-2024</span> David B. McCoy</span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a>of this software and associated documentation <span class="fu">files</span> (the <span class="st">"Software"</span>), to deal</span>
-<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="cf">in</span> the Software without restriction, including without limitation the rights</span>
-<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>to use, copy, modify, merge, publish, distribute, sublicense, and<span class="sc">/</span>or sell</span>
-<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>copies of the Software, and to permit persons to whom the Software is</span>
-<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a>furnished to do so, subject to the following conditions<span class="sc">:</span></span>
-<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a>The above copyright notice and this permission notice shall be included <span class="cf">in</span> all</span>
-<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>copies or substantial portions of the Software.</span>
-<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>THE SOFTWARE IS PROVIDED <span class="st">"AS IS"</span>, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
-<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
-<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
-<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a>AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
-<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
-<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a>OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
-<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a>SOFTWARE.</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>MIT License</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">Copyright</span> (c) <span class="dv">2020-2024</span> David B. McCoy</span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>of this software and associated documentation <span class="fu">files</span> (the <span class="st">"Software"</span>), to deal</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="cf">in</span> the Software without restriction, including without limitation the rights</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>to use, copy, modify, merge, publish, distribute, sublicense, and<span class="sc">/</span>or sell</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>copies of the Software, and to permit persons to whom the Software is</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>furnished to do so, subject to the following conditions<span class="sc">:</span></span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>The above copyright notice and this permission notice shall be included <span class="cf">in</span> all</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>copies or substantial portions of the Software.</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>THE SOFTWARE IS PROVIDED <span class="st">"AS IS"</span>, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>SOFTWARE.</span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">

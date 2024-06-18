@@ -75,7 +75,7 @@ specific level and pooled across folds, which estimates the overall oracle param
 <span>  <span class="va">deltas</span>,</span>
 <span>  estimator <span class="op">=</span> <span class="st">"tmle"</span>,</span>
 <span>  fluctuation <span class="op">=</span> <span class="st">"standard"</span>,</span>
-<span>  pi_learner <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  g_learner <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mu_learner <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_folds <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>  outcome_type <span class="op">=</span> <span class="st">"continuous"</span>,</span>
@@ -86,7 +86,8 @@ specific level and pooled across folds, which estimates the overall oracle param
 <span>  hn_trunc_thresh <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  adaptive_delta <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  top_n <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  min_obs <span class="op">=</span> <span class="fl">20</span></span>
+<span>  min_obs <span class="op">=</span> <span class="fl">20</span>,</span>
+<span>  density_classification <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -120,10 +121,6 @@ maximum likelihood estimation, or <code>"onestep"</code> for a one-step estimato
 <dt>fluctuation</dt>
 <dd><p>Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.</p></dd>
-
-
-<dt>pi_learner</dt>
-<dd><p>Learners for fitting Super Learner ensembles to densities via <span class="pkg">sl3</span>.</p></dd>
 
 
 <dt>mu_learner</dt>
@@ -163,35 +160,19 @@ This determines where to place the auxiliary covariate in the logistic tilting r
 <dd><p>If TRUE, reduces the user-specified delta until</p></dd>
 
 
+<dt>top_n</dt>
+<dd><p>top number of effect modifier-exposure pairs to estimate</p></dd>
+
+
 <dt>min_obs</dt>
 <dd><p>Minimum number of observations allowed in a covariate region
 the Hn calculated for a shift does not have any observation greater
 than hn_trunc_thresh (default: FALSE).</p></dd>
 
 
-<dt>z</dt>
-<dd><p><code>matrix</code>, <code>data.frame</code>, or similar containing individual or
-multiple mediators (optional).</p></dd>
-
-
-<dt>var_sets</dt>
-<dd><p>A list specifying variable sets for deterministic EffectXshift usage.
-Example: var_sets &lt;- c("A_1", "A_1-Z_2") where the analyst provides variable sets
-for exposures, exposure-mediator, or exposure-covariate relationships.</p></dd>
-
-
-<dt>g_learner</dt>
-<dd><p>Learners for fitting Super Learner ensembles to the g-mechanism
+<dt>pi_learner</dt>
+<dd><p>Learners for fitting Super Learner ensembles to the g-mechanism density estimation
 g(A|W) (a probability estimator, not a density estimator) for mediation via <span class="pkg">sl3</span>.</p></dd>
-
-
-<dt>e_learner</dt>
-<dd><p>Learners for fitting Super Learner ensembles to the e-mechanism
-g(A|Z,W) (a probability estimator, not a density estimator) for mediation via <span class="pkg">sl3</span>.</p></dd>
-
-
-<dt>zeta_learner</dt>
-<dd><p>Learners for fitting Super Learner ensembles to the outcome model via <span class="pkg">sl3</span>..</p></dd>
 
 </dl></div>
     <div id="value">

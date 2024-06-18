@@ -76,7 +76,13 @@
     <loc>/reference/calculatePooledEstimate.html</loc>
   </url>
   <url>
+    <loc>/reference/create_augmented_data.html</loc>
+  </url>
+  <url>
     <loc>/reference/create_cv_folds.html</loc>
+  </url>
+  <url>
+    <loc>/reference/create_shifted_data.html</loc>
   </url>
   <url>
     <loc>/reference/create_sls.html</loc>
@@ -86,6 +92,9 @@
   </url>
   <url>
     <loc>/reference/est_hn.html</loc>
+  </url>
+  <url>
+    <loc>/reference/estimate_density_ratio.html</loc>
   </url>
   <url>
     <loc>/reference/extract_vars_from_basis.html</loc>

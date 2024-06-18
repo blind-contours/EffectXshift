@@ -158,7 +158,7 @@ effect modification and compare our estimates in each level of the
 modifier for an intervention on the exposure.
 
 ``` r
-n <- 1000 # Number of observations
+n <- 2000 # Number of observations
 
 # Generate binary covariates
 W3 <- rbinom(n, 1, 0.5) # 0 for one sex, 1 for another
@@ -207,14 +207,14 @@ print(effect_summary)
 #> # A tibble: 8 × 4
 #>      W3    W2    W1 Avg_Difference
 #>   <int> <int> <int>          <dbl>
-#> 1     0     0     0         -0.523
-#> 2     0     0     1         -0.501
-#> 3     0     1     0         -0.449
-#> 4     0     1     1         -0.893
-#> 5     1     0     0         -1.83 
-#> 6     1     0     1         -1.58 
-#> 7     1     1     0         -1.43 
-#> 8     1     1     1         -1.35
+#> 1     0     0     0         -0.549
+#> 2     0     0     1         -0.388
+#> 3     0     1     0         -0.362
+#> 4     0     1     1         -0.606
+#> 5     1     0     0         -1.43 
+#> 6     1     0     1         -1.60 
+#> 7     1     1     0         -1.56 
+#> 8     1     1     1         -1.57
 
 data_shifted$Y_diff <- data_shifted$Y_shifted - data_shifted$Y
 
@@ -229,16 +229,16 @@ avg_diff_W1 <- aggregate(Y_diff ~ W1, data = data_shifted, mean)
 
 print(avg_diff_W3)
 #>   W3     Y_diff
-#> 1  0 -0.5845702
-#> 2  1 -1.5486749
+#> 1  0 -0.4745651
+#> 2  1 -1.5385141
 print(avg_diff_W2)
-#>   W2    Y_diff
-#> 1  0 -1.108985
-#> 2  1 -1.051339
+#>   W2     Y_diff
+#> 1  0 -0.9881843
+#> 2  1 -1.0236184
 print(avg_diff_W1)
-#>   W1    Y_diff
-#> 1  0 -1.081664
-#> 2  1 -1.080522
+#>   W1     Y_diff
+#> 1  0 -0.9980014
+#> 2  1 -1.0147684
 ```
 
 ``` r
@@ -305,25 +305,121 @@ Y_diff
 1
 </td>
 <td style="text-align:right;">
-1.8251942
+0.6561885
 </td>
 <td style="text-align:right;">
-1.3251942
+0.1561885
 </td>
 <td style="text-align:right;">
--0.0451165
+1.2513750
 </td>
 <td style="text-align:right;">
-0.3677981
+-0.0302229
 </td>
 <td style="text-align:right;">
-9.6444070
+5.7034805
 </td>
 <td style="text-align:right;">
-6.4087359
+4.5714986
 </td>
 <td style="text-align:right;">
--3.2356710
+-1.1319819
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+-0.0663319
+</td>
+<td style="text-align:right;">
+-0.5663319
+</td>
+<td style="text-align:right;">
+-0.7459642
+</td>
+<td style="text-align:right;">
+-0.2913230
+</td>
+<td style="text-align:right;">
+1.1732674
+</td>
+<td style="text-align:right;">
+0.1622237
+</td>
+<td style="text-align:right;">
+-1.0110437
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+-0.7725338
+</td>
+<td style="text-align:right;">
+-1.2725338
+</td>
+<td style="text-align:right;">
+-1.7225836
+</td>
+<td style="text-align:right;">
+-0.4569841
+</td>
+<td style="text-align:right;">
+-0.4378984
+</td>
+<td style="text-align:right;">
+-2.3417960
+</td>
+<td style="text-align:right;">
+-1.9038976
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+2.1282690
+</td>
+<td style="text-align:right;">
+1.6282690
+</td>
+<td style="text-align:right;">
+0.9214369
+</td>
+<td style="text-align:right;">
+0.1985388
+</td>
+<td style="text-align:right;">
+5.8853582
+</td>
+<td style="text-align:right;">
+5.6776743
+</td>
+<td style="text-align:right;">
+-0.2076839
 </td>
 </tr>
 <tr>
@@ -337,89 +433,25 @@ Y_diff
 0
 </td>
 <td style="text-align:right;">
-1.4355733
+0.8980677
 </td>
 <td style="text-align:right;">
-0.9355733
+0.3980677
 </td>
 <td style="text-align:right;">
--0.5961851
+-1.1049424
 </td>
 <td style="text-align:right;">
--0.1900499
+-0.2965051
 </td>
 <td style="text-align:right;">
-6.7776261
+4.7532763
 </td>
 <td style="text-align:right;">
-3.9907013
+4.1622951
 </td>
 <td style="text-align:right;">
--2.7869247
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.3597802
-</td>
-<td style="text-align:right;">
--0.8597802
-</td>
-<td style="text-align:right;">
-0.2278567
-</td>
-<td style="text-align:right;">
-0.4210997
-</td>
-<td style="text-align:right;">
-0.8195058
-</td>
-<td style="text-align:right;">
-0.2503849
-</td>
-<td style="text-align:right;">
--0.5691209
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
--0.1521016
-</td>
-<td style="text-align:right;">
--0.6521016
-</td>
-<td style="text-align:right;">
--0.5440319
-</td>
-<td style="text-align:right;">
--0.0723255
-</td>
-<td style="text-align:right;">
-2.3289856
-</td>
-<td style="text-align:right;">
-1.2345317
-</td>
-<td style="text-align:right;">
--1.0944539
+-0.5909812
 </td>
 </tr>
 <tr>
@@ -427,63 +459,31 @@ Y_diff
 1
 </td>
 <td style="text-align:right;">
-1
+0
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:right;">
-0.5522047
+-1.3723133
 </td>
 <td style="text-align:right;">
-0.0522047
+-1.8723133
 </td>
 <td style="text-align:right;">
-3.3883258
+0.9265418
 </td>
 <td style="text-align:right;">
-1.1761818
+-0.2643861
 </td>
 <td style="text-align:right;">
-7.5480306
+-0.7917697
 </td>
 <td style="text-align:right;">
-2.8384768
+-3.5744031
 </td>
 <td style="text-align:right;">
--4.7095538
-</td>
-</tr>
-<tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-1.2299938
-</td>
-<td style="text-align:right;">
-0.7299938
-</td>
-<td style="text-align:right;">
-2.4612301
-</td>
-<td style="text-align:right;">
-0.5439224
-</td>
-<td style="text-align:right;">
-5.7973901
-</td>
-<td style="text-align:right;">
-5.1828397
-</td>
-<td style="text-align:right;">
--0.6145505
+-2.7826334
 </td>
 </tr>
 </tbody>
@@ -506,7 +506,7 @@ sim_results <- EffectXshift(
 )
 proc.time() - ptm
 #>    user  system elapsed 
-#>   6.770   0.454  87.132
+#>  27.683   1.113 578.345
 
 ## marginal effects
 k_fold_results <- sim_results$`Effect Modification K-Fold Results`
@@ -556,16 +556,16 @@ Fold
 A1
 </td>
 <td style="text-align:right;">
--0.4607403
+-0.7579587
 </td>
 <td style="text-align:right;">
-0.1716025
+0.1690658
 </td>
 <td style="text-align:right;">
--0.7971
+-1.0893
 </td>
 <td style="text-align:right;">
--0.1244
+-0.4266
 </td>
 <td style="text-align:left;">
 W3 == 0
@@ -579,16 +579,16 @@ W3 == 0
 A1
 </td>
 <td style="text-align:right;">
--0.9372819
+-1.3879808
 </td>
 <td style="text-align:right;">
-0.3293086
+0.3151326
 </td>
 <td style="text-align:right;">
--1.5827
+-2.0056
 </td>
 <td style="text-align:right;">
--0.2918
+-0.7703
 </td>
 <td style="text-align:left;">
 W3 == 1
@@ -602,16 +602,16 @@ W3 == 1
 A1
 </td>
 <td style="text-align:right;">
--0.4312649
+-0.5919865
 </td>
 <td style="text-align:right;">
-0.1520413
+0.1293933
 </td>
 <td style="text-align:right;">
--0.7293
+-0.8456
 </td>
 <td style="text-align:right;">
--0.1333
+-0.3384
 </td>
 <td style="text-align:left;">
 W3 == 0
@@ -625,16 +625,16 @@ W3 == 0
 A1
 </td>
 <td style="text-align:right;">
--0.9259123
+-1.0801027
 </td>
 <td style="text-align:right;">
-0.4038112
+0.2593741
 </td>
 <td style="text-align:right;">
--1.7174
+-1.5885
 </td>
 <td style="text-align:right;">
--0.1345
+-0.5717
 </td>
 <td style="text-align:left;">
 W3 == 1
@@ -648,16 +648,16 @@ W3 == 1
 A1
 </td>
 <td style="text-align:right;">
--0.9851225
+-0.4721210
 </td>
 <td style="text-align:right;">
-0.1663141
+0.1139173
 </td>
 <td style="text-align:right;">
--1.3111
+-0.6954
 </td>
 <td style="text-align:right;">
--0.6592
+-0.2488
 </td>
 <td style="text-align:left;">
 W3 == 0
@@ -671,16 +671,16 @@ W3 == 0
 A1
 </td>
 <td style="text-align:right;">
--1.7650811
+-1.1524121
 </td>
 <td style="text-align:right;">
-0.2966523
+0.2181057
 </td>
 <td style="text-align:right;">
--2.3465
+-1.5799
 </td>
 <td style="text-align:right;">
--1.1837
+-0.7249
 </td>
 <td style="text-align:left;">
 W3 == 1
@@ -694,16 +694,16 @@ W3 == 1
 A1
 </td>
 <td style="text-align:right;">
--0.3049075
+-0.4892525
 </td>
 <td style="text-align:right;">
-0.2336208
+0.0949592
 </td>
 <td style="text-align:right;">
--0.7628
+-0.6754
 </td>
 <td style="text-align:right;">
-0.1530
+-0.3031
 </td>
 <td style="text-align:left;">
 W3 == 0
@@ -717,16 +717,16 @@ W3 == 0
 A1
 </td>
 <td style="text-align:right;">
--0.8764155
+-1.1872886
 </td>
 <td style="text-align:right;">
-0.3151982
+0.2231328
 </td>
 <td style="text-align:right;">
--1.4942
+-1.6246
 </td>
 <td style="text-align:right;">
--0.2586
+-0.7500
 </td>
 <td style="text-align:left;">
 W3 == 1
@@ -740,16 +740,16 @@ W3 == 1
 A1
 </td>
 <td style="text-align:right;">
--0.1232804
+-0.2172513
 </td>
 <td style="text-align:right;">
-0.1321311
+0.0988232
 </td>
 <td style="text-align:right;">
--0.3823
+-0.4109
 </td>
 <td style="text-align:right;">
-0.1357
+-0.0236
 </td>
 <td style="text-align:left;">
 W3 == 0
@@ -763,16 +763,16 @@ W3 == 0
 A1
 </td>
 <td style="text-align:right;">
--0.7886600
+-0.7606050
 </td>
 <td style="text-align:right;">
-0.5435316
+0.2169844
 </td>
 <td style="text-align:right;">
--1.8540
+-1.1859
 </td>
 <td style="text-align:right;">
-0.2766
+-0.3353
 </td>
 <td style="text-align:left;">
 W3 == 1
@@ -797,133 +797,6 @@ with effect modification by sex. So in this simple example of 3
 exposures and 2 covariates we identify the correct exposure-covariate
 combination that has modification and generate estimates that are close
 to the truth.
-
-The consistency of our results means we can look at the pooled results
-which pools estimates for the top effect modifier in each level.
-
-``` r
-pooled_results_df <- rbind(pooled_results_v, pooled_results_vc)
-pooled_results_df %>%
-  kbl(caption = "Pooled TMLE Results by Region") %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-```
-
-<table class=" lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-Pooled TMLE Results by Region
-</caption>
-<thead>
-<tr>
-<th style="text-align:left;">
-Condition
-</th>
-<th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower CI
-</th>
-<th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
-</th>
-<th style="text-align:left;">
-Fold
-</th>
-<th style="text-align:left;">
-Type
-</th>
-<th style="text-align:left;">
-Variables
-</th>
-<th style="text-align:right;">
-N
-</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-v
-</td>
-<td style="text-align:right;">
-0.1985276
-</td>
-<td style="text-align:right;">
-0.0048664
-</td>
-<td style="text-align:right;">
-0.0697597
-</td>
-<td style="text-align:right;">
-0.0618
-</td>
-<td style="text-align:right;">
-0.3353
-</td>
-<td style="text-align:right;">
-0.0044289
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-v
-</td>
-<td style="text-align:right;">
-485
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-vc
-</td>
-<td style="text-align:right;">
--1.4408420
-</td>
-<td style="text-align:right;">
-0.0220128
-</td>
-<td style="text-align:right;">
-0.1483672
-</td>
-<td style="text-align:right;">
--1.7316
-</td>
-<td style="text-align:right;">
--1.1500
-</td>
-<td style="text-align:right;">
-0.0000000
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-vc
-</td>
-<td style="text-align:right;">
-515
-</td>
-</tr>
-</tbody>
-</table>
-
-This shows the pooled results for the region v and its compliment.
 
 ------------------------------------------------------------------------
 

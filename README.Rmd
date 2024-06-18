@@ -108,7 +108,7 @@ set.seed(seed)
 We will simulate some data with effect modification to see if we both find the correct exposure-covariate combination that has the maximum effect modification and compare our estimates in each level of the modifier for an intervention on the exposure. 
 
 ```{r simple example}
-n <- 1000 # Number of observations
+n <- 2000 # Number of observations
 
 # Generate binary covariates
 W3 <- rbinom(n, 1, 0.5) # 0 for one sex, 1 for another
@@ -186,7 +186,6 @@ head(data_shifted) %>%
 ```
 
 
-
 ```{r run EffectXshift, eval = TRUE, message=FALSE, warning=FALSE}
 
 ptm <- proc.time()
@@ -219,18 +218,6 @@ k_fold_df %>%
 ```
 
 Above the k-fold specific results show that we find the correct exposure-covariate combination with max effect modification compared to ground truth. Our estimates are very close to ground-truth as well for a -0.5 shift in A1 in each level of sex. Above Psi shows the expected outcome under a shift of -0.5 compared to the observed average outcome. Variance is the variance derived from the influence function for stochastic shift interventions. Covariate region is the level of the covariate that was found. So here, we are looking for the top effect modification (rank 1), which was found to have exposure A1 in all folds with effect modification by sex. So in this simple example of 3 exposures and 2 covariates we identify the correct exposure-covariate combination that has modification and generate estimates that are close to the truth.
-
-
-The consistency of our results means we can look at the pooled results which pools estimates for the top effect modifier in each level. 
-
-```{r top negative results}
-pooled_results_df <- rbind(pooled_results_v, pooled_results_vc)
-pooled_results_df %>%
-  kbl(caption = "Pooled TMLE Results by Region") %>%
-  kable_classic(full_width = F, html_font = "Cambria")
-```
-
-This shows the pooled results for the region v and its compliment.
 
 
 ---

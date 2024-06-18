@@ -40,7 +40,7 @@
 #' @importFrom data.table as.data.table setnames
 #' @export
 
-find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outcome_type, mu_learner, g_learner, top_n = 3, seed, min_obs, fold, density_classification = FALSE) {
+find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outcome_type, mu_learner, g_learner, top_n = 3, seed, min_obs, fold, density_classification = TRUE, max_depth) {
   future::plan(future::sequential, gc = TRUE)
   set.seed(seed)
 
@@ -115,10 +115,10 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
 
     # Compute the density ratios for unshifted exposures
     at_u_t_unshift <- at_class_model_preds[augmented_data$at_dup$intervention == 0]
-    at_density_ratio_unshift <- at_u_t_unshift / (1 - at_u_t_unshift)
+    at_density_ratio_unshift <- 1
 
     av_u_t_unshift <- av_class_model_preds[augmented_data$av_dup$intervention == 0]
-    av_density_ratio_unshift <- av_u_t_unshift / (1 - av_u_t_unshift)
+    av_density_ratio_unshift <- 1
 
     # Combine the density ratios into a data.table
     at_density_ratios <- data.table::as.data.table(
@@ -315,7 +315,8 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
     for (var in split_variables) {
       unique_values <- sort(unique(data[[var]]))
       # Check if the variable is binary (i.e., only contains 0 and 1)
-      is_binary <- all(sort(unique_values) == c(0, 1))
+      is_binary <- length(unique_values) == 2 && all(sort(unique_values) == c(0, 1))
+
 
 
       for (split_point in unique_values) {
@@ -388,8 +389,8 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
     }
 
     # Find the best split using the parent mean calculated earlier
-    best_split <- find_best_split(data, split_variables, outcome,
-      min_obs,
+    best_split <- find_best_split(data = data, split_variables = split_variables, outcome,
+      min_obs = min_obs,
       parent_p = parent_p,
       min_max = min_max
     )
@@ -472,7 +473,7 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
     min_ave_tree_results <- recursive_split_all_rules(
       data = as.data.frame(mod_data),
       split_variables = w_names,
-      max_depth = 1,
+      max_depth = max_depth,
       outcome = "y",
       min_obs = min_obs
     )
