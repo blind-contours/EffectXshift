@@ -72,3 +72,26 @@ report("Region V",  r$v_est,  r$v_se,  true_v)
 report("Region V^c", r$vc_est, r$vc_se, true_vc)
 report("Contrast",  r$con_est, r$con_se, true_con)
 cat("\nSE/SD ~ 1 => calibrated (undercoverage is bias). SE/SD << 1 => SEs too small.\n")
+
+# ---------------------------------------------------------------------------
+# Reference results (ranger(100) + glm, 2 folds; "Contrast" = V - V^c, truth 2).
+#
+#                       bias    SE/SD   coverage
+#   PRE-FIX  n=1000    -0.41    0.16      0.20      (no-shift density ratio == 1)
+#   POST-FIX n=1000    -0.21    0.48      0.63
+#   POST-FIX n=2500    -0.00    0.38      0.50
+#
+# Reading the results:
+#  * The density-ratio fix (no-shift clever covariate = classifier odds, not 1)
+#    restores debiasing: the bias now goes to ~0 as n grows, and the egregious
+#    variance underestimation (SE/SD 0.16) roughly triples toward calibration.
+#  * A residual ~2x SE underestimation remains and does NOT vanish with n in
+#    this regime: the empirical SD shrinks slower than the 1/sqrt(n) rate of the
+#    influence-function SE, because flexible-ML nuisance error (the ranger
+#    outcome/density fits, which converge at a nonparametric rate) is not
+#    captured by the first-order EIF with only 2 cross-fitting folds.
+#  * Practical guidance: for trustworthy CIs use the paper's regime -- a richer
+#    Super Learner library, >= 5 folds, and larger n -- which speeds nuisance
+#    convergence so the first-order variance becomes calibrated. The RCT path
+#    (known propensity, AIPW) is unaffected and stays at ~95% coverage.
+# ---------------------------------------------------------------------------
