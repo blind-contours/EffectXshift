@@ -12,3 +12,7 @@
 ^codecov\.yml$
 ^LICENSE\.md$
 ^contributing\.md$
+^docs$
+^\.claude$
+^[^/]*\.pdf$
+^[^/]*\.png$

@@ -502,16 +502,19 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
   # well-defined for any max_depth, not only depth-1 splits.
   # ---------------------------------------------------------------------------
 
-  # For one exposure's tree, return the leaf rule with the strongest signal
-  # (largest deviation of the leaf effect from the sample-wide weighted mean).
+  # For one exposure's tree, region V is the highest-effect leaf and the
+  # modification signal is the spread of leaf effects. Selecting the *highest*
+  # effect (rather than the largest absolute deviation from the mean) gives a
+  # consistent orientation across folds: for a symmetric split both leaves
+  # deviate equally from the mean, so an abs-deviation rule breaks ties
+  # arbitrarily and "region V" would flip between folds, mixing high- and
+  # low-effect subjects when the folds are pooled.
   best_leaf_for_exposure <- function(em) {
     mean_leaf <- as.numeric(unlist(em$RegionMean))
-    n_leaf    <- as.numeric(unlist(em$N))
     rules     <- as.character(unlist(em$Rule))
-    overall   <- sum(mean_leaf * n_leaf, na.rm = TRUE) / sum(n_leaf, na.rm = TRUE)
-    dev       <- abs(mean_leaf - overall)
-    best      <- which.max(dev)
-    list(rule = rules[best], signal = dev[best])
+    best      <- which.max(mean_leaf)
+    signal    <- max(mean_leaf, na.rm = TRUE) - min(mean_leaf, na.rm = TRUE)
+    list(rule = rules[best], signal = signal)
   }
 
   exposure_best  <- lapply(effect_mod_results, best_leaf_for_exposure)

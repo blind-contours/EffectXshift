@@ -75,10 +75,11 @@ under one of two target parameters selected by \code{rct_type}:
 \item \code{rct_type = "ate"}: the subject-level average treatment effect,
 \eqn{Q(1, W_i) - Q(0, W_i)}. The outcome regression is fit with a
 Super Learner and updated by a TMLE step using the known propensity.
-\item \code{rct_type = "incps"}: a two-stage incremental propensity-score
-shift, moving the treatment probability from \code{alpha} to
-\code{alpha + delta}, and the per-subject difference of the two
-shifted outcome predictions.
+\item \code{rct_type = "incps"}: an incremental propensity-score shift that
+moves the marginal treatment probability from \code{alpha} to
+\code{alpha + delta}. For a binary treatment the resulting change in
+mean outcome equals \code{delta} times the ATE, so this is estimated
+with the same doubly-robust machinery scaled by \code{delta}.
 }
 
 Regions are discovered on the training fold with a recursive partition of the

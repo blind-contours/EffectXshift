@@ -9,10 +9,11 @@
 #'   \item \code{rct_type = "ate"}: the subject-level average treatment effect,
 #'         \eqn{Q(1, W_i) - Q(0, W_i)}. The outcome regression is fit with a
 #'         Super Learner and updated by a TMLE step using the known propensity.
-#'   \item \code{rct_type = "incps"}: a two-stage incremental propensity-score
-#'         shift, moving the treatment probability from \code{alpha} to
-#'         \code{alpha + delta}, and the per-subject difference of the two
-#'         shifted outcome predictions.
+#'   \item \code{rct_type = "incps"}: an incremental propensity-score shift that
+#'         moves the marginal treatment probability from \code{alpha} to
+#'         \code{alpha + delta}. For a binary treatment the resulting change in
+#'         mean outcome equals \code{delta} times the ATE, so this is estimated
+#'         with the same doubly-robust machinery scaled by \code{delta}.
 #' }
 #'
 #' Regions are discovered on the training fold with a recursive partition of the
@@ -259,35 +260,6 @@ find_max_effect_mods_rct <- function(
     )
   }
 
-  tmle_shift_binary <- function(data, outcome, a_name, alpha_obs, alpha_val, outcome_type) {
-    # For the incremental shift approach
-    A <- data[[a_name]]
-    data$Q_init <- ifelse(A == 1, data$Q1_init, data$Q0_init)
-
-    Y <- data[[outcome]]
-    Q_init <- data$Q_init
-
-    data$Hn <- ifelse(
-      A == 1,
-      alpha_val / alpha_obs,
-      (1 - alpha_val) / (1 - alpha_obs)
-    )
-
-    fluc <- get_fluctuation_model(
-      Y = outcome,
-      offset_term = Q_init,
-      clever_cov = "Hn",
-      data = data,
-      outcome_type = outcome_type
-    )
-    Q_star <- fluc$Q_star
-    psi_hat <- mean(Q_star, na.rm = TRUE)
-    partial_eif <- data$Hn * (Y - Q_star)
-    full_eif <- partial_eif + (Q_star - psi_hat)
-
-    list(Q_star = Q_star, eif = full_eif, psi_hat = psi_hat)
-  }
-
   # ---------------------------------------------------------
   # 3) Depending on rct_type, define "Effect" and "IC"
   # ---------------------------------------------------------
@@ -315,20 +287,25 @@ find_max_effect_mods_rct <- function(
     av$IC_full <- av_res$eif
     av$Dstar  <- av_res$eif + av_res$psi_hat
   } else {
-    # B) SHIFT
-    at_alpha <- tmle_shift_binary(data = at, outcome, a_name, alpha_obs = alpha, alpha_val = alpha, outcome_type = outcome_type)
-    av_alpha <- tmle_shift_binary(data = av, outcome, a_name, alpha_obs = alpha, alpha_val = alpha, outcome_type = outcome_type)
+    # B) Incremental propensity shift (alpha -> alpha + delta).
+    # When a binary treatment's marginal assignment probability is shifted from
+    # alpha to alpha + delta, the resulting change in mean outcome is
+    #   (alpha + delta) E[Q(1,W)] + (1 - alpha - delta) E[Q(0,W)]
+    #     - { alpha E[Q(1,W)] + (1 - alpha) E[Q(0,W)] }
+    #   = delta * E[Q(1,W) - Q(0,W)],
+    # i.e. delta times the ATE. Per subject the effect is delta * (Q(1,W_i) -
+    # Q(0,W_i)). We therefore reuse the (doubly-robust) ATE machinery and scale
+    # every quantity by delta.
+    at_res <- tmle_ate_binary(at, outcome, a_name, alpha, outcome_type)
+    av_res <- tmle_ate_binary(av, outcome, a_name, alpha, outcome_type)
 
-    at_alphad <- tmle_shift_binary(at, outcome, a_name, alpha, alpha_val = alpha+delta, outcome_type = outcome_type)
-    av_alphad <- tmle_shift_binary(av, outcome, a_name, alpha, alpha_val = alpha+delta, outcome_type = outcome_type)
+    at$Effect  <- delta * at_res$effect
+    at$IC_full <- delta * at_res$eif
+    at$Dstar   <- delta * (at_res$eif + at_res$psi_hat)
 
-    at$Effect <- at_alphad$Q_star - at_alpha$Q_star
-    at$IC_full <- (at_alphad$eif - at_alpha$eif)
-    at$Dstar  <- at$IC_full + (at_alphad$psi_hat - at_alpha$psi_hat)
-
-    av$Effect <- av_alphad$Q_star - av_alpha$Q_star
-    av$IC_full <- (av_alphad$eif - av_alpha$eif)
-    av$Dstar  <- av$IC_full + (av_alphad$psi_hat - av_alpha$psi_hat)
+    av$Effect  <- delta * av_res$effect
+    av$IC_full <- delta * av_res$eif
+    av$Dstar   <- delta * (av_res$eif + av_res$psi_hat)
   }
 
   # ---------------------------------------------------------
@@ -476,10 +453,12 @@ find_max_effect_mods_rct <- function(
   iteration_df$RegionMean <- as.numeric(iteration_df$RegionMean)
   iteration_df$N <- as.integer(iteration_df$N)
 
-  # If we have >1 rows, the first row is the root with no split
+  # Region V is the highest-effect leaf, with V^c its complement. Ordering by
+  # the (signed) effect rather than absolute deviation gives a consistent region
+  # orientation across folds, so pooling the validation folds does not mix
+  # high- and low-effect subgroups.
   if (nrow(iteration_df) > 1) {
-    root_mean <- iteration_df$RegionMean[1]
-    idx <- order(abs(iteration_df$RegionMean - root_mean), decreasing = TRUE)
+    idx <- order(iteration_df$RegionMean, decreasing = TRUE)
     selected_items <- iteration_df[idx[1:min(top_n, length(idx))], ]
   } else {
     selected_items <- iteration_df
