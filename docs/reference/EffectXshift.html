@@ -73,8 +73,8 @@ specific level and pooled across folds, which estimates the overall oracle param
 <span>  <span class="va">a</span>,</span>
 <span>  <span class="va">y</span>,</span>
 <span>  <span class="va">deltas</span>,</span>
-<span>  estimator <span class="op">=</span> <span class="st">"tmle"</span>,</span>
-<span>  fluctuation <span class="op">=</span> <span class="st">"standard"</span>,</span>
+<span>  estimator <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tmle"</span>, <span class="st">"onestep"</span><span class="op">)</span>,</span>
+<span>  fluctuation <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"standard"</span>, <span class="st">"weighted"</span><span class="op">)</span>,</span>
 <span>  g_learner <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  mu_learner <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  n_folds <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -87,7 +87,11 @@ specific level and pooled across folds, which estimates the overall oracle param
 <span>  adaptive_delta <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  top_n <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  min_obs <span class="op">=</span> <span class="fl">20</span>,</span>
-<span>  density_classification <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  density_classification <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  max_depth <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  rct <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  rct_type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"ate"</span>, <span class="st">"incps"</span><span class="op">)</span>,</span>
+<span>  pval_thresh <span class="op">=</span> <span class="fl">0.1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -114,13 +118,19 @@ is true, these values will be reduced.</p></dd>
 
 
 <dt>estimator</dt>
-<dd><p>The type of estimator to fit: <code>"tmle"</code> for targeted
-maximum likelihood estimation, or <code>"onestep"</code> for a one-step estimator.</p></dd>
+<dd><p>The type of estimator to fit: <code>"tmle"</code> (default) for
+targeted maximum likelihood estimation, or <code>"onestep"</code> for a one-step estimator.</p></dd>
 
 
 <dt>fluctuation</dt>
 <dd><p>Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.</p></dd>
+
+
+<dt>g_learner</dt>
+<dd><p>Learners for fitting the exposure mechanism g(A|W) via <span class="pkg">sl3</span>.
+Used to estimate the density ratio for continuous exposures when
+<code>density_classification = FALSE</code>.</p></dd>
 
 
 <dt>mu_learner</dt>
@@ -157,22 +167,46 @@ This determines where to place the auxiliary covariate in the logistic tilting r
 
 
 <dt>adaptive_delta</dt>
-<dd><p>If TRUE, reduces the user-specified delta until</p></dd>
-
-
-<dt>top_n</dt>
-<dd><p>top number of effect modifier-exposure pairs to estimate</p></dd>
-
-
-<dt>min_obs</dt>
-<dd><p>Minimum number of observations allowed in a covariate region
+<dd><p>If TRUE, reduces the user-specified delta until
 the Hn calculated for a shift does not have any observation greater
 than hn_trunc_thresh (default: FALSE).</p></dd>
 
 
-<dt>pi_learner</dt>
-<dd><p>Learners for fitting Super Learner ensembles to the g-mechanism density estimation
-g(A|W) (a probability estimator, not a density estimator) for mediation via <span class="pkg">sl3</span>.</p></dd>
+<dt>top_n</dt>
+<dd><p>top number of effect modifier-exposure pairs to estimate.</p></dd>
+
+
+<dt>min_obs</dt>
+<dd><p>Minimum number of observations allowed in a covariate region.</p></dd>
+
+
+<dt>density_classification</dt>
+<dd><p>If TRUE, estimate the exposure density ratio
+via a classification reparameterization rather than direct conditional
+density estimation (default: FALSE). Continuous-exposure path only.</p></dd>
+
+
+<dt>max_depth</dt>
+<dd><p>Maximum depth of the partitioning tree used to discover
+effect-modification regions (default: 1).</p></dd>
+
+
+<dt>rct</dt>
+<dd><p>If TRUE, run the randomized-trial workflow for a single binary
+exposure (estimate the subject-level treatment effect and find the oracle
+effect-modification region). If FALSE (default), run the mixed-exposure
+stochastic-shift workflow.</p></dd>
+
+
+<dt>rct_type</dt>
+<dd><p>Only used when <code>rct = TRUE</code>. Either <code>"ate"</code> (default),
+which targets the subject-level ATE \(Q(1, W) - Q(0, W)\), or <code>"incps"</code>,
+an incremental propensity-score shift from \(\alpha\) to \(\alpha + \delta\).</p></dd>
+
+
+<dt>pval_thresh</dt>
+<dd><p>p-value threshold for accepting a partition split when
+discovering effect-modification regions in the RCT workflow (default: 0.1).</p></dd>
 
 </dl></div>
     <div id="value">

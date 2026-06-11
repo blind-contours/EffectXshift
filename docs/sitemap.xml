@@ -46,9 +46,6 @@
     <loc>/reference/calc_basis_freq.html</loc>
   </url>
   <url>
-    <loc>/reference/calc_final_effect_mod_param.html</loc>
-  </url>
-  <url>
     <loc>/reference/calc_final_ind_shift_param.html</loc>
   </url>
   <url>
@@ -65,9 +62,6 @@
   </url>
   <url>
     <loc>/reference/calc_pooled_indiv_shifts.html</loc>
-  </url>
-  <url>
-    <loc>/reference/calc_pooled_intxn_shifts.html</loc>
   </url>
   <url>
     <loc>/reference/calc_pvals.html</loc>
@@ -101,6 +95,9 @@
   </url>
   <url>
     <loc>/reference/find_max_effect_mods.html</loc>
+  </url>
+  <url>
+    <loc>/reference/find_max_effect_mods_rct.html</loc>
   </url>
   <url>
     <loc>/reference/fit_basis_estimators.html</loc>

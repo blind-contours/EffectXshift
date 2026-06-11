@@ -142,9 +142,7 @@ create_sls <- function() {
   lrnr_xgboost_300 <- make_learner(Lrnr_xgboost, nrounds = 300)
 
   learners <- c(
-    lrnr_glm_basic,
     # lrnr_ridge,
-    lrnr_lasso,
     lrnr_ranger_100,
     lrnr_xgboost_50,
     # lrnr_xgboost_100,

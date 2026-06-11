@@ -70,7 +70,8 @@ Once the individual intervention effects and influence curve estimates given an 
 <span>  <span class="va">seed</span>,</span>
 <span>  <span class="va">min_obs</span>,</span>
 <span>  <span class="va">fold</span>,</span>
-<span>  density_classification <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  density_classification <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  <span class="va">max_depth</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -129,23 +130,22 @@ Once the individual intervention effects and influence curve estimates given an 
 
     <div id="ref-examples">
     <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span></span>
-<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span>, <span class="st">"exposure"</span>, <span class="st">"outcome"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">deltas</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>exposure <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">a_names</span> <span class="op">&lt;-</span> <span class="st">"exposure"</span></span></span>
-<span class="r-in"><span><span class="va">w_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">outcome</span> <span class="op">&lt;-</span> <span class="st">"outcome"</span></span></span>
-<span class="r-in"><span><span class="va">outcome_type</span> <span class="op">&lt;-</span> <span class="st">"continuous"</span></span></span>
-<span class="r-in"><span><span class="va">mu_learner</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">sl3</span><span class="fu">::</span><span class="va"><a href="https://tlverse.org/sl3/reference/Lrnr_mean.html" class="external-link">Lrnr_mean</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span>, <span class="fu">sl3</span><span class="fu">::</span><span class="va"><a href="https://tlverse.org/sl3/reference/Lrnr_glm.html" class="external-link">Lrnr_glm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="va">top_n</span> <span class="op">&lt;-</span> <span class="fl">3</span></span></span>
-<span class="r-in"><span><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fl">123</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">find_max_effect_mods</span><span class="op">(</span><span class="va">data</span>, <span class="va">deltas</span>, <span class="va">a_names</span>, <span class="va">w_names</span>, <span class="va">outcome</span>, <span class="va">outcome_type</span>, <span class="va">mu_learner</span>, <span class="va">g_learner</span>, <span class="va">top_n</span>, <span class="va">seed</span>, min_obs <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span></span></span>
-<span class="r-in"><span></span></span>
-</code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">100</span> <span class="op">*</span> <span class="fl">10</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span>, <span class="st">"exposure"</span>, <span class="st">"outcome"</span><span class="op">)</span></span>
+<span><span class="va">deltas</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>exposure <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span><span class="va">a_names</span> <span class="op">&lt;-</span> <span class="st">"exposure"</span></span>
+<span><span class="va">w_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">8</span><span class="op">)</span></span>
+<span><span class="va">outcome</span> <span class="op">&lt;-</span> <span class="st">"outcome"</span></span>
+<span><span class="va">outcome_type</span> <span class="op">&lt;-</span> <span class="st">"continuous"</span></span>
+<span><span class="va">mu_learner</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu">sl3</span><span class="fu">::</span><span class="va"><a href="https://tlverse.org/sl3/reference/Lrnr_mean.html" class="external-link">Lrnr_mean</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span>, <span class="fu">sl3</span><span class="fu">::</span><span class="va"><a href="https://tlverse.org/sl3/reference/Lrnr_glm.html" class="external-link">Lrnr_glm</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">top_n</span> <span class="op">&lt;-</span> <span class="fl">3</span></span>
+<span><span class="va">seed</span> <span class="op">&lt;-</span> <span class="fl">123</span></span>
+<span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu">find_max_effect_mods</span><span class="op">(</span><span class="va">data</span>, <span class="va">deltas</span>, <span class="va">a_names</span>, <span class="va">w_names</span>, <span class="va">outcome</span>, <span class="va">outcome_type</span>, <span class="va">mu_learner</span>, <span class="va">g_learner</span>, <span class="va">top_n</span>, <span class="va">seed</span>, min_obs <span class="op">=</span> <span class="fl">10</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">results</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span></span></code></pre></div>
     </div>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

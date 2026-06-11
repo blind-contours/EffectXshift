@@ -73,10 +73,7 @@
 <a class="anchor" aria-label="anchor" href="#reffectxshift"></a>
 </h1></div>
 <!-- badges: start -->
-
-<blockquote>
-<p>Effect Modification Identification and Estimation using Data-Adaptive Stochastic Interventions <strong>Authors:</strong> <a href="https://davidmccoy.org" class="external-link">David McCoy</a></p>
-</blockquote>
+<blockquote><p>Effect Modification Identification and Estimation using Data-Adaptive Stochastic Interventions <strong>Authors:</strong> <a href="https://davidmccoy.org" class="external-link">David McCoy</a></p></blockquote>
 <hr>
 <div class="section level2">
 <h2 id="whats-effectxshift">What’s <code>EffectXshift</code>?<a class="anchor" aria-label="anchor" href="#whats-effectxshift"></a>
@@ -242,233 +239,91 @@ $$</span></p>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"Sim Data"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_classic</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">F</span>, html_font <span class="op">=</span> <span class="st">"Cambria"</span><span class="op">)</span></span></code></pre></div>
 <table class="table  lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-Sim Data
-</caption>
+<caption>Sim Data</caption>
 <thead><tr>
-<th style="text-align:right;">
-W3
-</th>
-<th style="text-align:right;">
-W2
-</th>
-<th style="text-align:right;">
-W1
-</th>
-<th style="text-align:right;">
-A1
-</th>
-<th style="text-align:right;">
-A1_shifted
-</th>
-<th style="text-align:right;">
-A2
-</th>
-<th style="text-align:right;">
-A3
-</th>
-<th style="text-align:right;">
-Y
-</th>
-<th style="text-align:right;">
-Y_shifted
-</th>
-<th style="text-align:right;">
-Y_diff
-</th>
+<th style="text-align:right;">W3</th>
+<th style="text-align:right;">W2</th>
+<th style="text-align:right;">W1</th>
+<th style="text-align:right;">A1</th>
+<th style="text-align:right;">A1_shifted</th>
+<th style="text-align:right;">A2</th>
+<th style="text-align:right;">A3</th>
+<th style="text-align:right;">Y</th>
+<th style="text-align:right;">Y_shifted</th>
+<th style="text-align:right;">Y_diff</th>
 </tr></thead>
 <tbody>
 <tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0.6561885
-</td>
-<td style="text-align:right;">
-0.1561885
-</td>
-<td style="text-align:right;">
-1.2513750
-</td>
-<td style="text-align:right;">
--0.0302229
-</td>
-<td style="text-align:right;">
-5.7034805
-</td>
-<td style="text-align:right;">
-4.5714986
-</td>
-<td style="text-align:right;">
--1.1319819
-</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">0.6561885</td>
+<td style="text-align:right;">0.1561885</td>
+<td style="text-align:right;">1.2513750</td>
+<td style="text-align:right;">-0.0302229</td>
+<td style="text-align:right;">5.7034805</td>
+<td style="text-align:right;">4.5714986</td>
+<td style="text-align:right;">-1.1319819</td>
 </tr>
 <tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
--0.0663319
-</td>
-<td style="text-align:right;">
--0.5663319
-</td>
-<td style="text-align:right;">
--0.7459642
-</td>
-<td style="text-align:right;">
--0.2913230
-</td>
-<td style="text-align:right;">
-1.1732674
-</td>
-<td style="text-align:right;">
-0.1622237
-</td>
-<td style="text-align:right;">
--1.0110437
-</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">0</td>
+<td style="text-align:right;">0</td>
+<td style="text-align:right;">-0.0663319</td>
+<td style="text-align:right;">-0.5663319</td>
+<td style="text-align:right;">-0.7459642</td>
+<td style="text-align:right;">-0.2913230</td>
+<td style="text-align:right;">1.1732674</td>
+<td style="text-align:right;">0.1622237</td>
+<td style="text-align:right;">-1.0110437</td>
 </tr>
 <tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
--0.7725338
-</td>
-<td style="text-align:right;">
--1.2725338
-</td>
-<td style="text-align:right;">
--1.7225836
-</td>
-<td style="text-align:right;">
--0.4569841
-</td>
-<td style="text-align:right;">
--0.4378984
-</td>
-<td style="text-align:right;">
--2.3417960
-</td>
-<td style="text-align:right;">
--1.9038976
-</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">-0.7725338</td>
+<td style="text-align:right;">-1.2725338</td>
+<td style="text-align:right;">-1.7225836</td>
+<td style="text-align:right;">-0.4569841</td>
+<td style="text-align:right;">-0.4378984</td>
+<td style="text-align:right;">-2.3417960</td>
+<td style="text-align:right;">-1.9038976</td>
 </tr>
 <tr>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-2.1282690
-</td>
-<td style="text-align:right;">
-1.6282690
-</td>
-<td style="text-align:right;">
-0.9214369
-</td>
-<td style="text-align:right;">
-0.1985388
-</td>
-<td style="text-align:right;">
-5.8853582
-</td>
-<td style="text-align:right;">
-5.6776743
-</td>
-<td style="text-align:right;">
--0.2076839
-</td>
+<td style="text-align:right;">0</td>
+<td style="text-align:right;">0</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">2.1282690</td>
+<td style="text-align:right;">1.6282690</td>
+<td style="text-align:right;">0.9214369</td>
+<td style="text-align:right;">0.1985388</td>
+<td style="text-align:right;">5.8853582</td>
+<td style="text-align:right;">5.6776743</td>
+<td style="text-align:right;">-0.2076839</td>
 </tr>
 <tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0.8980677
-</td>
-<td style="text-align:right;">
-0.3980677
-</td>
-<td style="text-align:right;">
--1.1049424
-</td>
-<td style="text-align:right;">
--0.2965051
-</td>
-<td style="text-align:right;">
-4.7532763
-</td>
-<td style="text-align:right;">
-4.1622951
-</td>
-<td style="text-align:right;">
--0.5909812
-</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">0</td>
+<td style="text-align:right;">0</td>
+<td style="text-align:right;">0.8980677</td>
+<td style="text-align:right;">0.3980677</td>
+<td style="text-align:right;">-1.1049424</td>
+<td style="text-align:right;">-0.2965051</td>
+<td style="text-align:right;">4.7532763</td>
+<td style="text-align:right;">4.1622951</td>
+<td style="text-align:right;">-0.5909812</td>
 </tr>
 <tr>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:right;">
--1.3723133
-</td>
-<td style="text-align:right;">
--1.8723133
-</td>
-<td style="text-align:right;">
-0.9265418
-</td>
-<td style="text-align:right;">
--0.2643861
-</td>
-<td style="text-align:right;">
--0.7917697
-</td>
-<td style="text-align:right;">
--3.5744031
-</td>
-<td style="text-align:right;">
--2.7826334
-</td>
+<td style="text-align:right;">1</td>
+<td style="text-align:right;">0</td>
+<td style="text-align:right;">0</td>
+<td style="text-align:right;">-1.3723133</td>
+<td style="text-align:right;">-1.8723133</td>
+<td style="text-align:right;">0.9265418</td>
+<td style="text-align:right;">-0.2643861</td>
+<td style="text-align:right;">-0.7917697</td>
+<td style="text-align:right;">-3.5744031</td>
+<td style="text-align:right;">-2.7826334</td>
 </tr>
 </tbody>
 </table>
@@ -501,266 +356,144 @@ Y_diff
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"K Fold Effect Modification Results"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_classic</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">F</span>, html_font <span class="op">=</span> <span class="st">"Cambria"</span><span class="op">)</span></span></code></pre></div>
 <table class="table  lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-K Fold Effect Modification Results
-</caption>
+<caption>K Fold Effect Modification Results</caption>
 <thead><tr>
-<th style="text-align:left;">
-Exposure
-</th>
-<th style="text-align:right;">
-Effect
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower.CI
-</th>
-<th style="text-align:right;">
-Upper.CI
-</th>
-<th style="text-align:left;">
-Modifier
-</th>
-<th style="text-align:right;">
-Fold
-</th>
+<th style="text-align:left;">Exposure</th>
+<th style="text-align:right;">Effect</th>
+<th style="text-align:right;">SE</th>
+<th style="text-align:right;">Lower.CI</th>
+<th style="text-align:right;">Upper.CI</th>
+<th style="text-align:left;">Modifier</th>
+<th style="text-align:right;">Fold</th>
 </tr></thead>
 <tbody>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--0.7579587
-</td>
-<td style="text-align:right;">
-0.1690658
-</td>
-<td style="text-align:right;">
--1.0893
-</td>
-<td style="text-align:right;">
--0.4266
-</td>
-<td style="text-align:left;">
-W3 == 0
-</td>
-<td style="text-align:right;">
-1
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-0.7579587</td>
+<td style="text-align:right;">0.1690658</td>
+<td style="text-align:right;">-1.0893</td>
+<td style="text-align:right;">-0.4266</td>
+<td style="text-align:left;">W3 == 0</td>
+<td style="text-align:right;">1</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--1.3879808
-</td>
-<td style="text-align:right;">
-0.3151326
-</td>
-<td style="text-align:right;">
--2.0056
-</td>
-<td style="text-align:right;">
--0.7703
-</td>
-<td style="text-align:left;">
-W3 == 1
-</td>
-<td style="text-align:right;">
-1
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-1.3879808</td>
+<td style="text-align:right;">0.3151326</td>
+<td style="text-align:right;">-2.0056</td>
+<td style="text-align:right;">-0.7703</td>
+<td style="text-align:left;">W3 == 1</td>
+<td style="text-align:right;">1</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--0.5919865
-</td>
-<td style="text-align:right;">
-0.1293933
-</td>
-<td style="text-align:right;">
--0.8456
-</td>
-<td style="text-align:right;">
--0.3384
-</td>
-<td style="text-align:left;">
-W3 == 0
-</td>
-<td style="text-align:right;">
-2
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-0.5919865</td>
+<td style="text-align:right;">0.1293933</td>
+<td style="text-align:right;">-0.8456</td>
+<td style="text-align:right;">-0.3384</td>
+<td style="text-align:left;">W3 == 0</td>
+<td style="text-align:right;">2</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--1.0801027
-</td>
-<td style="text-align:right;">
-0.2593741
-</td>
-<td style="text-align:right;">
--1.5885
-</td>
-<td style="text-align:right;">
--0.5717
-</td>
-<td style="text-align:left;">
-W3 == 1
-</td>
-<td style="text-align:right;">
-2
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-1.0801027</td>
+<td style="text-align:right;">0.2593741</td>
+<td style="text-align:right;">-1.5885</td>
+<td style="text-align:right;">-0.5717</td>
+<td style="text-align:left;">W3 == 1</td>
+<td style="text-align:right;">2</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--0.4721210
-</td>
-<td style="text-align:right;">
-0.1139173
-</td>
-<td style="text-align:right;">
--0.6954
-</td>
-<td style="text-align:right;">
--0.2488
-</td>
-<td style="text-align:left;">
-W3 == 0
-</td>
-<td style="text-align:right;">
-3
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-0.4721210</td>
+<td style="text-align:right;">0.1139173</td>
+<td style="text-align:right;">-0.6954</td>
+<td style="text-align:right;">-0.2488</td>
+<td style="text-align:left;">W3 == 0</td>
+<td style="text-align:right;">3</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--1.1524121
-</td>
-<td style="text-align:right;">
-0.2181057
-</td>
-<td style="text-align:right;">
--1.5799
-</td>
-<td style="text-align:right;">
--0.7249
-</td>
-<td style="text-align:left;">
-W3 == 1
-</td>
-<td style="text-align:right;">
-3
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-1.1524121</td>
+<td style="text-align:right;">0.2181057</td>
+<td style="text-align:right;">-1.5799</td>
+<td style="text-align:right;">-0.7249</td>
+<td style="text-align:left;">W3 == 1</td>
+<td style="text-align:right;">3</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--0.4892525
-</td>
-<td style="text-align:right;">
-0.0949592
-</td>
-<td style="text-align:right;">
--0.6754
-</td>
-<td style="text-align:right;">
--0.3031
-</td>
-<td style="text-align:left;">
-W3 == 0
-</td>
-<td style="text-align:right;">
-4
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-0.4892525</td>
+<td style="text-align:right;">0.0949592</td>
+<td style="text-align:right;">-0.6754</td>
+<td style="text-align:right;">-0.3031</td>
+<td style="text-align:left;">W3 == 0</td>
+<td style="text-align:right;">4</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--1.1872886
-</td>
-<td style="text-align:right;">
-0.2231328
-</td>
-<td style="text-align:right;">
--1.6246
-</td>
-<td style="text-align:right;">
--0.7500
-</td>
-<td style="text-align:left;">
-W3 == 1
-</td>
-<td style="text-align:right;">
-4
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-1.1872886</td>
+<td style="text-align:right;">0.2231328</td>
+<td style="text-align:right;">-1.6246</td>
+<td style="text-align:right;">-0.7500</td>
+<td style="text-align:left;">W3 == 1</td>
+<td style="text-align:right;">4</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--0.2172513
-</td>
-<td style="text-align:right;">
-0.0988232
-</td>
-<td style="text-align:right;">
--0.4109
-</td>
-<td style="text-align:right;">
--0.0236
-</td>
-<td style="text-align:left;">
-W3 == 0
-</td>
-<td style="text-align:right;">
-5
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-0.2172513</td>
+<td style="text-align:right;">0.0988232</td>
+<td style="text-align:right;">-0.4109</td>
+<td style="text-align:right;">-0.0236</td>
+<td style="text-align:left;">W3 == 0</td>
+<td style="text-align:right;">5</td>
 </tr>
 <tr>
-<td style="text-align:left;">
-A1
-</td>
-<td style="text-align:right;">
--0.7606050
-</td>
-<td style="text-align:right;">
-0.2169844
-</td>
-<td style="text-align:right;">
--1.1859
-</td>
-<td style="text-align:right;">
--0.3353
-</td>
-<td style="text-align:left;">
-W3 == 1
-</td>
-<td style="text-align:right;">
-5
-</td>
+<td style="text-align:left;">A1</td>
+<td style="text-align:right;">-0.7606050</td>
+<td style="text-align:right;">0.2169844</td>
+<td style="text-align:right;">-1.1859</td>
+<td style="text-align:right;">-0.3353</td>
+<td style="text-align:left;">W3 == 1</td>
+<td style="text-align:right;">5</td>
 </tr>
 </tbody>
 </table>
 <p>Above the k-fold specific results show that we find the correct exposure-covariate combination with max effect modification compared to ground truth. Our estimates are very close to ground-truth as well for a -0.5 shift in A1 in each level of sex. Above Psi shows the expected outcome under a shift of -0.5 compared to the observed average outcome. Variance is the variance derived from the influence function for stochastic shift interventions. Covariate region is the level of the covariate that was found. So here, we are looking for the top effect modification (rank 1), which was found to have exposure A1 in all folds with effect modification by sex. So in this simple example of 3 exposures and 2 covariates we identify the correct exposure-covariate combination that has modification and generate estimates that are close to the truth.</p>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="randomized-trials-a-single-binary-treatment">Randomized Trials: a Single Binary Treatment<a class="anchor" aria-label="anchor" href="#randomized-trials-a-single-binary-treatment"></a>
+</h2>
+<p>The same machinery applies to a randomized controlled trial with a single binary treatment. Set <code>rct = TRUE</code> and pass one binary exposure. EffectXshift estimates the subject-level treatment effect (the ATE <em>Q</em>(1, <em>W</em>) − <em>Q</em>(0, <em>W</em>) via TMLE with the known randomization probability), then searches the covariate space for the region <code>V</code> that maximizes the differential treatment effect against its complement <code>V^c</code>. The discovered region and its complement are estimated by CV-TMLE, pooling held-out influence-curve contributions across folds.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># A randomized binary treatment whose effect is modified by W1</span></span>
+<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span>
+<span><span class="va">W1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span></span>
+<span><span class="va">W2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span><span class="va">W3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fl">0.4</span><span class="op">)</span></span>
+<span><span class="va">A</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span><span class="va">n</span>, <span class="fl">1</span>, <span class="fl">0.5</span><span class="op">)</span>                       <span class="co"># randomized, alpha = 0.5</span></span>
+<span><span class="va">tau</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">W1</span> <span class="op">==</span> <span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">0</span><span class="op">)</span>                  <span class="co"># effect modified by W1</span></span>
+<span><span class="va">Y</span>  <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">W2</span> <span class="op">-</span> <span class="fl">0.3</span> <span class="op">*</span> <span class="va">W3</span> <span class="op">+</span> <span class="va">tau</span> <span class="op">*</span> <span class="va">A</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">rct_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/EffectXshift.html">EffectXshift</a></span><span class="op">(</span></span>
+<span>  w <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>W1 <span class="op">=</span> <span class="va">W1</span>, W2 <span class="op">=</span> <span class="va">W2</span>, W3 <span class="op">=</span> <span class="va">W3</span><span class="op">)</span>,</span>
+<span>  a <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>A <span class="op">=</span> <span class="va">A</span><span class="op">)</span>,</span>
+<span>  deltas <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  y <span class="op">=</span> <span class="va">Y</span>,</span>
+<span>  rct <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  rct_type <span class="op">=</span> <span class="st">"ate"</span>,   <span class="co"># subject-level ATE; use "incps" for an incremental shift</span></span>
+<span>  n_folds <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  max_depth <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">4291531</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Per-fold discovered regions and effects</span></span>
+<span><span class="va">rct_results</span><span class="op">$</span><span class="va">`Effect Modification K-Fold Results`</span></span>
+<span></span>
+<span><span class="co"># Pooled region V, region V^c, and the V - V^c oracle contrast (with 95% CIs)</span></span>
+<span><span class="va">rct_results</span><span class="op">$</span><span class="va">`Pooled Region Effects`</span></span></code></pre></div>
+<p>The <code>Pooled Region Effects</code> table reports the effect in <code>V</code>, in <code>V^c</code>, and the <code>V - V^c</code> contrast, each with a standard error, a Wald 95% confidence interval, and a p-value. For the data-generating process above the method recovers the region <code>{W1 == 1}</code> with an effect near 2, an effect near 0 in the complement, and a positive, significant contrast.</p>
 <hr>
 </div>
 <div class="section level2">
@@ -802,50 +535,36 @@ W3 == 1
 </h2>
 <p>© 2020-2022 <a href="https://davidmccoy.org" class="external-link">David B. McCoy</a></p>
 <p>The contents of this repository are distributed under the MIT license. See below for details:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>MIT License</span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="fu">Copyright</span> (c) <span class="dv">2020-2024</span> David B. McCoy</span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>Permission is hereby granted, free of charge, to any person obtaining a copy</span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>of this software and associated documentation <span class="fu">files</span> (the <span class="st">"Software"</span>), to deal</span>
-<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="cf">in</span> the Software without restriction, including without limitation the rights</span>
-<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>to use, copy, modify, merge, publish, distribute, sublicense, and<span class="sc">/</span>or sell</span>
-<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>copies of the Software, and to permit persons to whom the Software is</span>
-<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>furnished to do so, subject to the following conditions<span class="sc">:</span></span>
-<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>The above copyright notice and this permission notice shall be included <span class="cf">in</span> all</span>
-<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>copies or substantial portions of the Software.</span>
-<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>THE SOFTWARE IS PROVIDED <span class="st">"AS IS"</span>, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
-<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
-<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
-<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
-<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
-<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
-<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>SOFTWARE.</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>MIT License</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">Copyright</span> (c) <span class="dv">2020-2024</span> David B. McCoy</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>Permission is hereby granted, free of charge, to any person obtaining a copy</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>of this software and associated documentation <span class="fu">files</span> (the <span class="st">"Software"</span>), to deal</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="cf">in</span> the Software without restriction, including without limitation the rights</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>to use, copy, modify, merge, publish, distribute, sublicense, and<span class="sc">/</span>or sell</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>copies of the Software, and to permit persons to whom the Software is</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>furnished to do so, subject to the following conditions<span class="sc">:</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>The above copyright notice and this permission notice shall be included <span class="cf">in</span> all</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>copies or substantial portions of the Software.</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>THE SOFTWARE IS PROVIDED <span class="st">"AS IS"</span>, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>SOFTWARE.</span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <div id="refs" class="references csl-bib-body hanging-indent">
-<div id="ref-coyle-sl3-rpkg" class="csl-entry">
-Coyle, Jeremy R, Nima S Hejazi, Ivana Malenica, Rachael V Phillips, and Oleg Sofrygin. 2022. “<span class="nocase">sl3</span>: Modern Machine Learning Pipelines for Super Learning.” <a href="https://doi.org/10.5281/zenodo.1342293" class="external-link uri">https://doi.org/10.5281/zenodo.1342293</a>.
-</div>
-<div id="ref-coyle-hal9001-rpkg" class="csl-entry">
-Coyle, Jeremy R, Nima S Hejazi, Rachael V Phillips, Lars W van der Laan, and Mark J van der Laan. 2022. “<span class="nocase">hal9001</span>: The Scalable Highly Adaptive Lasso.” <a href="https://doi.org/10.5281/zenodo.3558313" class="external-link uri">https://doi.org/10.5281/zenodo.3558313</a>.
-</div>
-<div id="ref-diaz2020causal" class="csl-entry">
-Dı́az, Iván, and Nima S Hejazi. 2020. “Causal Mediation Analysis for Stochastic Interventions.” <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em> 82 (3): 661–83. <a href="https://doi.org/10.1111/rssb.12362" class="external-link uri">https://doi.org/10.1111/rssb.12362</a>.
-</div>
-<div id="ref-diaz2011super" class="csl-entry">
-Dı́az, Iván, and Mark J van der Laan. 2011. “Super Learner Based Conditional Density Estimation with Application to Marginal Structural Models.” <em>The International Journal of Biostatistics</em> 7 (1): 1–20.
-</div>
-<div id="ref-diaz2012population" class="csl-entry">
-———. 2012. “Population Intervention Causal Effects Based on Stochastic Interventions.” <em>Biometrics</em> 68 (2): 541–49.
-</div>
-<div id="ref-haneuse2013estimation" class="csl-entry">
-Haneuse, Sebastian, and Andrea Rotnitzky. 2013. “Estimation of the Effect of Interventions That Modify the Received Treatment.” <em>Statistics in Medicine</em> 32 (30): 5260–77.
-</div>
-<div id="ref-hejazi2020hal9001-joss" class="csl-entry">
-Hejazi, Nima S, Jeremy R Coyle, and Mark J van der Laan. 2020. “<span class="nocase">hal9001</span>: Scalable Highly Adaptive Lasso Regression in R.” <em>Journal of Open Source Software</em> 5 (53): 2526. <a href="https://doi.org/10.21105/joss.02526" class="external-link uri">https://doi.org/10.21105/joss.02526</a>.
-</div>
+<div id="ref-coyle-sl3-rpkg" class="csl-entry">Coyle, Jeremy R, Nima S Hejazi, Ivana Malenica, Rachael V Phillips, and Oleg Sofrygin. 2022. “<span class="nocase">sl3</span>: Modern Machine Learning Pipelines for Super Learning.” <a href="https://doi.org/10.5281/zenodo.1342293" class="external-link uri">https://doi.org/10.5281/zenodo.1342293</a>.</div>
+<div id="ref-coyle-hal9001-rpkg" class="csl-entry">Coyle, Jeremy R, Nima S Hejazi, Rachael V Phillips, Lars W van der Laan, and Mark J van der Laan. 2022. “<span class="nocase">hal9001</span>: The Scalable Highly Adaptive Lasso.” <a href="https://doi.org/10.5281/zenodo.3558313" class="external-link uri">https://doi.org/10.5281/zenodo.3558313</a>.</div>
+<div id="ref-diaz2020causal" class="csl-entry">Dı́az, Iván, and Nima S Hejazi. 2020. “Causal Mediation Analysis for Stochastic Interventions.” <em>Journal of the Royal Statistical Society: Series B (Statistical Methodology)</em> 82 (3): 661–83. <a href="https://doi.org/10.1111/rssb.12362" class="external-link uri">https://doi.org/10.1111/rssb.12362</a>.</div>
+<div id="ref-diaz2011super" class="csl-entry">Dı́az, Iván, and Mark J van der Laan. 2011. “Super Learner Based Conditional Density Estimation with Application to Marginal Structural Models.” <em>The International Journal of Biostatistics</em> 7 (1): 1–20.</div>
+<div id="ref-diaz2012population" class="csl-entry">———. 2012. “Population Intervention Causal Effects Based on Stochastic Interventions.” <em>Biometrics</em> 68 (2): 541–49.</div>
+<div id="ref-haneuse2013estimation" class="csl-entry">Haneuse, Sebastian, and Andrea Rotnitzky. 2013. “Estimation of the Effect of Interventions That Modify the Received Treatment.” <em>Statistics in Medicine</em> 32 (30): 5260–77.</div>
+<div id="ref-hejazi2020hal9001-joss" class="csl-entry">Hejazi, Nima S, Jeremy R Coyle, and Mark J van der Laan. 2020. “<span class="nocase">hal9001</span>: Scalable Highly Adaptive Lasso Regression in R.” <em>Journal of Open Source Software</em> 5 (53): 2526. <a href="https://doi.org/10.21105/joss.02526" class="external-link uri">https://doi.org/10.21105/joss.02526</a>.</div>
 </div>
 </div>
 </div>

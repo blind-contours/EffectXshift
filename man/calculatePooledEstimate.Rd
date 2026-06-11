@@ -10,6 +10,8 @@ calculatePooledEstimate(results_df, n_folds, delta = NULL)
 \item{results_df}{Table of results}
 
 \item{n_folds}{Total number of folds specified}
+
+\item{delta}{Optional shift amount carried through to the pooled results row.}
 }
 \description{
 Does a weighted combination estimate for folds with estimates

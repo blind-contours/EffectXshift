@@ -9,8 +9,8 @@ EffectXshift(
   a,
   y,
   deltas,
-  estimator = "tmle",
-  fluctuation = "standard",
+  estimator = c("tmle", "onestep"),
+  fluctuation = c("standard", "weighted"),
   g_learner = NULL,
   mu_learner = NULL,
   n_folds = 2,
@@ -23,7 +23,11 @@ EffectXshift(
   adaptive_delta = FALSE,
   top_n = 1,
   min_obs = 20,
-  density_classification = FALSE
+  density_classification = FALSE,
+  max_depth = 1,
+  rct = FALSE,
+  rct_type = c("ate", "incps"),
+  pval_thresh = 0.1
 )
 }
 \arguments{
@@ -39,11 +43,15 @@ multiple exposures.}
 define the target parameter, with respect to the scale of the exposures (A). If adaptive_delta
 is true, these values will be reduced.}
 
-\item{estimator}{The type of estimator to fit: \code{"tmle"} for targeted
-maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.}
+\item{estimator}{The type of estimator to fit: \code{"tmle"} (default) for
+targeted maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.}
 
 \item{fluctuation}{Method used in the targeting step for TML estimation: "standard" or "weighted".
 This determines where to place the auxiliary covariate in the logistic tilting regression.}
+
+\item{g_learner}{Learners for fitting the exposure mechanism g(A|W) via \pkg{sl3}.
+Used to estimate the density ratio for continuous exposures when
+\code{density_classification = FALSE}.}
 
 \item{mu_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}.}
 
@@ -62,16 +70,32 @@ This determines where to place the auxiliary covariate in the logistic tilting r
 
 \item{hn_trunc_thresh}{Truncation level for the clever covariate (default: 10).}
 
-\item{adaptive_delta}{If TRUE, reduces the user-specified delta until}
-
-\item{top_n}{top number of effect modifier-exposure pairs to estimate}
-
-\item{min_obs}{Minimum number of observations allowed in a covariate region
+\item{adaptive_delta}{If TRUE, reduces the user-specified delta until
 the Hn calculated for a shift does not have any observation greater
 than hn_trunc_thresh (default: FALSE).}
 
-\item{pi_learner}{Learners for fitting Super Learner ensembles to the g-mechanism density estimation
-g(A|W) (a probability estimator, not a density estimator) for mediation via \pkg{sl3}.}
+\item{top_n}{top number of effect modifier-exposure pairs to estimate.}
+
+\item{min_obs}{Minimum number of observations allowed in a covariate region.}
+
+\item{density_classification}{If TRUE, estimate the exposure density ratio
+via a classification reparameterization rather than direct conditional
+density estimation (default: FALSE). Continuous-exposure path only.}
+
+\item{max_depth}{Maximum depth of the partitioning tree used to discover
+effect-modification regions (default: 1).}
+
+\item{rct}{If TRUE, run the randomized-trial workflow for a single binary
+exposure (estimate the subject-level treatment effect and find the oracle
+effect-modification region). If FALSE (default), run the mixed-exposure
+stochastic-shift workflow.}
+
+\item{rct_type}{Only used when \code{rct = TRUE}. Either \code{"ate"} (default),
+which targets the subject-level ATE \eqn{Q(1, W) - Q(0, W)}, or \code{"incps"},
+an incremental propensity-score shift from \eqn{\alpha} to \eqn{\alpha + \delta}.}
+
+\item{pval_thresh}{p-value threshold for accepting a partition split when
+discovering effect-modification regions in the RCT workflow (default: 0.1).}
 }
 \value{
 An S3 object of class \code{EffectXshift} containing the results of the

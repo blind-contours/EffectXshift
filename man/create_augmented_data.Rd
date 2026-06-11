@@ -34,7 +34,9 @@ validation_data <- data.frame(A = rnorm(50), W1 = rbinom(50, 1, 0.5), W2 = rbino
 delta <- -0.5
 exposure_variable <- "A"
 covariates <- c("W1", "W2")
-result <- create_augmented_data(training_data, validation_data, delta, exposure_variable, covariates)
+result <- create_augmented_data(
+  training_data, validation_data, delta, exposure_variable, covariates
+)
 augmented_training_data <- result$at_dup
 augmented_validation_data <- result$av_dup
 

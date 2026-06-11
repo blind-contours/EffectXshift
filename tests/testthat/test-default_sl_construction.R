@@ -1,21 +1,15 @@
 library(sl3)
 # Test Script
 
-# Create default Super Learner estimators
+# Create default Super Learner estimators used internally by EffectXshift
 sls <- create_sls()
 
-# Create a test set
-test_data <- data.frame(
-  x = runif(1000),
-  y = runif(1000)
-)
-
-# Check that the correct number of estimators is created
-expect_equal(length(sls), 6)
+# create_sls() returns the two ensembles actually consumed by the pipeline:
+#   - g_learner: a Super Learner for the (conditional density) exposure mechanism
+#   - mu_learner: a stack of learners for the outcome regression
+expect_equal(length(sls), 2)
+expect_setequal(names(sls), c("g_learner", "mu_learner"))
 
 # Check that the estimators are of the correct type
-expect_true(class(sls$pi_learner)[1] == "Lrnr_sl")
-expect_true(class(sls$zeta_learner)[1] == "Stack")
-expect_true(class(sls$mu_learner)[1] == "Stack")
-expect_true(class(sls$e_learner)[1] == "Stack")
-expect_true(class(sls$g_learner)[1] == "Stack")
+expect_true(inherits(sls$g_learner, "Lrnr_sl"))
+expect_true(inherits(sls$mu_learner, "Stack"))

@@ -36,8 +36,12 @@ validation_data <- data.frame(A = rnorm(50), W1 = rbinom(50, 1, 0.5), W2 = rbino
 delta <- -0.5
 exposure_variable <- "A"
 covariates <- c("W1", "W2")
-classifier <- sl3::Lrnr_glm$new()
-result <- estimate_density_ratio(training_data, validation_data, delta, exposure_variable, covariates, classifier)
+classifier <- sl3::make_learner(
+  sl3::Stack, sl3::Lrnr_glm$new(), sl3::Lrnr_mean$new()
+)
+result <- estimate_density_ratio(
+  training_data, validation_data, delta, exposure_variable, covariates, classifier
+)
 training_density_ratios <- result$Hn_at
 validation_density_ratios <- result$Hn_av
 

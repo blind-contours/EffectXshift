@@ -18,17 +18,22 @@ find_max_effect_mods(
   seed,
   min_obs,
   fold,
-  density_classification = FALSE
+  density_classification = TRUE,
+  max_depth
 )
 }
 \arguments{
+\item{at}{A training-fold \code{data.frame} containing the baseline covariates, exposures, and outcome.}
+
+\item{av}{A validation-fold \code{data.frame} with the same columns as \code{at}.}
+
 \item{deltas}{A named \code{list} or \code{vector} specifying the shift in exposures to define the target parameter. Each element should correspond to an exposure variable specified in \code{a_names}, detailing the amount by which that exposure is to be shifted.}
 
-\item{a_names}{A \code{character} vector specifying the names of the exposure variables within \code{data}.}
+\item{a_names}{A \code{character} vector specifying the names of the exposure variables.}
 
-\item{w_names}{A \code{character} vector specifying the names of the covariate variables within \code{data}.}
+\item{w_names}{A \code{character} vector specifying the names of the covariate variables.}
 
-\item{outcome}{The name of the outcome variable in \code{data}.}
+\item{outcome}{The name of the outcome variable.}
 
 \item{outcome_type}{A \code{character} string indicating the type of the outcome variable; either "continuous", "binary", or "count".}
 
@@ -42,7 +47,11 @@ find_max_effect_mods(
 
 \item{min_obs}{Minimum number of observations in a region to warrant a split.}
 
-\item{data}{A \code{data.frame} containing all the variables needed for the analysis, including baseline covariates, exposures, and the outcome.}
+\item{fold}{Label for the fold index (for cross-validation).}
+
+\item{density_classification}{If TRUE, estimate the exposure density ratio via a classification reparameterization rather than direct conditional density estimation.}
+
+\item{max_depth}{Maximum depth of the partitioning tree used to discover effect-modification regions.}
 }
 \value{
 A list containing the top effects and interactions identified and estimated by the function. It includes elements for top positive and negative individual effects as well as top synergistic and antagonistic interactions.
@@ -64,7 +73,12 @@ mu_learner <- list(sl3::Lrnr_mean$new(), sl3::Lrnr_glm$new())
 top_n <- 3
 seed <- 123
 
-results <- find_max_effect_mods(data, deltas, a_names, w_names, outcome, outcome_type, mu_learner, g_learner, top_n, seed, min_obs = 10)
+results <- find_max_effect_mods(
+  at = data, av = data, deltas = deltas, a_names = a_names, w_names = w_names,
+  outcome = outcome, outcome_type = outcome_type, mu_learner = mu_learner,
+  g_learner = mu_learner, top_n = top_n, seed = seed, min_obs = 10,
+  fold = 1, density_classification = TRUE, max_depth = 1
+)
 print(results)
 }
 

@@ -21,7 +21,9 @@
 #' delta <- -0.5
 #' exposure_variable <- "A"
 #' covariates <- c("W1", "W2")
-#' result <- create_augmented_data(training_data, validation_data, delta, exposure_variable, covariates)
+#' result <- create_augmented_data(
+#'   training_data, validation_data, delta, exposure_variable, covariates
+#' )
 #' augmented_training_data <- result$at_dup
 #' augmented_validation_data <- result$av_dup
 #'
@@ -64,8 +66,12 @@ create_augmented_data <- function(at, av,  delta, var, covars) {
 #' delta <- -0.5
 #' exposure_variable <- "A"
 #' covariates <- c("W1", "W2")
-#' classifier <- sl3::Lrnr_glm$new()
-#' result <- estimate_density_ratio(training_data, validation_data, delta, exposure_variable, covariates, classifier)
+#' classifier <- sl3::make_learner(
+#'   sl3::Stack, sl3::Lrnr_glm$new(), sl3::Lrnr_mean$new()
+#' )
+#' result <- estimate_density_ratio(
+#'   training_data, validation_data, delta, exposure_variable, covariates, classifier
+#' )
 #' training_density_ratios <- result$Hn_at
 #' validation_density_ratios <- result$Hn_av
 #'
@@ -88,7 +94,7 @@ estimate_density_ratio <- function(at, av, delta, var, covars, classifier) {
   )
 
   sl <- sl3::Lrnr_sl$new(
-    learners = mu_learner,
+    learners = classifier,
     metalearner = sl3::Lrnr_nnls$new()
   )
 

@@ -69,12 +69,10 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
-      <h1 data-toc-skip>Effect Modification Identification and
-Estimation using Data-Adaptive Stochastic Interventions</h1>
-                        <h4 data-toc-skip class="author">David
-McCoy</h4>
+      <h1 data-toc-skip>Effect Modification Identification and Estimation using Data-Adaptive Stochastic Interventions</h1>
+                        <h4 data-toc-skip class="author">David McCoy</h4>
             
-            <h4 data-toc-skip class="date">2024-06-17</h4>
+            <h4 data-toc-skip class="date">2026-06-11</h4>
       
       
       <div class="hidden name"><code>EffectXshift-vignette.Rmd</code></div>
@@ -107,185 +105,60 @@ McCoy</h4>
 <div class="section level2">
 <h2 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
 </h2>
-<p>The motivation behind the package EffectXshift is to answer the
-question, “what subpopulations of individuals have the largest
-difference in impact in the event of an exposure intervention”.
-Researchers are often interested in understanding vulnerable
-subpopulations, or individuals with certain characteristics like sex or
-age, that make them more susceptible to the impact of a drug or
-pollutant.</p>
+<p>The motivation behind the package EffectXshift is to answer the question, “what subpopulations of individuals have the largest difference in impact in the event of an exposure intervention.” Researchers are often interested in understanding vulnerable subpopulations, or individuals with certain characteristics like sex or age, that make them more susceptible to the impact of a drug or pollutant.</p>
 </div>
 <div class="section level2">
 <h2 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
 </h2>
-<p>Methods like R-learners, S-learners, T-learners, and X-learners, have
-been pivotal in estimating Conditional Average Treatment Effects (CATE)
-across diverse settings. While S-learners apply a single model to the
-entire data, incorporating treatment as a feature, T-learners use
-separate models for treated and control groups to capture distinct
-patterns. X-learners, designed for settings with imbalanced treatment
-groups, first estimate treatment effects for both groups separately and
-then use the information from one group to refine the estimates for the
-other.</p>
-<p>Despite their effectiveness, these methods often act as black boxes,
-offering limited insights into which specific subpopulations are most
-affected by a treatment or exposure. Additionally, many of these methods
-are limited to only estimating the differential effects of a binary
-treatment/exposure. Our work with EffectXshift addresses this gap by
-providing an interpretable framework that not only estimates the impact
-of interventions but also identifies subpopulations with the maximal
-effect difference. This approach enhances our understanding of treatment
-effects, facilitating targeted interventions and personalized treatment
-strategies.</p>
+<p>Methods like R-learners, S-learners, T-learners, and X-learners, have been pivotal in estimating Conditional Average Treatment Effects (CATE) across diverse settings. While S-learners apply a single model to the entire data, incorporating treatment as a feature, T-learners use separate models for treated and control groups to capture distinct patterns. X-learners, designed for settings with imbalanced treatment groups, first estimate treatment effects for both groups separately and then use the information from one group to refine the estimates for the other.</p>
+<p>Despite their effectiveness, these methods often act as black boxes, offering limited insights into which specific subpopulations are most affected by a treatment or exposure. Additionally, many of these methods are limited to only estimating the differential effects of a binary treatment/exposure. Our work with EffectXshift addresses this gap by providing an interpretable framework that not only estimates the impact of interventions but also identifies subpopulations with the maximal effect difference. This approach enhances our understanding of treatment effects, facilitating targeted interventions and personalized treatment strategies.</p>
 </div>
 <div class="section level2">
 <h2 id="target-parameter">Target Parameter<a class="anchor" aria-label="anchor" href="#target-parameter"></a>
 </h2>
-<p>EffectXshift uses data-adaptive machine learning methods to identify
-the exposure-covariate combination that has the maximum difference in
-the impact of intervention.</p>
-<p>Given a set of exposures <span class="math inline">\(\boldsymbol{A}\)</span>, a covariate space <span class="math inline">\(W\)</span>, and a particular outcome <span class="math inline">\(Y\)</span>, our goal is to identify the exposure
-<span class="math inline">\(A_i \in \boldsymbol{A}\)</span> and region
-<span class="math inline">\(V \subseteq W\)</span> that demonstrate the
-maximal difference in the expected outcome with an intervention applied,
-compared across <span class="math inline">\(V\)</span> and its
-complementary region <span class="math inline">\(V^c\)</span>. Our
-target parameter looks like:</p>
+<p>EffectXshift uses data-adaptive machine learning methods to identify the exposure-covariate combination that has the maximum difference in the impact of intervention.</p>
+<p>Given a set of exposures <span class="math inline">\(\boldsymbol{A}\)</span>, a covariate space <span class="math inline">\(W\)</span>, and a particular outcome <span class="math inline">\(Y\)</span>, our goal is to identify the exposure <span class="math inline">\(A_i \in \boldsymbol{A}\)</span> and region <span class="math inline">\(V \subseteq W\)</span> that demonstrate the maximal difference in the expected outcome with an intervention applied, compared across <span class="math inline">\(V\)</span> and its complementary region <span class="math inline">\(V^c\)</span>. Our target parameter looks like:</p>
 <p>$$</p>
 <p><span class="math display">\[\begin{align*}
-&amp;\underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\text{arg max}}
-\\
-&amp;\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \,
-W_{\setminus j}\right] \right. \\
-&amp;\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \,
-W_{\setminus j}\right] \, \right].
+&amp;\underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\text{arg max}} \\
+&amp;\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \, W_{\setminus j}\right] \right. \\
+&amp;\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
 \end{align*}\]</span></p>
-<p>$$ Here, <span class="math inline">\(\delta_i\)</span> denotes the
-intervention effect on exposure <span class="math inline">\(A_i\)</span>, and <span class="math inline">\(V^c\)</span> represents the complementary set of
-<span class="math inline">\(V\)</span> within <span class="math inline">\(W\)</span>.</p>
-<p>To elucidate the EffectXshift algorithm, we start by fitting an
-outcome model utilizing the Super Learner ensemble methodology. This
-model is tasked with predicting the outcome variable, <span class="math inline">\(Y\)</span>, based on a set of exposures, <span class="math inline">\(\boldsymbol{A}\)</span>, and covariates, <span class="math inline">\(\boldsymbol{W}\)</span>. The Super Learner
-algorithm, a machine learning ensemble, optimally combines predictions
-from a pre-specified library of candidate models to minimize prediction
-error, thereby offering a flexible and robust approach to outcome
-modeling.</p>
-<p>Subsequently, for each exposure <span class="math inline">\(A_i\)</span> within the vector of exposures <span class="math inline">\(\boldsymbol{A}\)</span>, we apply a shift, denoted
-by <span class="math inline">\(\delta_i\)</span>, and predict the
-expected outcome under this perturbation, yielding <span class="math inline">\(E[Y | A_i + \delta_i, \boldsymbol{W}]\)</span>.
-This process is repeated for the baseline scenario without the shift to
-compute <span class="math inline">\(E[Y | \boldsymbol{A},
-\boldsymbol{W}]\)</span>. The difference between these two expected
-outcomes, <span class="math inline">\(E[Y | A_i + \delta_i,
-\boldsymbol{W}] - E[Y | \boldsymbol{A}, \boldsymbol{W}]\)</span>,
-constitutes our individual treatment effect (ITE) vectors, capturing the
-expected change in outcome attributable to the intervention <span class="math inline">\(\delta_i\)</span> on exposure <span class="math inline">\(A_i\)</span>.</p>
-<p>To identify subpopulations with maximally differential responses to
-the intervention, we employ a custom decision tree algorithm that
-partitions the covariate space <span class="math inline">\(\boldsymbol{W}\)</span> in a manner that maximizes
-the average difference in population intervention effects between the
-resulting regions. This tree-based partitioning is performed
-recursively, with splits chosen to greedily maximize the difference in
-mean ITE between subgroups defined by the covariates within <span class="math inline">\(\boldsymbol{W}\)</span>. This approach aims to
-approximate the oracle target parameter: the region in the covariate
-space where the intervention exhibits the maximal differential
-effect.</p>
-<p>The final output of the EffectXshift algorithm is a set of rules
-defining covariate-based subpopulations alongside estimates of the
-population intervention effect within these subpopulations. This not
-only provides insights into the heterogeneity of treatment effects
-across different segments of the population but also guides the
-identification of individuals who stand to benefit most from targeted
-interventions, thus embodying a significant stride towards personalized
-treatment strategies.</p>
+<p>$$ Here, <span class="math inline">\(\delta_i\)</span> denotes the intervention effect on exposure <span class="math inline">\(A_i\)</span>, and <span class="math inline">\(V^c\)</span> represents the complementary set of <span class="math inline">\(V\)</span> within <span class="math inline">\(W\)</span>.</p>
+<p>To elucidate the EffectXshift algorithm, we start by fitting an outcome model utilizing the Super Learner ensemble methodology. This model is tasked with predicting the outcome variable, (Y), based on a set of exposures, (), and covariates, (). The Super Learner algorithm, a machine learning ensemble, optimally combines predictions from a pre-specified library of candidate models to minimize prediction error, thereby offering a flexible and robust approach to outcome modeling.</p>
+<p>Subsequently, for each exposure (A_i) within the vector of exposures (), we apply a shift, denoted by (_i), and predict the expected outcome under this perturbation, yielding (E[Y | A_i + _i, ]). This process is repeated for the baseline scenario without the shift to compute (E[Y | , ]). The difference between these two expected outcomes, (E[Y | A_i + _i, ] - E[Y | , ]), constitutes our individual treatment effect (ITE) vectors, capturing the expected change in outcome attributable to the intervention (_i) on exposure (A_i).</p>
+<p>To identify subpopulations with maximally differential responses to the intervention, we employ a custom decision tree algorithm that partitions the covariate space () in a manner that maximizes the average difference in population intervention effects between the resulting regions. This tree-based partitioning is performed recursively, with splits chosen to greedily maximize the difference in mean ITE between subgroups defined by the covariates within (). This approach aims to approximate the oracle target parameter: the region in the covariate space where the intervention exhibits the maximal differential effect.</p>
+<p>The final output of the EffectXshift algorithm is a set of rules defining covariate-based subpopulations alongside estimates of the population intervention effect within these subpopulations. This not only provides insights into the heterogeneity of treatment effects across different segments of the population but also guides the identification of individuals who stand to benefit most from targeted interventions, thus embodying a significant stride towards personalized treatment strategies.</p>
 </div>
 <div class="section level2">
 <h2 id="doubly-robust-estimation">Doubly Robust Estimation<a class="anchor" aria-label="anchor" href="#doubly-robust-estimation"></a>
 </h2>
-<p>The above g-computation approach to estimation the population
-intervention effect which is then regressed onto covariates using our
-custom decision tree to find the maximal subpopulation intervention
-effect is the data-adaptive discovery portion of the method. What comes
-out is an exposure-covariate region combination for each fold. We then
-estimate stochastic interventions, shifting the exposure in subregions
-of the covariate space found and applying targeted learning to debias
-our initial estimates. In order to get proper inference for the
-subpopulation intervention effect in the covariate regions we use
-targeted learning. Briefly, we fit a propensity score estimator to
-estimate the likelihood of exposure levels given covariates under the
-observed exposure level and intervened level, the ratio of these
-likelihoods consitutes the clever covariate for the influence curve of a
-stochastic intervention. We use this clever covariate to update our
-initial estimates of the expected outcome under shift which initially is
-done using Super Learner. This targeting step debiases our estimates and
-we are able to get confidence intervals.</p>
+<p>The above g-computation approach to estimation the population intervention effect which is then regressed onto covariates using our custom decision tree to find the maximal subpopulation intervention effect is the data-adaptive discovery portion of the method. What comes out is an exposure-covariate region combination for each fold. We then estimate stochastic interventions, shifting the exposure in subregions of the covariate space found and applying targeted learning to debias our initial estimates. In order to get proper inference for the subpopulation intervention effect in the covariate regions we use targeted learning. Briefly, we fit a propensity score estimator to estimate the likelihood of exposure levels given covariates under the observed exposure level and intervened level, the ratio of these likelihoods consitutes the clever covariate for the influence curve of a stochastic intervention. We use this clever covariate to update our initial estimates of the expected outcome under shift which initially is done using Super Learner. This targeting step debiases our estimates and we are able to get confidence intervals.</p>
 </div>
 <div class="section level2">
 <h2 id="sample-splitting">Sample Splitting<a class="anchor" aria-label="anchor" href="#sample-splitting"></a>
 </h2>
-<p>Because we don’t know which exposure-covariate regions to estimate
-our effect modification parameter a priori, we need to split our data
-and in the training fold find the exposure-covariate region, using the
-above g-computation framework, and in an estimation sample, efficiently
-estimate the subpopulation intervention effect parameter for the
-identified exposure in the covariate regions so that we can get valid
-confidence intervals for these data-adaptively identified interactions.
-As discussed above, is done using targeted learning. This sample
-splitting is through a cross-validation framework, ensuring the
-identification of our oracle parameter, the maximizing
-exposure-covariate region, is independent of the estimation, given we
-don’t know the maximum effect modifier beforehand.</p>
+<p>Because we don’t know which exposure-covariate regions to estimate our effect modification parameter a priori, we need to split our data and in the training fold find the exposure-covariate region, using the above g-computation framework, and in an estimation sample, efficiently estimate the subpopulation intervention effect parameter for the identified exposure in the covariate regions so that we can get valid confidence intervals for these data-adaptively identified interactions. As discussed above, is done using targeted learning. This sample splitting is through a cross-validation framework, ensuring the identification of our oracle parameter, the maximizing exposure-covariate region, is independent of the estimation, given we don’t know the maximum effect modifier beforehand.</p>
 </div>
 <div class="section level2">
 <h2 id="targeted-learning">Targeted Learning<a class="anchor" aria-label="anchor" href="#targeted-learning"></a>
 </h2>
-<p>We use targeted minimum loss based estimation (TMLE) to debias our
-initial outcome estimates given a shift in exposure such that the
-resulting estimator is asymptotically unbiased and has the smallest
-variance. This procedure involves constructing a least favorable
-submodel which uses a ratio of conditional exposure densities under
-shift and now shift as a covariate to debias the initial estimates. More
-details of targeted learning for stochastic shifts are here <span class="citation">Dı́az and van der Laan (2012)</span></p>
+<p>We use targeted minimum loss based estimation (TMLE) to debias our initial outcome estimates given a shift in exposure such that the resulting estimator is asymptotically unbiased and has the smallest variance. This procedure involves constructing a least favorable submodel which uses a ratio of conditional exposure densities under shift and now shift as a covariate to debias the initial estimates. More details of targeted learning for stochastic shifts are here <span class="citation">Dı́az and van der Laan (2012)</span></p>
 </div>
 <div class="section level2">
 <h2 id="data-adaptive-delta">Data Adaptive Delta<a class="anchor" aria-label="anchor" href="#data-adaptive-delta"></a>
 </h2>
-<p>For each exposure, the user inputs a respective delta, for example
-for exposures <span class="math inline">\(M1, M2, M3\)</span> the
-analyst puts in the <code>deltas</code> vector</p>
+<p>For each exposure, the user inputs a respective delta, for example for exposures <span class="math inline">\(M1, M2, M3\)</span> the analyst puts in the <code>deltas</code> vector</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">deltas</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"M1"</span> <span class="op">=</span> <span class="fl">1</span>, <span class="st">"M2"</span> <span class="op">=</span> <span class="fl">2.3</span>, <span class="st">"M3"</span> <span class="op">=</span> <span class="fl">1.4</span><span class="op">)</span></span></code></pre></div>
-<p>Which assigns a delta shift amount to each exposure. However, because
-the user doesn’t know the underlying experimentation in the data, a
-delta that is too big may result in positivity violations which leads to
-bias and high variance of the estimator. That is, if the user asks for a
-shift in exposure density that is very unlikely given the data. To solve
-this, the analyst can also choose to set
-<code>adaptive_delta = TRUE</code> which then makes the shift amount a
-data adaptive parameter as well. The delta will be reduced until the max
-of the ratio of densities for each exposure is less than or equal to
-<code>hn_trunc_thresh</code>.</p>
+<p>Which assigns a delta shift amount to each exposure. However, because the user doesn’t know the underlying experimentation in the data, a delta that is too big may result in positivity violations which leads to bias and high variance of the estimator. That is, if the user asks for a shift in exposure density that is very unlikely given the data. To solve this, the analyst can also choose to set <code>adaptive_delta = TRUE</code> which then makes the shift amount a data adaptive parameter as well. The delta will be reduced until the max of the ratio of densities for each exposure is less than or equal to <code>hn_trunc_thresh</code>.</p>
 </div>
 <div class="section level2">
 <h2 id="inputs-and-outputs">Inputs and Outputs<a class="anchor" aria-label="anchor" href="#inputs-and-outputs"></a>
 </h2>
-<p>EffectXshift takes in covariates, exposures, an outcome, a list of
-deltas to shift each exposure by, the estimator (tmle or one step)
-number of folds for the CV procedure, parallelization parameters and if
-the delta should be data-adaptive. Also the user defines top_n which is
-the number of ranked effect modification relationships, where 1 is the
-max.</p>
-<p>The package then outputs K-fold specific results, the result found in
-each fold, and the oracle result which is the parameter that is pooled
-across all the folds. For example, we will get the fold specific
-modification results for the rank 1 exposure-covariate region found to
-have the highest modification. The pooled parameter is the oracle rank
-1, meaning we do a pooled TMLE for all the rank 1 findings across the
-folds.</p>
-<p>If the same exposure-covariate reguion are used across the folds, the
-pooled estimate is interpretable and has greater power compared to
-k-fold. If not, the analyst must investigate the k-fold specific results
-and report consistency of findings.</p>
+<p>EffectXshift takes in covariates, exposures, an outcome, a list of deltas to shift each exposure by, the estimator (tmle or one step) number of folds for the CV procedure, parallelization parameters and if the delta should be data-adaptive. Also the user defines top_n which is the number of ranked effect modification relationships, where 1 is the max.</p>
+<p>The package then outputs K-fold specific results, the result found in each fold, and the oracle result which is the parameter that is pooled across all the folds. For example, we will get the fold specific modification results for the rank 1 exposure-covariate region found to have the highest modification. The pooled parameter is the oracle rank 1, meaning we do a pooled TMLE for all the rank 1 findings across the folds.</p>
+<p>If the same exposure-covariate reguion are used across the folds, the pooled estimate is interpretable and has greater power compared to k-fold. If not, the analyst must investigate the k-fold specific results and report consistency of findings.</p>
 </div>
 <div class="section level2">
 <h2 id="nhanes-data">NHANES Data<a class="anchor" aria-label="anchor" href="#nhanes-data"></a>
@@ -293,11 +166,8 @@ and report consistency of findings.</p>
 <p>Here we will try and replicate the analysis by Gibson et. al.:</p>
 <p><a href="https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1" class="external-link uri">https://ehjournal.biomedcentral.com/articles/10.1186/s12940-019-0515-1</a></p>
 <p>and Mitro et. al, <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4858394/" class="external-link uri">https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4858394/</a></p>
-<p>Who used the NHANES 2001-2002 data to investigate 18 POP exposures on
-telomere length.</p>
-<p>In this NHANES example, we will investigate if any of the included
-baseline covariates modify the impact of intervening on any of the
-persistant organic pollutants.</p>
+<p>Who used the NHANES 2001-2002 data to investigate 18 POP exposures on telomere length.</p>
+<p>In this NHANES example, we will investigate if any of the included baseline covariates modify the impact of intervening on any of the persistant organic pollutants.</p>
 <p>Let’s first load the data and investigate the variables:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="st">"NHANES_eurocim"</span><span class="op">)</span></span>
@@ -341,9 +211,7 @@ persistant organic pollutants.</p>
 <span>  <span class="st">"ln_lbxcot"</span>, <span class="co"># Cotinine (ng/mL), log-transformed</span></span>
 <span>  <span class="st">"edu_cat"</span></span>
 <span><span class="op">)</span> <span class="co"># Education Level - Adults 20+</span></span></code></pre></div>
-<p>To improve consistency in the region we find to be the maximizing
-region, it is best to remove an exposure of highly correlated sets, we
-do that here:</p>
+<p>To improve consistency in the region we find to be the maximizing region, it is best to remove an exposure of highly correlated sets, we do that here:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Calculate the correlation matrix for the exposures</span></span>
 <span><span class="va">cor_matrix</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/cor.html" class="external-link">cor</a></span><span class="op">(</span><span class="va">NHANES_eurocim</span><span class="op">[</span>, <span class="va">exposures</span><span class="op">]</span>, use <span class="op">=</span> <span class="st">"complete.obs"</span><span class="op">)</span></span>
@@ -411,13 +279,12 @@ do that here:</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
 <span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  18.487   0.873 261.493</span></span></code></pre></div>
+<span><span class="co">#&gt;  19.992   0.875 268.389</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="investigating-results">Investigating Results<a class="anchor" aria-label="anchor" href="#investigating-results"></a>
 </h2>
-<p>One note is that for this example we will get more variability than
-normal because we only run 5 fold CV due to computational time.</p>
+<p>One note is that for this example we will get more variability than normal because we only run 5 fold CV due to computational time.</p>
 <p>Let’s first look at the results for each fold:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
@@ -431,6 +298,8 @@ normal because we only run 5 fold CV due to computational time.</p>
 K-Fold Effect Modification Results
 </caption>
 <thead><tr>
+<th style="text-align:left;">
+</th>
 <th style="text-align:left;">
 Exposure
 </th>
@@ -452,26 +321,35 @@ Modifier
 <th style="text-align:right;">
 Fold
 </th>
+<th style="text-align:right;">
+Rank
+</th>
 </tr></thead>
 <tbody>
 <tr>
 <td style="text-align:left;">
+LBX074LA1
+</td>
+<td style="text-align:left;">
 LBX074LA
 </td>
 <td style="text-align:right;">
-0.6110256
+0.7994771
 </td>
 <td style="text-align:right;">
-0.0305277
+0.0226341
 </td>
 <td style="text-align:right;">
-0.5512
+0.7551
 </td>
 <td style="text-align:right;">
-0.6709
+0.8438
 </td>
 <td style="text-align:left;">
-age_cent &lt;= -3
+age_cent &lt;= -1
+</td>
+<td style="text-align:right;">
+1
 </td>
 <td style="text-align:right;">
 1
@@ -479,22 +357,28 @@ age_cent &lt;= -3
 </tr>
 <tr>
 <td style="text-align:left;">
+LBX074LA2
+</td>
+<td style="text-align:left;">
 LBX074LA
 </td>
 <td style="text-align:right;">
-0.4132045
+0.5658187
 </td>
 <td style="text-align:right;">
-0.0385187
+0.0487206
 </td>
 <td style="text-align:right;">
-0.3377
+0.4703
 </td>
 <td style="text-align:right;">
-0.4887
+0.6613
 </td>
 <td style="text-align:left;">
-age_cent &gt; -3
+age_cent &gt; -1
+</td>
+<td style="text-align:right;">
+1
 </td>
 <td style="text-align:right;">
 1
@@ -502,197 +386,240 @@ age_cent &gt; -3
 </tr>
 <tr>
 <td style="text-align:left;">
-LBXF03LA
-</td>
-<td style="text-align:right;">
-0.3267605
-</td>
-<td style="text-align:right;">
-0.0337236
-</td>
-<td style="text-align:right;">
-0.2607
-</td>
-<td style="text-align:right;">
-0.3929
+LBXD03LA1
 </td>
 <td style="text-align:left;">
-age_cent &lt;= 10
+LBXD03LA
+</td>
+<td style="text-align:right;">
+0.8167177
+</td>
+<td style="text-align:right;">
+0.0354414
+</td>
+<td style="text-align:right;">
+0.7473
+</td>
+<td style="text-align:right;">
+0.8862
+</td>
+<td style="text-align:left;">
+age_cent &lt;= -4
 </td>
 <td style="text-align:right;">
 2
 </td>
+<td style="text-align:right;">
+1
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
-LBXF03LA
-</td>
-<td style="text-align:right;">
-0.2285448
-</td>
-<td style="text-align:right;">
-0.0429648
-</td>
-<td style="text-align:right;">
-0.1443
-</td>
-<td style="text-align:right;">
-0.3128
+LBXD03LA2
 </td>
 <td style="text-align:left;">
-age_cent &gt; 10
+LBXD03LA
+</td>
+<td style="text-align:right;">
+0.4765830
+</td>
+<td style="text-align:right;">
+0.0467089
+</td>
+<td style="text-align:right;">
+0.3850
+</td>
+<td style="text-align:right;">
+0.5681
+</td>
+<td style="text-align:left;">
+age_cent &gt; -4
 </td>
 <td style="text-align:right;">
 2
 </td>
+<td style="text-align:right;">
+1
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
-LBXPCBLA
-</td>
-<td style="text-align:right;">
-0.5320874
-</td>
-<td style="text-align:right;">
-0.0368206
-</td>
-<td style="text-align:right;">
-0.4599
-</td>
-<td style="text-align:right;">
-0.6043
+LBXD03LA11
 </td>
 <td style="text-align:left;">
-ln_lbxcot &lt;= -3.352407217
+LBXD03LA
+</td>
+<td style="text-align:right;">
+0.6043067
+</td>
+<td style="text-align:right;">
+0.0306724
+</td>
+<td style="text-align:right;">
+0.5442
+</td>
+<td style="text-align:right;">
+0.6644
+</td>
+<td style="text-align:left;">
+age_cent &lt;= -4
 </td>
 <td style="text-align:right;">
 3
 </td>
+<td style="text-align:right;">
+1
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
-LBXPCBLA
-</td>
-<td style="text-align:right;">
-0.5687339
-</td>
-<td style="text-align:right;">
-0.0288810
-</td>
-<td style="text-align:right;">
-0.5121
-</td>
-<td style="text-align:right;">
-0.6253
+LBXD03LA21
 </td>
 <td style="text-align:left;">
-ln_lbxcot &gt; -3.352407217
+LBXD03LA
+</td>
+<td style="text-align:right;">
+0.4643143
+</td>
+<td style="text-align:right;">
+0.0390713
+</td>
+<td style="text-align:right;">
+0.3877
+</td>
+<td style="text-align:right;">
+0.5409
+</td>
+<td style="text-align:left;">
+age_cent &gt; -4
 </td>
 <td style="text-align:right;">
 3
 </td>
+<td style="text-align:right;">
+1
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
-LBXD05LA
-</td>
-<td style="text-align:right;">
--0.3299617
-</td>
-<td style="text-align:right;">
-0.0282164
-</td>
-<td style="text-align:right;">
--0.3853
-</td>
-<td style="text-align:right;">
--0.2747
+LBXD03LA12
 </td>
 <td style="text-align:left;">
-age_cent &lt;= 5
+LBXD03LA
+</td>
+<td style="text-align:right;">
+-0.5310408
+</td>
+<td style="text-align:right;">
+0.0302616
+</td>
+<td style="text-align:right;">
+-0.5904
+</td>
+<td style="text-align:right;">
+-0.4717
+</td>
+<td style="text-align:left;">
+age_cent &lt;= -4
 </td>
 <td style="text-align:right;">
 4
 </td>
+<td style="text-align:right;">
+1
+</td>
 </tr>
 <tr>
 <td style="text-align:left;">
-LBXD05LA
-</td>
-<td style="text-align:right;">
--0.2045736
-</td>
-<td style="text-align:right;">
-0.0233911
-</td>
-<td style="text-align:right;">
--0.2504
-</td>
-<td style="text-align:right;">
--0.1587
+LBXD03LA22
 </td>
 <td style="text-align:left;">
-age_cent &gt; 5
+LBXD03LA
+</td>
+<td style="text-align:right;">
+-0.2760789
+</td>
+<td style="text-align:right;">
+0.0251036
+</td>
+<td style="text-align:right;">
+-0.3253
+</td>
+<td style="text-align:right;">
+-0.2269
+</td>
+<td style="text-align:left;">
+age_cent &gt; -4
 </td>
 <td style="text-align:right;">
 4
 </td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBXPCBLA
-</td>
 <td style="text-align:right;">
-0.5396725
-</td>
-<td style="text-align:right;">
-0.0526328
-</td>
-<td style="text-align:right;">
-0.4365
-</td>
-<td style="text-align:right;">
-0.6428
-</td>
-<td style="text-align:left;">
-ln_lbxcot &lt;= -3.442019376
-</td>
-<td style="text-align:right;">
-5
+1
 </td>
 </tr>
 <tr>
 <td style="text-align:left;">
-LBXPCBLA
-</td>
-<td style="text-align:right;">
-0.6405070
-</td>
-<td style="text-align:right;">
-0.0337704
-</td>
-<td style="text-align:right;">
-0.5743
-</td>
-<td style="text-align:right;">
-0.7067
+LBX074LA11
 </td>
 <td style="text-align:left;">
-ln_lbxcot &gt; -3.442019376
+LBX074LA
+</td>
+<td style="text-align:right;">
+0.7758920
+</td>
+<td style="text-align:right;">
+0.0285572
+</td>
+<td style="text-align:right;">
+0.7199
+</td>
+<td style="text-align:right;">
+0.8319
+</td>
+<td style="text-align:left;">
+age_cent &lt;= 1
 </td>
 <td style="text-align:right;">
 5
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+LBX074LA21
+</td>
+<td style="text-align:left;">
+LBX074LA
+</td>
+<td style="text-align:right;">
+0.5784782
+</td>
+<td style="text-align:right;">
+0.0453696
+</td>
+<td style="text-align:right;">
+0.4896
+</td>
+<td style="text-align:right;">
+0.6674
+</td>
+<td style="text-align:left;">
+age_cent &gt; 1
+</td>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:right;">
+1
 </td>
 </tr>
 </tbody>
 </table>
-<p>Psi is the comparison of the expected outcome under shift
-intervention compared to the mean outcome in each strata of the
-covariate. Variance estimates are from the influence function for
-stochastic interventions.</p>
-<p>Above, the first row in each fold corresponds to the region v and the
-second row vc for the pooled results. The pooled results, leveraging the
-full data is below:</p>
+<p>Psi is the comparison of the expected outcome under shift intervention compared to the mean outcome in each strata of the covariate. Variance estimates are from the influence function for stochastic interventions.</p>
+<p>Above, the first row in each fold corresponds to the region v and the second row vc for the pooled results. The pooled results, leveraging the full data is below:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">pooled_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span><span class="va">NHANES_results</span><span class="op">$</span><span class="va">`Effect Modification Region V Pooled Results`</span>, <span class="va">NHANES_results</span><span class="op">$</span><span class="va">`Effect Modification Region V^c Pooled Results`</span><span class="op">)</span></span>
 <span></span>
@@ -744,19 +671,19 @@ N
 v
 </td>
 <td style="text-align:right;">
--0.1653373
+-0.4496631
 </td>
 <td style="text-align:right;">
-0.0000551
+0.0000221
 </td>
 <td style="text-align:right;">
-0.0074236
+0.0046961
 </td>
 <td style="text-align:right;">
--0.1799
+-0.4589
 </td>
 <td style="text-align:right;">
--0.1508
+-0.4405
 </td>
 <td style="text-align:right;">
 0
@@ -771,7 +698,7 @@ Indiv Shift
 v
 </td>
 <td style="text-align:right;">
-482
+426
 </td>
 </tr>
 <tr>
@@ -779,19 +706,19 @@ v
 vc
 </td>
 <td style="text-align:right;">
-0.4319678
+0.4711579
 </td>
 <td style="text-align:right;">
-0.0002707
+0.0003288
 </td>
 <td style="text-align:right;">
-0.0164519
+0.0181327
 </td>
 <td style="text-align:right;">
-0.3997
+0.4356
 </td>
 <td style="text-align:right;">
-0.4642
+0.5067
 </td>
 <td style="text-align:right;">
 0
@@ -806,21 +733,15 @@ Indiv Shift
 vc
 </td>
 <td style="text-align:right;">
-525
+581
 </td>
 </tr>
 </tbody>
 </table>
-<p>Of course, pooled results are only interpretable if the same
-exposure-covariate region was found in the definition of v and vc. When
-results are consistent, this indicates a shift in the same exposure in
-the same region of the covariate space and we are able to leverage more
-data in the estimation folds to get more precise estimates.</p>
+<p>Of course, pooled results are only interpretable if the same exposure-covariate region was found in the definition of v and vc. When results are consistent, this indicates a shift in the same exposure in the same region of the covariate space and we are able to leverage more data in the estimation folds to get more precise estimates.</p>
 <div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-diaz2012population" class="csl-entry">
-Dı́az, Iván, and Mark J van der Laan. 2012. <span>“Population
-Intervention Causal Effects Based on Stochastic Interventions.”</span>
-<em>Biometrics</em> 68 (2): 541–49.
+Dı́az, Iván, and Mark J van der Laan. 2012. <span>“Population Intervention Causal Effects Based on Stochastic Interventions.”</span> <em>Biometrics</em> 68 (2): 541–49.
 </div>
 </div>
 </div>

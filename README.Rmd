@@ -222,6 +222,54 @@ Above the k-fold specific results show that we find the correct exposure-covaria
 
 ---
 
+## Randomized Trials: a Single Binary Treatment
+
+The same machinery applies to a randomized controlled trial with a single binary
+treatment. Set `rct = TRUE` and pass one binary exposure. EffectXshift estimates
+the subject-level treatment effect (the ATE \eqn{Q(1, W) - Q(0, W)} via TMLE with
+the known randomization probability), then searches the covariate space for the
+region `V` that maximizes the differential treatment effect against its
+complement `V^c`. The discovered region and its complement are estimated by
+CV-TMLE, pooling held-out influence-curve contributions across folds.
+
+```{r rct example, eval = FALSE}
+# A randomized binary treatment whose effect is modified by W1
+n <- 1000
+W1 <- rbinom(n, 1, 0.5)
+W2 <- rnorm(n)
+W3 <- rbinom(n, 1, 0.4)
+A  <- rbinom(n, 1, 0.5)                       # randomized, alpha = 0.5
+tau <- ifelse(W1 == 1, 2, 0)                  # effect modified by W1
+Y  <- 1 + 0.5 * W2 - 0.3 * W3 + tau * A + rnorm(n)
+
+rct_results <- EffectXshift(
+  w = data.frame(W1 = W1, W2 = W2, W3 = W3),
+  a = data.frame(A = A),
+  deltas = 0.1,
+  y = Y,
+  rct = TRUE,
+  rct_type = "ate",   # subject-level ATE; use "incps" for an incremental shift
+  n_folds = 2,
+  max_depth = 1,
+  seed = 4291531
+)
+
+# Per-fold discovered regions and effects
+rct_results$`Effect Modification K-Fold Results`
+
+# Pooled region V, region V^c, and the V - V^c oracle contrast (with 95% CIs)
+rct_results$`Pooled Region Effects`
+```
+
+The `Pooled Region Effects` table reports the effect in `V`, in `V^c`, and the
+`V - V^c` contrast, each with a standard error, a Wald 95% confidence interval,
+and a p-value. For the data-generating process above the method recovers the
+region `{W1 == 1}` with an effect near 2, an effect near 0 in the complement, and
+a positive, significant contrast.
+
+
+---
+
 ## Issues
 
 If you encounter any bugs or have any specific feature requests, 

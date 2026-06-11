@@ -3,6 +3,7 @@
 #' and null folds finding 0 using inverse variance
 #' @param results_df Table of results
 #' @param n_folds Total number of folds specified
+#' @param delta Optional shift amount carried through to the pooled results row.
 #' @export
 
 calculatePooledEstimate <- function(results_df, n_folds, delta = NULL) {

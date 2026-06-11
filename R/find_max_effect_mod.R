@@ -3,17 +3,21 @@
 #' @description The `find_max_effect_mods` function identifies subpopulations with the maximum differential impact of stochastic shift interventions on exposures within a mixture. The method estimates the individual effects of shifting each exposure while controlling for other exposures and covariates, using ensemble machine learning and targeted maximum likelihood estimation (TMLE).
 #' Once the individual intervention effects and influence curve estimates given an intervention on each exposure are derived, we then use a simple t-statistic partitioning algorithm to find the region with the maximum significant difference in intervention effects.
 #'
-#' @param data A \code{data.frame} containing all the variables needed for the analysis, including baseline covariates, exposures, and the outcome.
+#' @param at A training-fold \code{data.frame} containing the baseline covariates, exposures, and outcome.
+#' @param av A validation-fold \code{data.frame} with the same columns as \code{at}.
 #' @param deltas A named \code{list} or \code{vector} specifying the shift in exposures to define the target parameter. Each element should correspond to an exposure variable specified in \code{a_names}, detailing the amount by which that exposure is to be shifted.
-#' @param a_names A \code{character} vector specifying the names of the exposure variables within \code{data}.
-#' @param w_names A \code{character} vector specifying the names of the covariate variables within \code{data}.
-#' @param outcome The name of the outcome variable in \code{data}.
+#' @param a_names A \code{character} vector specifying the names of the exposure variables.
+#' @param w_names A \code{character} vector specifying the names of the covariate variables.
+#' @param outcome The name of the outcome variable.
 #' @param outcome_type A \code{character} string indicating the type of the outcome variable; either "continuous", "binary", or "count".
 #' @param mu_learner A list of \code{\link[sl3]{Lrnr_sl}} learners specifying the ensemble machine learning models to be used for outcome prediction within the Super Learner framework.
 #' @param g_learner A list of \code{\link[sl3]{Lrnr_sl}} learners specifying the ensemble machine learning models to be used for estimating the conditional density of the exposures.
 #' @param top_n An \code{integer} specifying the number of top positive and negative effects to return.
 #' @param seed An \code{integer} value to set the seed for reproducibility.
 #' @param min_obs Minimum number of observations in a region to warrant a split.
+#' @param fold Label for the fold index (for cross-validation).
+#' @param density_classification If TRUE, estimate the exposure density ratio via a classification reparameterization rather than direct conditional density estimation.
+#' @param max_depth Maximum depth of the partitioning tree used to discover effect-modification regions.
 #'
 #' @return A list containing the top effects and interactions identified and estimated by the function. It includes elements for top positive and negative individual effects as well as top synergistic and antagonistic interactions.
 #'
@@ -30,13 +34,18 @@
 #' top_n <- 3
 #' seed <- 123
 #'
-#' results <- find_max_effect_mods(data, deltas, a_names, w_names, outcome, outcome_type, mu_learner, g_learner, top_n, seed, min_obs = 10)
+#' results <- find_max_effect_mods(
+#'   at = data, av = data, deltas = deltas, a_names = a_names, w_names = w_names,
+#'   outcome = outcome, outcome_type = outcome_type, mu_learner = mu_learner,
+#'   g_learner = mu_learner, top_n = top_n, seed = seed, min_obs = 10,
+#'   fold = 1, density_classification = TRUE, max_depth = 1
+#' )
 #' print(results)
 #' }
 #'
 #' @importFrom sl3 make_sl3_Task Lrnr_sl
 #' @import dplyr
-#' @import ranger
+#' @importFrom ranger ranger
 #' @importFrom data.table as.data.table setnames
 #' @export
 
@@ -484,84 +493,111 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
     effect_mod_results[[colnames(at_individual_effects_df)[indiv_effect]]] <- iteration_results
   }
 
-  # Calculate the difference in RegionMean values for each item and store them with their names
-  region_mean_diffs <- sapply(effect_mod_results, function(x) abs(x$RegionMean[[1]] - x$RegionMean[[2]]))
+  # ---------------------------------------------------------------------------
+  # Select the oracle region(s). The partition tree produces one or more
+  # candidate leaves per exposure. The discovered region V is the single leaf
+  # whose effect deviates most from the rest of the sample, and V^c is its TRUE
+  # complement (every observation not in V). Defining V^c as the genuine
+  # complement (rather than a sibling leaf) keeps the region contrast
+  # well-defined for any max_depth, not only depth-1 splits.
+  # ---------------------------------------------------------------------------
 
-  # Rank the items based on the differences
-  ranked_names <- names(sort(region_mean_diffs, decreasing = TRUE))
+  # For one exposure's tree, return the leaf rule with the strongest signal
+  # (largest deviation of the leaf effect from the sample-wide weighted mean).
+  best_leaf_for_exposure <- function(em) {
+    mean_leaf <- as.numeric(unlist(em$RegionMean))
+    n_leaf    <- as.numeric(unlist(em$N))
+    rules     <- as.character(unlist(em$Rule))
+    overall   <- sum(mean_leaf * n_leaf, na.rm = TRUE) / sum(n_leaf, na.rm = TRUE)
+    dev       <- abs(mean_leaf - overall)
+    best      <- which.max(dev)
+    list(rule = rules[best], signal = dev[best])
+  }
 
-  # Number of items you want to select
+  exposure_best  <- lapply(effect_mod_results, best_leaf_for_exposure)
+  region_signal  <- vapply(exposure_best, function(x) x$signal, numeric(1))
+  ranked_names   <- names(sort(region_signal, decreasing = TRUE))
+  selected_names <- ranked_names[seq_len(min(top_n, length(ranked_names)))]
 
-  # Select the top n items
-  selected_items <- effect_mod_results[ranked_names[1:top_n]]
-  results_list <- list()
-  q_region_list <- list()
-  g_region_list <- list()
+  results_list     <- list()
+  q_region_list    <- list()
+  g_region_list    <- list()
   region_data_list <- list()
 
-  for (item_index in 1:length(selected_items)) {
-    item <- selected_items[[item_index]]
-    item$Rank <- item_index
-    selected_items[[item_index]] <- item
+  # Evaluate region V (the rule) and V^c (its complement) on the validation set.
+  eval_region <- function(exposure, rule, rank) {
+    rule_clean <- gsub("&\\s*$", "", rule)
+    if (nchar(trimws(rule_clean)) == 0) {
+      ind <- rep(TRUE, nrow(av))
+    } else {
+      ind <- av %>%
+        mutate(.Indicator = eval(parse(text = paste0("(", rule_clean, ")")))) %>%
+        pull(.Indicator)
+      ind <- ifelse(is.na(ind), FALSE, ind)
+    }
+
+    summarise_region <- function(in_region, label, rule_label) {
+      eff <- mean(av_individual_effects_df[[exposure]][in_region], na.rm = TRUE)
+      ic  <- av_influence_curve_df[[exposure]][in_region]
+      se  <- sqrt(var(ic, na.rm = TRUE) / length(ic))
+      ci  <- calc_CIs(eff, se)
+      list(
+        row = data.frame(
+          Exposure    = exposure,
+          RegionType  = label,
+          Effect      = eff,
+          SE          = se,
+          `Lower CI`  = ci[1],
+          `Upper CI`  = ci[2],
+          Modifier    = rule_label,
+          Fold        = fold,
+          Rank        = rank,
+          N_in_Region = sum(in_region),
+          check.names = FALSE
+        ),
+        q    = av_q_estimates[[exposure]][in_region],
+        g    = av_g_estimates[[exposure]][in_region],
+        data = av[in_region]
+      )
+    }
+
+    v  <- summarise_region(ind,  "V",  rule_clean)
+    vc <- summarise_region(!ind, "Vc", paste0("NOT(", rule_clean, ")"))
+    list(v = v, vc = vc)
   }
 
-  selected_items <- selected_items[[1]]
-
-  for (row in 1:nrow(selected_items)) {
-    item <- selected_items[row,]
-    rule <- item$Rule
-    exposure <- item$Exposure
-
-    effect_indicator <- av %>%
-      mutate(Indicator = eval(parse(text = paste0("(", rule, ")")))) %>%
-      pull(Indicator)
-
-    effect_indicator <- as.numeric(effect_indicator)
-
-    effect_in_region <- mean(av_individual_effects_df[[exposure]][effect_indicator == 1], na.rm = TRUE)
-    ic_in_region <- av_influence_curve_df[[exposure]][effect_indicator == 1]
-    region_data <- av[effect_indicator == 1]
-
-    av_q_estimates_region <- av_q_estimates[[exposure]][effect_indicator == 1]
-    av_g_estimates_region <- av_g_estimates[[exposure]][effect_indicator == 1]
-
-    # Compute standard error and confidence intervals
-    variance_est <- var(ic_in_region, na.rm = TRUE) / length(ic_in_region)
-    se_est <- sqrt(variance_est)
-    CI <- calc_CIs(effect_in_region, se_est)
-
-    Lower_CI <- CI[1]
-    Upper_CI <- CI[2]
-
-    # Store results in a data frame
-    results <- data.frame(
-      Exposure = exposure,
-      Effect = effect_in_region,
-      SE = se_est,
-      `Lower CI` = Lower_CI,
-      `Upper CI` = Upper_CI,
-      Modifier = rule[[1]],
-      Fold = fold
-    )
-    results_list[[row]] <- results
-    g_region_list[[row]] <- av_g_estimates_region
-    q_region_list[[row]] <- av_q_estimates_region
-    region_data_list[[row]] <- region_data
-
+  for (rank in seq_along(selected_names)) {
+    exposure <- selected_names[rank]
+    reg <- eval_region(exposure, exposure_best[[exposure]]$rule, rank)
+    results_list[[exposure]]     <- list(reg$v$row, reg$vc$row)
+    q_region_list[[exposure]]    <- list(reg$v$q, reg$vc$q)
+    g_region_list[[exposure]]    <- list(reg$v$g, reg$vc$g)
+    region_data_list[[exposure]] <- list(reg$v$data, reg$vc$data)
   }
 
-  results_df <- do.call(rbind, results_list)
+  results_df <- do.call(rbind, unlist(results_list, recursive = FALSE))
 
+  # The top-ranked exposure (rank 1) defines the oracle region V (element 1)
+  # and its complement V^c (element 2).
+  top_exposure <- selected_names[1]
 
-  # Return the results
-  return(list("K-fold_EM_results" = results_df,
+  g_region_v   <- g_region_list[[top_exposure]][[1]]
+  g_region_vc  <- g_region_list[[top_exposure]][[2]]
+  q_region_v   <- q_region_list[[top_exposure]][[1]]
+  q_region_vc  <- q_region_list[[top_exposure]][[2]]
+  data_region_v  <- region_data_list[[top_exposure]][[1]]
+  data_region_vc <- region_data_list[[top_exposure]][[2]]
+
+  # Return the results. Names are kept consistent with find_max_effect_mods_rct
+  # so the downstream EffectXshift() pooling logic can consume either path.
+  return(list("K_fold_EM_results" = results_df,
               "av_q_estimates" = av_q_estimates,
               "av_hn_estimates" = av_g_estimates,
-              "g_region_v" = g_region_list[[1]],
-              "g_region_vc" = g_region_list[[2]],
-              "q_region_v" = q_region_list[[1]],
-              "q_region_vc" = q_region_list[[2]],
-              "region_data_v" = region_data_list[[1]],
-              "region_data_vc" = region_data_list[[2]],
+              "g_region_v" = g_region_v,
+              "g_region_vc" = g_region_vc,
+              "q_region_v" = q_region_v,
+              "q_region_vc" = q_region_vc,
+              "data_region_v" = data_region_v,
+              "data_region_vc" = data_region_vc,
               "data" = av))
 }
