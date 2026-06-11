@@ -112,22 +112,29 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
     at_class_model <- suppressWarnings(suppressMessages(sl$train(at_sl_task)))
 
     # at predictions -----------
-    at_class_model_preds <- at_class_model$predict(at_sl_task)
-    av_class_model_preds <- at_class_model$predict(av_sl_task)
+    # Bound classifier probabilities away from 0/1 so the resulting density
+    # ratios stay finite (mirrors bound_propensity in the direct-density path).
+    bound_p <- function(p) pmin(pmax(p, 0.025), 0.975)
+    at_class_model_preds <- bound_p(at_class_model$predict(at_sl_task))
+    av_class_model_preds <- bound_p(at_class_model$predict(av_sl_task))
 
-    # Compute the density ratios for shifted exposures
+    # Density ratio g(a - delta | w) / g(a | w) evaluated at the SHIFTED points
+    # (the clever covariate Hn(d(A,W), W), used to predict the shifted Q*).
     at_u_t_shift <- at_class_model_preds[augmented_data$at_dup$intervention == 1]
     at_density_ratio_shift <- at_u_t_shift / (1 - at_u_t_shift)
 
     av_u_t_shift <- av_class_model_preds[augmented_data$av_dup$intervention == 1]
     av_density_ratio_shift <- av_u_t_shift / (1 - av_u_t_shift)
 
-    # Compute the density ratios for unshifted exposures
+    # Density ratio evaluated at the OBSERVED points -- this is the clever
+    # covariate Hn(A, W) that enters BOTH the targeting step and the EIF residual
+    # term. It must be the classifier odds s(A,W)/(1-s(A,W)), NOT 1; hardcoding
+    # it to 1 zeroes the debiasing residual and yields anti-conservative CIs.
     at_u_t_unshift <- at_class_model_preds[augmented_data$at_dup$intervention == 0]
-    at_density_ratio_unshift <- 1
+    at_density_ratio_unshift <- at_u_t_unshift / (1 - at_u_t_unshift)
 
     av_u_t_unshift <- av_class_model_preds[augmented_data$av_dup$intervention == 0]
-    av_density_ratio_unshift <- 1
+    av_density_ratio_unshift <- av_u_t_unshift / (1 - av_u_t_unshift)
 
     # Combine the density ratios into a data.table
     at_density_ratios <- data.table::as.data.table(

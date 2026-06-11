@@ -102,8 +102,10 @@ estimate_density_ratio <- function(at, av, delta, var, covars, classifier) {
   at_class_model <- suppressWarnings(suppressMessages(sl$train(at_sl_task)))
 
   # at predictions -----------
-  at_class_model_preds <- at_class_model$predict(at_sl_task)
-  av_class_model_preds <- at_class_model$predict(av_sl_task)
+  # Bound classifier probabilities away from 0/1 so the density ratios stay finite.
+  bound_p <- function(p) pmin(pmax(p, 0.025), 0.975)
+  at_class_model_preds <- bound_p(at_class_model$predict(at_sl_task))
+  av_class_model_preds <- bound_p(at_class_model$predict(av_sl_task))
 
   # Compute the density ratios for shifted exposures
   at_u_t_shift <- at_class_model_preds[augmented_data$at_dup$intervention == 1]
