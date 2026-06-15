@@ -19,9 +19,10 @@ suppressMessages({
 
 set.seed(20240611)
 
-n_reps <- as.integer(Sys.getenv("DIAG_REPS", "30"))
-n_obs  <- as.integer(Sys.getenv("DIAG_N", "1000"))
-delta  <- 1
+n_reps  <- as.integer(Sys.getenv("DIAG_REPS", "30"))
+n_obs   <- as.integer(Sys.getenv("DIAG_N", "1000"))
+n_folds <- as.integer(Sys.getenv("DIAG_FOLDS", "2"))
+delta   <- 1
 true_v  <- 3 * delta
 true_vc <- 1 * delta
 true_con <- true_v - true_vc
@@ -42,7 +43,7 @@ sim_one <- function() {
 
   res <- tryCatch(EffectXshift(
     w = w, a = a, y = Y, deltas = list(A1 = delta, A2 = delta, A3 = delta),
-    mu_learner = ml, g_learner = g_lrn, n_folds = 2, parallel = FALSE, seed = 1,
+    mu_learner = ml, g_learner = g_lrn, n_folds = n_folds, parallel = FALSE, seed = 1,
     rct = FALSE, density_classification = dens_class, min_obs = 40, max_depth = 1, top_n = 1
   ), error = function(e) NULL)
   if (is.null(res)) return(NULL)
@@ -67,7 +68,8 @@ report <- function(name, est, se, truth) {
               name, mean(est), truth, emp_sd, mean_se, mean_se / emp_sd, cov))
 }
 
-cat("\n===== Mixture variance calibration (", nrow(r), "reps, n =", n_obs, ") =====\n")
+cat("\n===== Mixture variance calibration (", nrow(r), "reps, n =", n_obs,
+    ", folds =", n_folds, ") =====\n")
 report("Region V",  r$v_est,  r$v_se,  true_v)
 report("Region V^c", r$vc_est, r$vc_se, true_vc)
 report("Contrast",  r$con_est, r$con_se, true_con)
@@ -94,4 +96,15 @@ cat("\nSE/SD ~ 1 => calibrated (undercoverage is bias). SE/SD << 1 => SEs too sm
 #    Super Learner library, >= 5 folds, and larger n -- which speeds nuisance
 #    convergence so the first-order variance becomes calibrated. The RCT path
 #    (known propensity, AIPW) is unaffected and stays at ~95% coverage.
+#
+# Methodological-lever test (does increasing folds alone fix calibration?):
+#                       contrast SE/SD   contrast coverage
+#   2 folds (n=1000)        0.48              0.63
+#   5 folds (n=1000)        0.56              0.60      (15 reps; noisy)
+#   -> More folds alone gives only a marginal change. The bottleneck is the
+#      learner's bias / slow convergence, not the cross-fitting count, so the
+#      real remedy is a faster-converging nuisance library (e.g. HAL with
+#      undersmoothing) or a resampling-based standard error. The default n_folds
+#      was raised to 5 as better cross-fitting practice (matching the paper), but
+#      it is NOT on its own a cure for the finite-sample CI undercoverage.
 # ---------------------------------------------------------------------------

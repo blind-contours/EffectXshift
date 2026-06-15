@@ -28,7 +28,13 @@
 #' @param g_learner Learners for fitting the exposure mechanism g(A|W) via \pkg{sl3}.
 #' Used to estimate the density ratio for continuous exposures when
 #' \code{density_classification = FALSE}.
-#' @param n_folds Number of folds to use in cross-validation, default is 2.
+#' @param n_folds Number of folds to use in cross-validation, default is 5.
+#' More folds give each cross-fitted nuisance more training data and follow the
+#' paper's 5-10 fold setup. Note: increasing folds is better cross-fitting
+#' practice but does not by itself resolve the finite-sample anti-conservativeness
+#' of the mixture-path confidence intervals when flexible learners are used (see
+#' the validation scripts under sandbox/); for trustworthy mixture CIs combine
+#' more folds with a richer / faster-converging Super Learner library.
 #' @param outcome_type Data type of the outcome, default is "continuous".
 #' @param parallel Whether to parallelize across cores (default: TRUE).
 #' @param parallel_type Type of parallelization to use if parallel is TRUE:
@@ -80,7 +86,7 @@ EffectXshift <- function(w,
                          fluctuation = c("standard", "weighted"),
                          g_learner = NULL,
                          mu_learner = NULL,
-                         n_folds = 2,
+                         n_folds = 5,
                          outcome_type = "continuous",
                          parallel = TRUE,
                          parallel_type = "multi_session",

@@ -13,7 +13,7 @@ EffectXshift(
   fluctuation = c("standard", "weighted"),
   g_learner = NULL,
   mu_learner = NULL,
-  n_folds = 2,
+  n_folds = 5,
   outcome_type = "continuous",
   parallel = TRUE,
   parallel_type = "multi_session",
@@ -55,7 +55,13 @@ Used to estimate the density ratio for continuous exposures when
 
 \item{mu_learner}{Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}.}
 
-\item{n_folds}{Number of folds to use in cross-validation, default is 2.}
+\item{n_folds}{Number of folds to use in cross-validation, default is 5.
+More folds give each cross-fitted nuisance more training data and follow the
+paper's 5-10 fold setup. Note: increasing folds is better cross-fitting
+practice but does not by itself resolve the finite-sample anti-conservativeness
+of the mixture-path confidence intervals when flexible learners are used (see
+the validation scripts under sandbox/); for trustworthy mixture CIs combine
+more folds with a richer / faster-converging Super Learner library.}
 
 \item{outcome_type}{Data type of the outcome, default is "continuous".}
 
