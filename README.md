@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# R/`EffectXshift` <img src="man/figures/EffectXshift_logo.png" align="right" height="139" alt="EffectXshift hex logo" />
+# R/`EffectXshift` <img src="https://raw.githubusercontent.com/blind-contours/EffectXshift/main/man/figures/EffectXshift_logo.png" align="right" height="139" alt="EffectXshift hex logo" />
 
 <!-- badges: start -->
 
