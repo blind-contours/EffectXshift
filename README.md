@@ -37,7 +37,7 @@ and Rotnitzky 2013).
 
 Our target parameter is:
 
-$$
+```math
 \begin{aligned}
 (\hat A_i, \hat V)
 &= \underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\arg\max}
@@ -51,7 +51,7 @@ E\{Y \mid A_i + \delta_i, A_{\setminus i}, W\}
 \mid W \in V
 \right].
 \end{aligned}
-$$
+```
 
 This finds the exposure-covariate region combination where the effect of
 an intervention is maximally different.
