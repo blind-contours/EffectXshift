@@ -38,23 +38,73 @@ Methods like R-learners, S-learners, T-learners, and X-learners, have been pivot
 
 Despite their effectiveness, these methods often act as black boxes, offering limited insights into which specific subpopulations are most affected by a treatment or exposure. Additionally, many of these methods are limited to only estimating the differential effects of a binary treatment/exposure. Our work with EffectXshift addresses this gap by providing an interpretable framework that not only estimates the impact of interventions but also identifies subpopulations with the maximal effect difference. This approach enhances our understanding of treatment effects, facilitating targeted interventions and personalized treatment strategies.
 
+## Relationship to Other Methods
+
+EffectXshift sits between stochastic-intervention estimators, heterogeneous-treatment-effect methods, and exposure-mixture methods. Stochastic-intervention estimators define and estimate mean outcomes under modified exposure policies [@diaz2012population; @haneuse2013estimation], but typically do not search for the exposure and covariate region with maximal effect modification. Honest causal trees/forests and meta-learners focus on heterogeneous effects [@athey2016recursive; @wager2018estimation; @kunzel2019metalearners], but most commonly target binary or simpler treatments rather than additive stochastic shifts of continuous mixture components. Exposure-mixture methods such as quantile g-computation estimate overall mixture effects or component contributions [@keil2020quantile], while EffectXshift searches for interpretable exposure-region pairs where the stochastic-shift effect is most different.
+
+This data-adaptive search is useful but should be treated carefully. Users should review fold-level selection stability and positivity diagnostics before interpreting pooled estimates. Consistent exposure/rule selection across folds supports a more stable finding; large clever covariates indicate weak support for the requested shift.
+
+## Notes for Trialists
+
+For a randomized trial with one binary treatment, set `rct = TRUE` and pass one
+0/1 treatment column. In `rct_type = "ate"` mode, EffectXshift asks which
+baseline covariate-defined subgroup has the largest treatment-effect difference
+against its complement. It estimates \(Q(1, W) - Q(0, W)\), searches for the
+region `V` that maximizes the differential treatment effect, and reports held-out
+estimates for `V`, `V^c`, and the `V - V^c` contrast.
+
+Trialists should pass the known allocation probability with `alpha` whenever it
+is known, especially under unequal randomization. If `alpha = NULL`, the
+probability is estimated within each training fold from the observed treatment
+proportion. Use `target = "risk"` only for a prognostic high-risk subgroup
+analysis; it reports held-out outcome risk and is not a treatment-effect
+modification estimand. Current scope is one binary treatment and a marginal
+randomization probability; cluster-randomized, adaptive, crossover, or strongly
+stratified designs may require design-specific handling.
+
+For reporting, include treatment coding, the allocation probability, eligible
+baseline covariates, `n_folds`, `min_obs`, `max_depth`, `pval_thresh`,
+fold-level selected rules, the `V`, `V^c`, and `V - V^c` estimates with
+confidence intervals, selected-region arm counts and observed outcome summaries
+from `Trial Region Diagnostics`, and whether the analysis was prespecified or
+exploratory.
+
+For fixed-time event endpoints, define the time point \(\tau\) and endpoint
+scale before subgroup discovery. The current randomized-trial workflow expects a
+fully observed scalar endpoint, for example event by \(\tau\), survival at
+\(\tau\), or a continuous endpoint at a visit. Informative censoring before
+\(\tau\) requires a censoring-adjusted estimator; do not code censored subjects
+as event-free unless that composite endpoint is the intended estimand. A
+time-to-event extension should estimate a censoring survival model, construct an
+IPCW/AIPW/TMLE pseudo-outcome for the fixed-time risk or survival contrast, and
+then search for effect-modifying baseline regions using that adjusted
+pseudo-outcome [@ich2019e9r1; @moore2009increasing; @brooks2013targeted].
+
 
 ## Target Parameter 
 
 EffectXshift uses data-adaptive machine learning methods to identify the exposure-covariate combination that has the maximum difference in the impact of intervention. 
 
-Given a set of exposures $\boldsymbol{A}$, a covariate space $W$, and a particular outcome $Y$, our goal is to identify the exposure $A_i \in \boldsymbol{A}$ and region $V \subseteq W$ that demonstrate the maximal difference in the expected outcome with an intervention applied, compared across $V$ and its complementary region $V^c$. Our target parameter looks like:
+Given a set of exposures $\boldsymbol{A}$, a covariate space $W$, and a particular outcome $Y$, our goal is to identify the exposure $A_i \in \boldsymbol{A}$ and region $V \subseteq W$ that demonstrate the maximal difference in the stochastic-shift effect, compared across $V$ and its complementary region $V^c$. Our target parameter looks like:
 
 $$
 
 \begin{align*}
-&\underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\text{arg max}} \\
-&\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \, W_{\setminus j}\right] \right. \\
-&\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
+(\hat A_i, \hat V)
+&= \underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\arg\max}
+\left\{
+\Psi_i(V) - \Psi_i(V^c)
+\right\}, \\
+\Psi_i(V)
+&= E\left[
+E\{Y \mid A_i + \delta_i, A_{\setminus i}, W\}
+- E\{Y \mid A_i, A_{\setminus i}, W\}
+\mid W \in V
+\right].
 \end{align*}
 
 $$
-Here, $\delta_i$ denotes the intervention effect on exposure $A_i$, and $V^c$ represents the complementary set of $V$ within $W$.
+Here, $\delta_i$ denotes the additive intervention on exposure $A_i$, $\Psi_i(V)$ is the stochastic-shift effect in region $V$, and $V^c$ represents the complementary set of $V$ within $W$.
 
 To elucidate the EffectXshift algorithm, we start by fitting an outcome model utilizing the Super Learner ensemble methodology. This model is tasked with predicting the outcome variable, \(Y\), based on a set of exposures, \(\boldsymbol{A}\), and covariates, \(\boldsymbol{W}\). The Super Learner algorithm, a machine learning ensemble, optimally combines predictions from a pre-specified library of candidate models to minimize prediction error, thereby offering a flexible and robust approach to outcome modeling.
 
@@ -263,5 +313,3 @@ pooled_results %>%
 
 
 Of course, pooled results are only interpretable if the same exposure-covariate region was found in the definition of v and vc. When results are consistent, this indicates a shift in the same exposure in the same region of the covariate space and we are able to leverage more data in the estimation folds to get more precise estimates. 
-
-

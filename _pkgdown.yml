@@ -1,0 +1,11 @@
+url: https://blind-contours.github.io/EffectXshift/
+
+articles:
+- title: Core Method
+  contents:
+  - EffectXshift-vignette
+- title: For Trialists
+  contents:
+  - trialist-quick-start
+  - simulated-rct-trialist
+

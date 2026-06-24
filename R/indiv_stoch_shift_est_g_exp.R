@@ -197,7 +197,7 @@ indiv_stoch_shift_est_g_exp <- function(exposure,
     av_downshifted <- as.data.frame(av_downshifted)
 
 
-    g_model <- suppressMessages(haldensify(
+    g_model <- suppressMessages(haldensify::haldensify(
       A = at[[exposure]], W = at[covars], n_bins = n_bins, lambda_seq = exp(seq(-1, -10, length = 100)),
       # the following arguments are passed to hal9001::fit_hal()
       max_degree = max_degree

@@ -7,66 +7,62 @@
 #' @export
 
 calculatePooledEstimate <- function(results_df, n_folds, delta = NULL) {
-  # Identifying the row with the current pooled TMLE
   pooledRow <- results_df[results_df$Fold == "Pooled TMLE", ]
-  calculatePooledEstimate <- function(results_df, n_folds, delta = NULL) {
-    # Identifying the row with the current pooled TMLE
-    pooledRow <- results_df[results_df$Fold == "Pooled TMLE", ]
 
-    # Calculate n_0 and n_1
-    n_1 <- nrow(results_df[results_df$Fold != "Pooled TMLE", ])
-    n_0 <- n_folds - n_1
-
-    # Variance of the current pooled estimates
-    var_pooled <- pooledRow$Variance
-
-    # Estimating the variance of the "null" estimate
-    var_null <- var_pooled * n_1 / n_0
-
-    # Standard deviation for the null distribution
-    sd_null <- sqrt(var_null)
-
-    # Sample from the null distribution for each null fold
-    null_samples <- rnorm(n_0, mean = 0, sd = sd_null)
-
-    # Weights
-    w_1 <- 1 / var_pooled
-    w_0 <- 1 / var_null
-
-    # Calculate new pooled estimate and its variance
-    pooled_estimate <- pooledRow$Psi
-
-    # Calculate the weighted average using the sampled null values
-    new_pooled_psi <- (w_1 * pooled_estimate + sum(w_0 * null_samples)) / (w_1 + sum(w_0))
-
-    # Recalculate the variance
-    var_new_pooled <- 1 / (w_1 + sum(w_0))
-
-    # Calculate standard error and confidence intervals
-    se_new_pooled <- sqrt(var_new_pooled)
-    lower_ci <- new_pooled_psi - 1.96 * se_new_pooled
-    upper_ci <- new_pooled_psi + 1.96 * se_new_pooled
-
-    p_value_pooled <- 2 * stats::pnorm(abs(new_pooled_psi / se_new_pooled), lower.tail = F)
-
-    # Add new row to the table
-    new_row <- data.table(
-      Condition = pooledRow$Condition,
-      Psi = new_pooled_psi,
-      Variance = var_new_pooled,
-      SE = se_new_pooled,
-      `Lower CI` = lower_ci,
-      `Upper CI` = upper_ci,
-      `P-value` = p_value_pooled,
-      Fold = "Inverse Variance Pooled",
-      Type = pooledRow$Type,
-      Variables = pooledRow$Variables,
-      N = pooledRow$N,
-      Delta = pooledRow$Delta
-    )
-
-    bind_rows(results_df, new_row)
+  if (nrow(pooledRow) != 1) {
+    stop("results_df must contain exactly one row where Fold == 'Pooled TMLE'.", call. = FALSE)
   }
+
+  n_1 <- nrow(results_df[results_df$Fold != "Pooled TMLE", ])
+  n_0 <- n_folds - n_1
+
+  if (n_0 <= 0) {
+    return(results_df)
+  }
+
+  var_pooled <- pooledRow$Variance
+  if (!is.finite(var_pooled) || var_pooled <= 0) {
+    stop("The pooled variance must be finite and positive.", call. = FALSE)
+  }
+
+  var_null <- var_pooled * n_1 / n_0
+  if (!is.finite(var_null) || var_null <= 0) {
+    stop("Unable to construct a finite positive variance for null folds.", call. = FALSE)
+  }
+
+  w_1 <- 1 / var_pooled
+  w_0 <- 1 / var_null
+  new_pooled_psi <- (w_1 * pooledRow$Psi) / (w_1 + n_0 * w_0)
+  var_new_pooled <- 1 / (w_1 + n_0 * w_0)
+
+  se_new_pooled <- sqrt(var_new_pooled)
+  lower_ci <- new_pooled_psi - 1.96 * se_new_pooled
+  upper_ci <- new_pooled_psi + 1.96 * se_new_pooled
+  p_value_pooled <- 2 * stats::pnorm(abs(new_pooled_psi / se_new_pooled), lower.tail = FALSE)
+  delta_value <- if (!is.null(delta)) {
+    delta
+  } else if ("Delta" %in% names(pooledRow)) {
+    pooledRow$Delta
+  } else {
+    NA_real_
+  }
+
+  new_row <- data.table::data.table(
+    Condition = pooledRow$Condition,
+    Psi = new_pooled_psi,
+    Variance = var_new_pooled,
+    SE = se_new_pooled,
+    `Lower CI` = lower_ci,
+    `Upper CI` = upper_ci,
+    `P-value` = p_value_pooled,
+    Fold = "Inverse Variance Pooled",
+    Type = pooledRow$Type,
+    Variables = pooledRow$Variables,
+    N = pooledRow$N,
+    Delta = delta_value
+  )
+
+  dplyr::bind_rows(results_df, new_row)
 }
 
 

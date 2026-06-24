@@ -1,6 +1,6 @@
 #' @title Identification of Maximal Effect Modifiers Using Stochastic Shift Interventions
 #'
-#' @description The `find_max_effect_mods` function identifies subpopulations with the maximum differential impact of stochastic shift interventions on exposures within a mixture. The method estimates the individual effects of shifting each exposure while controlling for other exposures and covariates, using ensemble machine learning and targeted maximum likelihood estimation (TMLE).
+#' @description The `find_max_effect_mods` function identifies subpopulations with the maximum differential impact of stochastic shift interventions on exposures within a mixture. The method estimates the individual effects of shifting each exposure while controlling for other exposures and covariates, using ensemble machine learning and targeted maximum likelihood estimation (TMLE) or a one-step estimator.
 #' Once the individual intervention effects and influence curve estimates given an intervention on each exposure are derived, we then use a simple t-statistic partitioning algorithm to find the region with the maximum significant difference in intervention effects.
 #'
 #' @param at A training-fold \code{data.frame} containing the baseline covariates, exposures, and outcome.
@@ -12,11 +12,17 @@
 #' @param outcome_type A \code{character} string indicating the type of the outcome variable; either "continuous", "binary", or "count".
 #' @param mu_learner A list of \code{\link[sl3]{Lrnr_sl}} learners specifying the ensemble machine learning models to be used for outcome prediction within the Super Learner framework.
 #' @param g_learner A list of \code{\link[sl3]{Lrnr_sl}} learners specifying the ensemble machine learning models to be used for estimating the conditional density of the exposures.
+#' @param estimator The type of estimator to fit: \code{"tmle"} or \code{"onestep"}.
+#' @param fluctuation Method used in the targeting step: \code{"standard"} or \code{"weighted"}.
 #' @param top_n An \code{integer} specifying the number of top positive and negative effects to return.
 #' @param seed An \code{integer} value to set the seed for reproducibility.
 #' @param min_obs Minimum number of observations in a region to warrant a split.
 #' @param fold Label for the fold index (for cross-validation).
 #' @param density_classification If TRUE, estimate the exposure density ratio via a classification reparameterization rather than direct conditional density estimation.
+#' @param adaptive_delta If TRUE, reduce the exposure shift until the training-fold
+#' clever covariate is no larger than \code{hn_trunc_thresh}.
+#' @param hn_trunc_thresh Maximum allowed clever-covariate value under
+#' \code{adaptive_delta}.
 #' @param max_depth Maximum depth of the partitioning tree used to discover effect-modification regions.
 #'
 #' @return A list containing the top effects and interactions identified and estimated by the function. It includes elements for top positive and negative individual effects as well as top synergistic and antagonistic interactions.
@@ -47,11 +53,32 @@
 #' @import dplyr
 #' @importFrom ranger ranger
 #' @importFrom data.table as.data.table setnames
+#' @importFrom stats pt
 #' @export
 
-find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outcome_type, mu_learner, g_learner, top_n = 3, seed, min_obs, fold, density_classification = TRUE, max_depth) {
+find_max_effect_mods <- function(at,
+                                 av,
+                                 deltas,
+                                 a_names,
+                                 w_names,
+                                 outcome,
+                                 outcome_type,
+                                 mu_learner,
+                                 g_learner,
+                                 estimator = c("tmle", "onestep"),
+                                 fluctuation = c("standard", "weighted"),
+                                 top_n = 3,
+                                 seed = NULL,
+                                 min_obs,
+                                 fold,
+                                 density_classification = TRUE,
+                                 adaptive_delta = FALSE,
+                                 hn_trunc_thresh = 10,
+                                 max_depth) {
   future::plan(future::sequential, gc = TRUE)
-  set.seed(seed)
+  estimator <- match.arg(estimator)
+  fluctuation <- match.arg(fluctuation)
+  if (!is.null(seed)) set.seed(seed)
 
   # we need to impute any covariates before beginning the search algorithm
   at <- at %>%
@@ -71,6 +98,7 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
   av_influence_curve_df <- list()
   av_q_estimates <- list()
   av_g_estimates <- list()
+  delta_used <- list()
 
   create_augmented_data <- function(at, av,  delta, var, covars) {
     n <- nrow(at)
@@ -159,21 +187,40 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
   for (var in a_names) {
 
     ## get lower and upper bound so we don't shift too far
-    lower_bound <- min(min(at[[var]]), min(at[[var]]))
-    upper_bound <- max(max(at[[var]]), max(at[[var]]))
+    lower_bound <- min(min(at[[var]], na.rm = TRUE), min(av[[var]], na.rm = TRUE))
+    upper_bound <- max(max(at[[var]], na.rm = TRUE), max(av[[var]], na.rm = TRUE))
+    delta_var <- deltas[[var]]
 
     if (density_classification) {
-      ind_gn_exp_estim <- estimate_density_ratio(at = at, av = av, delta =  deltas[[var]], var = var, covars = c(var, w_names), classifier = mu_learner)
+      repeat {
+        ind_gn_exp_estim <- estimate_density_ratio(
+          at = at,
+          av = av,
+          delta = delta_var,
+          var = var,
+          covars = c(var, w_names),
+          classifier = mu_learner
+        )
+
+        max_hn <- max(ind_gn_exp_estim$Hn_at$shift, na.rm = TRUE)
+        if (!adaptive_delta || max_hn <= hn_trunc_thresh) break
+
+        next_delta <- delta_var - (0.1 * delta_var)
+        if (isTRUE(all.equal(next_delta, delta_var)) || abs(next_delta) < .Machine$double.eps) {
+          break
+        }
+        delta_var <- next_delta
+      }
     } else {
 
     ind_gn_exp_estim <- indiv_stoch_shift_est_g_exp(
       exposure = var,
-      delta =  deltas[[var]],
+      delta =  delta_var,
       g_learner = g_learner,
       covars = w_names,
       av = av,
       at = at,
-      adaptive_delta = FALSE,
+      adaptive_delta = adaptive_delta,
       hn_trunc_thresh = hn_trunc_thresh,
       use_multinomial = FALSE,
       lower_bound = lower_bound,
@@ -183,7 +230,9 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
       n_bins = 4,
       max_degree = 10
     )
+    delta_var <- ind_gn_exp_estim$delta
     }
+    delta_used[[var]] <- delta_var
 
     ## covariates are now exposures and baseline for Q
     covars <- c(a_names, w_names)
@@ -192,7 +241,7 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
 
     ind_qn_estim <- indiv_stoch_shift_est_Q(
       exposure = var,
-      delta = deltas[[var]],
+      delta = delta_var,
       mu_learner = mu_learner,
       covars = covars,
       av = av,
@@ -211,23 +260,25 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
     ## do the TMLE update for at
     at_tmle_fit <- tmle_exposhift(
       data_internal = at,
-      delta =  deltas[[var]],
+      delta =  delta_var,
       Qn_scaled = ind_qn_estim$q_at,
       Qn_unscaled = scale_to_original(ind_qn_estim$q_at, min_orig = min(at$y), max_orig = max(at$y)),
       Hn = Hn_at,
-      fluctuation = "standard",
-      y = at$y
+      fluctuation = fluctuation,
+      y = at$y,
+      estimator = estimator
     )
 
     ## do the TMLE update for av
     av_tmle_fit <- tmle_exposhift(
       data_internal = av,
-      delta =  deltas[[var]],
+      delta =  delta_var,
       Qn_scaled = ind_qn_estim$q_av,
       Qn_unscaled = scale_to_original(ind_qn_estim$q_av, min_orig = min(av$y), max_orig = max(av$y)),
       Hn = Hn_av,
-      fluctuation = "standard",
-      y = av$y
+      fluctuation = fluctuation,
+      y = av$y,
+      estimator = estimator
     )
 
     at_effect <- at_tmle_fit$qn_shift_star - at_tmle_fit$qn_noshift_star
@@ -249,6 +300,40 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
 
   at_individual_effects_df <- do.call(cbind, at_individual_effects_df)
   at_influence_curve_df <- do.call(cbind, at_influence_curve_df)
+
+  summarize_positivity <- function(exposure) {
+    hn <- av_g_estimates[[exposure]]
+    hn_noshift <- as.numeric(hn$noshift)
+    hn_shift <- as.numeric(hn$shift)
+    hn_shift_q <- stats::quantile(
+      hn_shift,
+      probs = c(0.5, 0.9, 0.95, 0.99),
+      na.rm = TRUE,
+      names = FALSE
+    )
+
+    data.frame(
+      Fold = fold,
+      Exposure = exposure,
+      Delta = delta_used[[exposure]],
+      Adaptive_Delta = adaptive_delta,
+      N = length(hn_shift),
+      Hn_Noshift_Max = max(hn_noshift, na.rm = TRUE),
+      Hn_Shift_Max = max(hn_shift, na.rm = TRUE),
+      Hn_Shift_Q50 = hn_shift_q[1],
+      Hn_Shift_Q90 = hn_shift_q[2],
+      Hn_Shift_Q95 = hn_shift_q[3],
+      Hn_Shift_Q99 = hn_shift_q[4],
+      Prop_Hn_Shift_GT_Threshold = mean(hn_shift > hn_trunc_thresh, na.rm = TRUE),
+      Threshold = hn_trunc_thresh,
+      check.names = FALSE
+    )
+  }
+
+  positivity_diagnostics <- do.call(
+    rbind,
+    lapply(names(av_g_estimates), summarize_positivity)
+  )
 
   calculate_p_value <- function(left_effects, left_ic, right_effects, right_ic) {
     left_mean <- mean(left_effects, na.rm = TRUE)
@@ -276,7 +361,7 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
   split_data <- function(data, split_var, split_point) {
     unique_values <- sort(unique(data[[split_var]]))
     # Check if the variable is binary (i.e., only contains 0 and 1)
-    is_binary <- all(sort(unique_values) == c(0, 1))
+    is_binary <- length(unique_values) == 2 && all(sort(unique_values) == c(0, 1))
 
 
     # Apply different ifelse conditions based on whether the variable is binary or not
@@ -322,8 +407,7 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
   }
 
   find_best_split <- function(data, split_variables,
-                              outcome, min_obs = 10, parent_p,
-                              min_max) {
+                              outcome, min_obs = 10, parent_p) {
     best_split <- NULL
     min_p_value <- 1
 
@@ -407,8 +491,7 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
     # Find the best split using the parent mean calculated earlier
     best_split <- find_best_split(data = data, split_variables = split_variables, outcome,
       min_obs = min_obs,
-      parent_p = parent_p,
-      min_max = min_max
+      parent_p = parent_p
     )
 
     if (is.null(best_split)) { # If no best split found, return the current path
@@ -540,9 +623,8 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
     if (nchar(trimws(rule_clean)) == 0) {
       ind <- rep(TRUE, nrow(av))
     } else {
-      ind <- av %>%
-        mutate(.Indicator = eval(parse(text = paste0("(", rule_clean, ")")))) %>%
-        pull(.Indicator)
+      rule_env <- list2env(as.list(av), parent = baseenv())
+      ind <- eval(parse(text = paste0("(", rule_clean, ")")), envir = rule_env)
       ind <- ifelse(is.na(ind), FALSE, ind)
     }
 
@@ -563,6 +645,7 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
           Fold        = fold,
           Rank        = rank,
           N_in_Region = sum(in_region),
+          Delta       = delta_used[[exposure]],
           check.names = FALSE
         ),
         q    = av_q_estimates[[exposure]][in_region],
@@ -609,5 +692,6 @@ find_max_effect_mods <- function(at, av, deltas, a_names, w_names, outcome, outc
               "q_region_vc" = q_region_vc,
               "data_region_v" = data_region_v,
               "data_region_vc" = data_region_vc,
+              "positivity_diagnostics" = positivity_diagnostics,
               "data" = av))
 }

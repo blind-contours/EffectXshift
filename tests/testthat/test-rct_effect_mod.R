@@ -43,6 +43,7 @@ test_that("EffectXshift(rct = TRUE) recovers a binary effect modifier", {
   expect_named(res, c(
     "Effect Modification K-Fold Results",
     "Pooled Region Effects",
+    "Trial Region Diagnostics",
     "Region V Data",
     "Region V^c Data"
   ))
@@ -50,6 +51,18 @@ test_that("EffectXshift(rct = TRUE) recovers a binary effect modifier", {
   pooled <- res[["Pooled Region Effects"]]
   expect_true(all(c("V", "V^c", "V - V^c") %in% pooled$Region))
   expect_true(all(c("Psi", "SE", "Lower CI", "Upper CI", "P-value", "N") %in% names(pooled)))
+
+  trial_diagnostics <- diagnose_trial_regions(res)
+  expect_equal(trial_diagnostics$Region, c("V", "V^c"))
+  expect_true(all(c(
+    "N_Control",
+    "N_Treated",
+    "Prop_Treated",
+    "Observed_Mean_Diff_Treated_Minus_Control",
+    "Flag_Small_Arm_N"
+  ) %in% names(trial_diagnostics)))
+  expect_true(all(trial_diagnostics$N_Control > 0))
+  expect_true(all(trial_diagnostics$N_Treated > 0))
 
   # The discovered region rule should reference the true modifier W1.
   kfold <- res[["Effect Modification K-Fold Results"]]

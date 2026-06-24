@@ -14,11 +14,15 @@ find_max_effect_mods(
   outcome_type,
   mu_learner,
   g_learner,
+  estimator = c("tmle", "onestep"),
+  fluctuation = c("standard", "weighted"),
   top_n = 3,
-  seed,
+  seed = NULL,
   min_obs,
   fold,
   density_classification = TRUE,
+  adaptive_delta = FALSE,
+  hn_trunc_thresh = 10,
   max_depth
 )
 }
@@ -41,6 +45,10 @@ find_max_effect_mods(
 
 \item{g_learner}{A list of \code{\link[sl3]{Lrnr_sl}} learners specifying the ensemble machine learning models to be used for estimating the conditional density of the exposures.}
 
+\item{estimator}{The type of estimator to fit: \code{"tmle"} or \code{"onestep"}.}
+
+\item{fluctuation}{Method used in the targeting step: \code{"standard"} or \code{"weighted"}.}
+
 \item{top_n}{An \code{integer} specifying the number of top positive and negative effects to return.}
 
 \item{seed}{An \code{integer} value to set the seed for reproducibility.}
@@ -51,13 +59,19 @@ find_max_effect_mods(
 
 \item{density_classification}{If TRUE, estimate the exposure density ratio via a classification reparameterization rather than direct conditional density estimation.}
 
+\item{adaptive_delta}{If TRUE, reduce the exposure shift until the training-fold
+clever covariate is no larger than \code{hn_trunc_thresh}.}
+
+\item{hn_trunc_thresh}{Maximum allowed clever-covariate value under
+\code{adaptive_delta}.}
+
 \item{max_depth}{Maximum depth of the partitioning tree used to discover effect-modification regions.}
 }
 \value{
 A list containing the top effects and interactions identified and estimated by the function. It includes elements for top positive and negative individual effects as well as top synergistic and antagonistic interactions.
 }
 \description{
-The \code{find_max_effect_mods} function identifies subpopulations with the maximum differential impact of stochastic shift interventions on exposures within a mixture. The method estimates the individual effects of shifting each exposure while controlling for other exposures and covariates, using ensemble machine learning and targeted maximum likelihood estimation (TMLE).
+The \code{find_max_effect_mods} function identifies subpopulations with the maximum differential impact of stochastic shift interventions on exposures within a mixture. The method estimates the individual effects of shifting each exposure while controlling for other exposures and covariates, using ensemble machine learning and targeted maximum likelihood estimation (TMLE) or a one-step estimator.
 Once the individual intervention effects and influence curve estimates given an intervention on each exposure are derived, we then use a simple t-statistic partitioning algorithm to find the region with the maximum significant difference in intervention effects.
 }
 \examples{

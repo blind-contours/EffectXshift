@@ -70,8 +70,8 @@ indiv_stoch_shift_est_Q <- function(exposure,
                                     covars,
                                     av,
                                     at,
-                                    lower_bound = lower_bound,
-                                    upper_bound = upper_bound,
+                                    lower_bound = -Inf,
+                                    upper_bound = Inf,
                                     outcome_type = "continuous") {
   future::plan(future::sequential, gc = TRUE)
 

@@ -1,0 +1,196 @@
+---
+title: "Simulated Randomized Trial Walkthrough"
+author: "David McCoy"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Simulated Randomized Trial Walkthrough}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+## Goal
+
+This article walks through a small randomized trial where the active treatment
+improves a binary response endpoint, but the treatment effect is much larger in
+participants with `marker_high == 1`. The goal is to show how a trialist should
+read the main `rct = TRUE` outputs:
+
+- fold-level selected subgroup rules
+- pooled effects in `V`, `V^c`, and the `V - V^c` contrast
+- selected-region arm counts and observed outcomes
+- selection stability diagnostics
+
+The example is intentionally simple. In a real trial, the endpoint definition,
+eligible subgroup variables, analysis role, and tuning parameters should be
+written in the protocol or SAP before looking at outcomes.
+
+## Simulate a trial
+
+```{r setup}
+library(EffectXshift)
+library(sl3)
+
+set.seed(20240624)
+
+n <- 600
+marker_high <- rbinom(n, 1, 0.5)
+age <- round(rnorm(n, mean = 62, sd = 9))
+biomarker <- rnorm(n)
+prior_tx <- rbinom(n, 1, plogis(-0.5 + 0.4 * biomarker))
+
+# 1:1 randomized treatment
+treatment <- rbinom(n, 1, 0.5)
+```
+
+The true response risk is generated so the treatment improves response by about
+35 percentage points when `marker_high == 1`, and by about 0 percentage points
+otherwise.
+
+```{r outcome}
+true_effect <- ifelse(marker_high == 1, 0.35, 0.00)
+
+baseline_response <- plogis(
+  -1.2 - 0.02 * (age - 62) + 0.3 * biomarker - 0.2 * prior_tx
+)
+response_prob <- pmin(pmax(baseline_response + true_effect * treatment, 0.01), 0.99)
+response <- rbinom(n, 1, response_prob)
+
+w <- data.frame(
+  marker_high = marker_high,
+  age = age,
+  biomarker = biomarker,
+  prior_tx = prior_tx
+)
+a <- data.frame(treatment = treatment)
+
+aggregate(true_effect ~ marker_high, data = data.frame(marker_high, true_effect), mean)
+```
+
+## Run the randomized-trial workflow
+
+For a trial, pass the known allocation probability through `alpha`. Here
+`alpha = 0.5` because this is a 1:1 randomized design.
+
+```{r fit}
+mu_learner <- list(
+  Lrnr_ranger$new(num.trees = 150),
+  Lrnr_glm$new()
+)
+
+trial_results <- EffectXshift(
+  w = w,
+  a = a,
+  y = response,
+  deltas = 0,
+  outcome_type = "binary",
+  mu_learner = mu_learner,
+  n_folds = 2,
+  parallel = FALSE,
+  seed = 12,
+  rct = TRUE,
+  rct_type = "ate",
+  alpha = 0.5,
+  min_obs = 50,
+  max_depth = 1,
+  pval_thresh = 0.3
+)
+```
+
+`pval_thresh = 0.3` is intentionally permissive for this small teaching
+simulation. In applied work, treat the split rule as a tuning choice and state
+it before running the analysis.
+
+## Fold-level rules
+
+```{r kfold}
+kfold <- trial_results$`Effect Modification K-Fold Results`
+kfold$Rule <- sub("&\\s*$", "", kfold$Rule)
+kfold
+```
+
+Interpretation:
+
+- `RegionType == "V"` is the discovered higher-effect region in that fold.
+- `RegionType == "Vc"` is the held-out complement.
+- `Rule` is the selected baseline subgroup rule. Here, `marker_high != 0` means
+  the selected region is the `marker_high == 1` subgroup.
+- `Effect` is the held-out region treatment-effect estimate on the response-risk
+  difference scale.
+- `N_in_Region` is the number of validation-fold participants in that region.
+
+The fold-level table is the first place to look. If different folds select
+different variables or opposite orientations, the pooled result should be
+reported as exploratory and interpreted cautiously.
+
+## Pooled region effects
+
+```{r pooled}
+trial_results$`Pooled Region Effects`
+```
+
+Interpretation:
+
+- `V` is the treatment effect in the selected subgroup.
+- `V^c` is the treatment effect in everyone outside that subgroup.
+- `V - V^c` is the effect-modification contrast.
+
+In this simulation, the selected `V` region has a large positive response-risk
+difference, while `V^c` is near zero. A positive `V - V^c` contrast indicates
+that treatment benefit is larger in the selected subgroup than in its
+complement.
+
+## Trial region diagnostics
+
+```{r trial-diagnostics}
+trial_results$`Trial Region Diagnostics`
+```
+
+These diagnostics are descriptive, not adjusted effect estimates. Use them to
+check whether the discovered regions have usable arm counts and whether the
+observed outcomes broadly agree with the adjusted results.
+
+Important columns:
+
+- `N_Control`, `N_Treated`: arm counts in the selected region
+- `Prop_Treated`: observed treatment fraction; in a randomized trial this should
+  be close to the design allocation probability, allowing for random variation
+- `Outcome_Mean_Control`, `Outcome_Mean_Treated`: observed endpoint means by arm
+- `Observed_Mean_Diff_Treated_Minus_Control`: unadjusted descriptive difference
+- `Flag_Small_Arm_N`: quick flag for regions where one arm is too small to
+  interpret comfortably
+
+## Selection stability
+
+```{r stability}
+diagnose_selection(trial_results)$stability
+```
+
+This summarizes whether the same treatment and rule were selected across folds.
+Stable fold-level selection supports a more interpretable finding. Unstable
+selection does not invalidate the held-out estimation procedure, but it does
+mean the discovered subgroup should be framed as exploratory.
+
+## What to write in a report
+
+For this simulated example, an interpretation could read:
+
+> In a 1:1 randomized trial with a binary response endpoint, EffectXshift
+> selected the baseline subgroup `marker_high == 1` as the higher-benefit
+> region. The pooled held-out treatment effect was larger in `V` than in `V^c`,
+> and the `V - V^c` contrast was positive. Arm counts in both selected regions
+> were adequate, and fold-level selection was stable across the two folds.
+
+For a real trial, also report whether this was prespecified or exploratory, the
+eligible baseline variables, the endpoint time point, censoring or missingness
+handling, `alpha`, and all subgroup-search tuning parameters.
+

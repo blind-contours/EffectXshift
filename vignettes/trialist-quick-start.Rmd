@@ -1,0 +1,111 @@
+---
+title: "Trialist Quick Start"
+author: "David McCoy"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+bibliography: ../inst/references.bib
+vignette: >
+  %\VignetteIndexEntry{Trialist Quick Start}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## What the trial workflow answers
+
+For a randomized trial with one binary treatment, `EffectXshift(rct = TRUE)`
+asks:
+
+> Which baseline covariate-defined subgroup has the largest treatment-effect
+> difference compared with its complement?
+
+In `rct_type = "ate"` mode, the subject-level contrast is the expected
+outcome under treatment minus the expected outcome under control:
+`Q(1, W) - Q(0, W)`. The package uses training folds to discover a subgroup
+rule and held-out folds to estimate the treatment effect in the discovered
+region `V`, its complement `V^c`, and the contrast `V - V^c`.
+
+This is most useful as an exploratory or adaptive-prespecification tool for
+baseline subgroup discovery. For a confirmatory trial analysis, the eligible
+baseline variables, tuning parameters, endpoint, intercurrent-event strategy,
+and interpretation plan should be prespecified.
+
+## Minimal inputs
+
+| Object | Meaning | Trialist note |
+|---|---|---|
+| `w` | Baseline covariates eligible for subgroup discovery | Include variables measured before randomization. Do not include post-randomization variables. |
+| `a` | One binary treatment column | Code control as `0` and active treatment as `1`. |
+| `y` | Fully observed scalar endpoint | For fixed-time event endpoints, handle censoring before creating `y`. |
+| `alpha` | Known treatment allocation probability | Pass the design value, especially for unequal randomization. |
+| `n_folds` | Cross-fitting folds | Use enough folds for stable held-out estimation; inspect fold-level rules. |
+| `min_obs`, `max_depth`, `pval_thresh` | Subgroup search controls | Keep the search simple enough to be interpretable. |
+
+The treatment mode currently targets one binary treatment and a marginal
+allocation probability. Cluster-randomized, adaptive, crossover, platform, or
+strongly stratified designs may need design-specific handling before
+confirmatory use.
+
+## Estimand checklist
+
+Before running the package, write down:
+
+- population: randomized participants included in the analysis
+- treatment contrast: active treatment (`A = 1`) versus control (`A = 0`)
+- endpoint: continuous outcome, binary response, or event status by a fixed time
+- time point: the visit or fixed time \(\tau\), if applicable
+- intercurrent events: treatment-policy, composite, hypothetical, or another
+  strategy aligned with ICH E9(R1) [@ich2019e9r1]
+- censoring and missingness: how subjects without the endpoint are handled
+- eligible subgroup variables: baseline variables only
+- analysis role: prespecified, exploratory, or sensitivity analysis
+
+For a fixed-time event estimand such as the risk difference by time `tau`, do
+not code subjects censored before `tau` as event-free unless that composite
+endpoint is the estimand. If
+censoring is informative, first use a censoring-adjusted estimator, such as an
+IPCW/AIPW/TMLE approach for right-censored outcomes, to construct an endpoint or
+pseudo-outcome aligned with the estimand [@moore2009increasing;
+@brooks2013targeted].
+
+## Output map
+
+| Result object | How to use it |
+|---|---|
+| `Effect Modification K-Fold Results` | Check whether folds select similar variables, thresholds, and region orientation. |
+| `Pooled Region Effects` | Primary held-out estimates for `V`, `V^c`, and `V - V^c`. |
+| `Trial Region Diagnostics` | Descriptive arm counts and observed outcome summaries in each selected region. |
+| `Region V Data`, `Region V^c Data` | Validation rows with the selected-region indicator and pseudo-outcome columns. |
+| `diagnose_selection(results)` | Compact summary of fold-level selection stability. |
+| `diagnose_trial_regions(results)` | Recompute or extract the trial region diagnostics table. |
+
+## Reporting template
+
+A concise report should include:
+
+- treatment coding and allocation probability `alpha`
+- endpoint definition, time point, and intercurrent-event strategy
+- censoring or missing-data handling
+- eligible baseline covariates
+- `n_folds`, `min_obs`, `max_depth`, and `pval_thresh`
+- fold-level selected subgroup rules
+- `V`, `V^c`, and `V - V^c` estimates with confidence intervals
+- selected-region arm counts and observed outcome summaries
+- whether the subgroup search was prespecified or exploratory
+
+For example:
+
+> EffectXshift was used as an exploratory held-out subgroup discovery analysis
+> among randomized participants. Treatment was coded as 1 for active treatment
+> and 0 for control, with allocation probability alpha = 0.5. Candidate subgroup
+> variables were restricted to baseline covariates. The selected region `V` was
+> compared with its complement `V^c`; fold-level rules, pooled region effects,
+> and selected-region arm counts were reviewed before interpretation.
+
+See the simulated randomized-trial walkthrough for a complete example.

@@ -13,7 +13,7 @@ tmle_exposhift(
   fluctuation = c("standard", "weighted"),
   eif_reg_type = c("hal", "glm"),
   y,
-  estimator = "tmle"
+  estimator = c("tmle", "onestep")
 )
 }
 \arguments{

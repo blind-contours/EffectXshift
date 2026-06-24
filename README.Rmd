@@ -18,11 +18,8 @@ knitr::opts_chunk$set(
 # R/`EffectXshift`
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXShift/actions)
-[![Coverage Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/EffectXShift?branch=master)
-[![CRAN](https://www.r-pkg.org/badges/version/EffectXshift)](https://www.r-pkg.org/pkg/EffectXshift)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/EffectXShift)](https://CRAN.R-project.org/package=EffectXshift)
-[![CRAN total downloads](http://cranlogs.r-pkg.org/badges/grand-total/EffectXShift)](https://CRAN.R-project.org/package=EffectXshift)
+[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXshift/actions)
+[![Coverage Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/EffectXshift?branch=master)
 [![Project Status: Active – The project has reached a stable, usable state and is being actively developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
 [![MIT license](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://opensource.org/licenses/MIT)
 <!-- [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4070042.svg)](https://doi.org/10.5281/zenodo.4070042) -->
@@ -37,15 +34,23 @@ __Authors:__ [David McCoy](https://davidmccoy.org)
 ## What's `EffectXshift`?
 
 
-The `EffectXshift` R package offers an approach which identifies and estimates the differential impact of intervention on a mixed exposure on an outcome. We define effect modification as the counterfactual mean of the outcome under stochastic interventions of an exposure in the mixture in a subregion of the covariate space compared to the complementary region of that space. Stochastic interventions or exposure changes depend on naturally observed values, as described in past literature [@diaz2012population; @haneuse2013estimation].
+The `EffectXshift` R package offers an approach which identifies and estimates the differential impact of intervention on a mixed exposure on an outcome. We define effect modification as a contrast of stochastic-shift effects: the expected change in the outcome under an additive shift of one exposure in a subregion of the covariate space compared to the complementary region of that space. Stochastic interventions or exposure changes depend on naturally observed values, as described in past literature [@diaz2012population; @haneuse2013estimation].
 
 Our target parameter is: 
 
 $$
 \begin{align*}
-&\underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\text{arg max}} \\
-&\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \, W_{\setminus j}\right] \right. \\
-&\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
+(\hat A_i, \hat V)
+&= \underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\arg\max}
+\left\{
+\Psi_i(V) - \Psi_i(V^c)
+\right\}, \\
+\Psi_i(V)
+&= E\left[
+E\{Y \mid A_i + \delta_i, A_{\setminus i}, W\}
+- E\{Y \mid A_i, A_{\setminus i}, W\}
+\mid W \in V
+\right].
 \end{align*}
 $$
 
@@ -57,15 +62,34 @@ This finds the exposure-covariate region combination where the effect of an inte
 
 ## K-Fold Cross-Validation
 
-The package ensures robustness by employing a k-fold cross-validation framework. This framework helps in estimating a data-adaptive parameter, which is the stochastic shift target parameters for the exposure  identified as having maximal effect modification. The process begins by partitioning the data into parameter-generating and estimation samples. In the parameter-generating sample, we identify our exposure-covariate region with maximum effect modification using machine learning g-computation framework. In the estimation sample we then estimate our stochastic shift target parameter in levels of the discovered covariate using the doubly robust estimator TMLE to ensure asymptotic efficiency which allows us to construct confidence intervals for our estimates (unlike the g-comp method). 
+The package uses a k-fold cross-validation framework for the data-adaptive parameter. The process begins by partitioning the data into parameter-generating and estimation samples. In the parameter-generating sample, we identify our exposure-covariate region with maximum effect modification using a machine learning g-computation framework. In the estimation sample we then estimate the stochastic-shift effect in the discovered region and its complement using the doubly robust estimator TMLE, which allows us to construct confidence intervals for the held-out estimates.
 
 By using EffectXshift, users get access to a tool that offers both k-fold specific and aggregated results for the maximal effect modification, ensuring that researchers can glean the most information from their data. For a more in-depth exploration, there's an accompanying vignette.
 
 ## Inputs 
 
-To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the respective $\delta$ for each exposure (indicating the degree of shift). The `top_n` parameter defines the top number of effect modification exposure-covariate pairs. A detailed guide is provided in the vignette. With these inputs, `EffectXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
+To utilize the package, users need to provide vectors for exposures, covariates, and outcomes. They also specify the respective $\delta$ for each exposure (indicating the degree of shift); unnamed delta vectors are matched to exposure columns in order. The `top_n` parameter defines the top number of effect modification exposure-covariate pairs. A detailed guide is provided in the vignette. With these inputs, `EffectXshift` processes the data and delivers tables showcasing fold-specific results and aggregated outcomes, allowing users to glean insights effectively.
 
 `EffectXshift` also incorporates features from the `sl3` package [@coyle-sl3-rpkg], facilitating ensemble machine learning in the estimation process. If the user does not specify any stack parameters, `EffectXshift` will automatically create an ensemble of machine learning algorithms that strike a balance between flexibility and computational efficiency.
+
+## Where This Fits
+
+`EffectXshift` is not intended to replace all heterogeneous-effect or mixture
+methods. Its target is more specific: interpretable discovery and held-out
+estimation of covariate regions where stochastic-shift effects differ for one
+component of a continuous exposure mixture.
+
+| Literature | Typical target | How `EffectXshift` differs |
+|---|---|---|
+| Stochastic interventions / modified treatment policies [@diaz2012population; @haneuse2013estimation] | Population mean under an exposure shift | Adds data-adaptive exposure and covariate-region discovery for effect modification |
+| Honest causal trees and forests [@athey2016recursive; @wager2018estimation] | Heterogeneous effects, often for binary or simple treatments | Targets additive stochastic shifts for continuous mixture components and reports interpretable selected regions |
+| Meta-learners for CATE [@kunzel2019metalearners] | Individualized conditional treatment effects | Uses fold-split discovery and TMLE/onestep estimation for a pre-specified stochastic-shift estimand |
+| Exposure-mixture methods such as quantile g-computation [@keil2020quantile] | Overall mixture effects or component weights | Searches for the exposure-region pair with maximal shift-effect contrast |
+
+Because the exposure/region is selected from the data, users should review the
+new selection and positivity diagnostics before interpreting pooled estimates.
+Unstable fold-level selections suggest an exploratory finding; large clever
+covariates suggest weak practical support for the requested exposure shift.
 
 
 ---
@@ -87,6 +111,23 @@ Make sure `sl3` installs correctly then install `EffectXshift`
 ```{r EffectXshift_install,  eval = FALSE}
 remotes::install_github("blind-contours/EffectXshift@main")
 ```
+
+## Trialist Guides
+
+The pkgdown site includes trial-focused pages that are more practical than the
+full methods vignette:
+
+- [Trialist Quick Start](https://blind-contours.github.io/EffectXshift/articles/trialist-quick-start.html):
+  estimand checklist, required inputs, output map, and reporting template.
+- [Simulated Randomized Trial Walkthrough](https://blind-contours.github.io/EffectXshift/articles/simulated-rct-trialist.html):
+  simulated trial data, `rct = TRUE` analysis, result tables, diagnostics, and
+  interpretation.
+- [Full Methods Vignette](https://blind-contours.github.io/EffectXshift/articles/EffectXshift-vignette.html):
+  broader stochastic-shift and mixed-exposure workflow.
+
+For a randomized trial, start with the quick-start page, then run through the
+simulated RCT article before applying the method to a real SAP or exploratory
+subgroup analysis.
 
 
 ## Example
@@ -207,6 +248,10 @@ proc.time() - ptm
 k_fold_results <- sim_results$`Effect Modification K-Fold Results`
 pooled_results_v <- sim_results$`Effect Modification Region V Pooled Results`
 pooled_results_vc <- sim_results$`Effect Modification Region V^c Pooled Results`
+
+## diagnostics to review before interpreting pooled results
+selection_diagnostics <- diagnose_selection(sim_results)
+positivity_diagnostics <- diagnose_positivity(sim_results)
 ```
 
 
@@ -222,15 +267,73 @@ Above the k-fold specific results show that we find the correct exposure-covaria
 
 ---
 
-## Randomized Trials: a Single Binary Treatment
+## For Trialists: Single Binary Treatment
 
-The same machinery applies to a randomized controlled trial with a single binary
-treatment. Set `rct = TRUE` and pass one binary exposure. EffectXshift estimates
-the subject-level treatment effect (the ATE \eqn{Q(1, W) - Q(0, W)} via TMLE with
-the known randomization probability), then searches the covariate space for the
-region `V` that maximizes the differential treatment effect against its
-complement `V^c`. The discovered region and its complement are estimated by
-CV-TMLE, pooling held-out influence-curve contributions across folds.
+For a randomized trial with one binary treatment, set `rct = TRUE` and pass one
+0/1 treatment column as `a`. The trial mode asks:
+
+> Which baseline covariate-defined subgroup has the largest treatment effect
+> difference compared with its complement?
+
+In `rct_type = "ate"` mode, EffectXshift estimates the subject-level treatment
+effect \(Q(1, W) - Q(0, W)\), searches for the region `V` with the largest
+differential effect, and reports held-out estimates for `V`, `V^c`, and the
+`V - V^c` contrast. If the allocation probability is known, pass it through
+`alpha`; if omitted, it is estimated within each training fold from the observed
+treatment proportion. For unequal randomization, the design value is preferred.
+
+Use `target = "risk"` only for a prognostic high-risk subgroup analysis. That
+mode finds baseline covariate regions with high held-out outcome risk; it is not
+a treatment-effect-modification estimand.
+
+Trialist reporting checklist:
+
+- treatment coding and allocation probability `alpha`
+- endpoint and baseline covariates eligible for subgroup discovery
+- `n_folds`, `min_obs`, `max_depth`, and `pval_thresh`
+- fold-level selected rules, not only the pooled result
+- `V`, `V^c`, and `V - V^c` estimates with confidence intervals
+- selected-region arm counts and observed outcome summaries from
+  `Trial Region Diagnostics`
+- whether the analysis was prespecified or exploratory
+
+Current scope: one binary treatment and a marginal treatment probability. For
+cluster-randomized, adaptive, crossover, or strongly stratified designs, the
+randomization mechanism may need design-specific handling before trial-grade
+confirmatory use.
+
+### Fixed-Time Endpoints and Informative Censoring
+
+For a trial endpoint defined at a particular time point \(\tau\), write the
+estimand before running subgroup discovery. For a binary event outcome this is
+typically a risk difference,
+
+\[
+E\{1(T^1 \le \tau) - 1(T^0 \le \tau)\},
+\]
+
+or the corresponding survival difference. The current `rct = TRUE` workflow
+expects that the supplied `y` is already the scalar endpoint to be analyzed at
+\(\tau\). It is appropriate when the endpoint is fully observed, or when
+censoring/missingness has already been handled by an estimator aligned with the
+trial estimand.
+
+Informative censoring is not handled by coding censored-before-\(\tau\) subjects
+as event-free. That instead changes the endpoint and can bias the fixed-time ATE
+unless it is the planned composite or treatment-policy estimand. For a censored
+time-to-event endpoint, a future extension should accept event time, event
+indicator, censoring time/status, and \(\tau\); estimate the censoring survival
+\(G_C(t \mid A, W)\); form an IPCW/AIPW/TMLE pseudo-outcome for the fixed-time
+risk or survival contrast; and then run the same held-out subgroup discovery on
+that censoring-adjusted effect. This is consistent with the ICH E9(R1) emphasis
+on aligning the estimand, estimator, and sensitivity analyses [@ich2019e9r1] and
+with targeted-learning approaches for right-censored trial endpoints
+[@moore2009increasing; @brooks2013targeted].
+
+For a trial report or SAP, also state the intercurrent-event strategy, whether
+censoring is assumed conditionally independent given measured variables, the
+censoring model/learner, truncation of censoring weights, and sensitivity
+analyses for departures from the censoring assumption.
 
 ```{r rct example, eval = FALSE}
 # A randomized binary treatment whose effect is modified by W1
@@ -249,6 +352,7 @@ rct_results <- EffectXshift(
   y = Y,
   rct = TRUE,
   rct_type = "ate",   # subject-level ATE; use "incps" for an incremental shift
+  alpha = 0.5,        # known allocation probability; important if unequal
   n_folds = 2,
   max_depth = 1,
   seed = 4291531
@@ -259,6 +363,9 @@ rct_results$`Effect Modification K-Fold Results`
 
 # Pooled region V, region V^c, and the V - V^c oracle contrast (with 95% CIs)
 rct_results$`Pooled Region Effects`
+
+# Descriptive arm counts and observed outcomes in the selected regions
+rct_results$`Trial Region Diagnostics`
 ```
 
 The `Pooled Region Effects` table reports the effect in `V`, in `V^c`, and the
@@ -277,8 +384,7 @@ please [file an
 issue](https://github.com/blind-contours/EffectXshift/issues). Further details
 on filing
 issues are provided in our [contribution
-guidelines](https://github.com/blind-contours/
-EffectXshift/main/contributing.md).
+guidelines](https://github.com/blind-contours/EffectXshift/blob/main/contributing.md).
 
 ---
 
@@ -286,7 +392,7 @@ EffectXshift/main/contributing.md).
 
 Contributions are very welcome. Interested contributors should consult our
 [contribution
-guidelines](https://github.com/blind-contours/EffectXshift/blob/master/CONTRIBUTING.md)
+guidelines](https://github.com/blind-contours/EffectXshift/blob/main/contributing.md)
 prior to submitting a pull request.
 
 ---

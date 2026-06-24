@@ -18,7 +18,7 @@ EffectXshift(
   parallel = TRUE,
   parallel_type = "multi_session",
   num_cores = 2,
-  seed = seed,
+  seed = NULL,
   hn_trunc_thresh = 10,
   adaptive_delta = FALSE,
   top_n = 1,
@@ -27,6 +27,7 @@ EffectXshift(
   max_depth = 1,
   rct = FALSE,
   rct_type = c("ate", "incps"),
+  alpha = NULL,
   target = c("effect", "risk"),
   pval_thresh = 0.1
 )
@@ -38,11 +39,17 @@ baseline covariates. These variables are measured before exposures.}
 \item{a}{\code{matrix}, \code{data.frame}, or similar containing individual or
 multiple exposures.}
 
-\item{y}{\code{numeric} vector of observed outcomes.}
+\item{y}{\code{numeric} vector of observed outcomes. In the randomized-trial
+workflow this should be a fully observed scalar endpoint at the analysis time.
+Censored fixed-time event endpoints with informative loss to follow-up require
+censoring-adjusted preprocessing or a dedicated time-to-event estimator; do
+not code censored subjects as event-free unless that is the intended estimand.}
 
-\item{deltas}{A \code{numeric} value indicating the shift in exposures to
-define the target parameter, with respect to the scale of the exposures (A). If adaptive_delta
-is true, these values will be reduced.}
+\item{deltas}{A numeric scalar for a single exposure, or a named/unnamed
+\code{numeric} vector or list with one shift per exposure. Unnamed values are
+matched to exposure columns in order. Values define the additive exposure
+shift on the observed exposure scale. If \code{adaptive_delta = TRUE}, these
+values may be reduced fold-by-fold to respect the clever-covariate threshold.}
 
 \item{estimator}{The type of estimator to fit: \code{"tmle"} (default) for
 targeted maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.}
@@ -73,7 +80,7 @@ more folds with a richer / faster-converging Super Learner library.}
 
 \item{num_cores}{Number of CPU cores to use in parallelization (default: 2).}
 
-\item{seed}{\code{numeric} seed value to be passed to all functions.}
+\item{seed}{Optional \code{numeric} seed value to be passed to all functions.}
 
 \item{hn_trunc_thresh}{Truncation level for the clever covariate (default: 10).}
 
@@ -94,12 +101,19 @@ effect-modification regions (default: 1).}
 
 \item{rct}{If TRUE, run the randomized-trial workflow for a single binary
 exposure (estimate the subject-level treatment effect and find the oracle
-effect-modification region). If FALSE (default), run the mixed-exposure
-stochastic-shift workflow.}
+effect-modification region). This workflow assumes the supplied outcome is
+already the trial endpoint to be analyzed. If FALSE (default), run the
+mixed-exposure stochastic-shift workflow.}
 
 \item{rct_type}{Only used when \code{rct = TRUE}. Either \code{"ate"} (default),
 which targets the subject-level ATE \eqn{Q(1, W) - Q(0, W)}, or \code{"incps"},
 an incremental propensity-score shift from \eqn{\alpha} to \eqn{\alpha + \delta}.}
+
+\item{alpha}{Only used when \code{rct = TRUE}. Optional known marginal
+treatment randomization probability. If \code{NULL}, alpha is estimated within
+each training fold as the observed treatment proportion. Trial analyses should
+pass the design probability when it is known, especially under unequal
+randomization.}
 
 \item{target}{Only used when \code{rct = TRUE}. \code{"effect"} (default) finds
 regions of differential treatment EFFECT (needs both arms); \code{"risk"}
@@ -112,10 +126,11 @@ discovering effect-modification regions in the RCT workflow (default: 0.1).}
 }
 \value{
 An S3 object of class \code{EffectXshift} containing the results of the
-procedure to compute a TML or one-step estimate of the counterfactual mean
-under a modified treatment policy that shifts a continuous-valued exposure
-by a scalar amount \code{delta} in subregions of the exposure space.
-These exposures are data-adaptively identified using the CV-TMLE procedure.
+procedure to compute TML or one-step estimates of stochastic-shift effects
+in a data-adaptively discovered covariate region \eqn{V} and its complement
+\eqn{V^c}. For \code{rct = TRUE}, the object instead contains randomized-trial
+region effects, the \eqn{V - V^c} contrast, validation rows for \eqn{V} and
+\eqn{V^c}, and descriptive trial region diagnostics.
 }
 \description{
 This packages aims to find, in a mixed exposure with many covariates and a future outcome, the
@@ -124,6 +139,8 @@ training fold we find the region in the covariate space that maximizes the avera
 compared between the regions. This outputs an exposure-covariate region pairing. Then in an estimation sample, we estimate
 a stochastic shift intervention using targeted learning in each level of the covariate, shifting the discovered exposure.
 This is done in a CV-TMLE procedure where each fold is used as validation and the complementary folds are used as training.
-This package outputs the targeted estimates for the discovered exposure in the levels of the discovered covariate both at the k-fold
-specific level and pooled across folds, which estimates the overall oracle parameter.
+This package outputs the targeted estimates of the stochastic-shift effect
+\eqn{E[Y_{A_i + \delta_i} - Y]} in the discovered region and its complement,
+both at the k-fold specific level and pooled across folds, which estimates
+the data-adaptive oracle contrast between \eqn{V} and \eqn{V^c}.
 }

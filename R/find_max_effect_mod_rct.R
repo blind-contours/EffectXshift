@@ -41,12 +41,14 @@
 #' @param rct_type Either \code{"ate"} or \code{"incps"}.
 #' @param target Either \code{"effect"} (default; the treatment-effect-modification
 #'   contrast Q(1,W)-Q(0,W), requires both arms) or \code{"risk"} (a single-arm
-#'   PROGNOSTIC risk region: partition the Super-Learner risk Q(W)=E[Y|W] on the
+#'   PROGNOSTIC risk region: partition the Super-Learner risk
+#'   \eqn{Q(W)=E[Y \mid W]} on the
 #'   training folds and report the HELD-OUT region risk. No control arm or
 #'   propensity is needed; for a region mean the influence-function SE equals the
 #'   binomial SE, so Q(W) is used only to discover the region. \code{"risk"}
 #'   estimates a prediction, not a causal effect.
 #'
+#' @importFrom stats binomial gaussian pnorm pt
 #' @return A list with:
 #' \item{K_fold_EM_results}{Data frame with 2 rows per discovered region: region V and its complement V^c.}
 #' \item{av_q_estimates}{Per-subject AIPW pseudo-outcome on the validation set.}
@@ -122,6 +124,10 @@ find_max_effect_mods_rct <- function(
   # ---------------------------------------------------------
   if (is.null(alpha)) {
     alpha <- mean(at[[a_name]])
+  }
+  if (!is.numeric(alpha) || length(alpha) != 1 || is.na(alpha) ||
+      alpha <= 0 || alpha >= 1) {
+    stop("alpha must be a single numeric value strictly between 0 and 1.", call. = FALSE)
   }
   # Guardrail: a contrast needs a usable control arm. Warn when the smaller arm
   # has too few EVENTS to anchor Q(0,W) -- the discovered regions will be driven

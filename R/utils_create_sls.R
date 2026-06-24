@@ -6,6 +6,10 @@
 #' fast but also flexible.
 #'
 #' @import sl3
+#' @importFrom earth earth
+#' @importFrom glmnet glmnet
+#' @importFrom nnet nnet
+#' @importFrom xgboost xgboost
 #' @return List of ensemble estimators
 #' @export
 

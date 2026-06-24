@@ -59,7 +59,8 @@ find_max_effect_mods_rct(
 
 \item{target}{Either \code{"effect"} (default; the treatment-effect-modification
 contrast Q(1,W)-Q(0,W), requires both arms) or \code{"risk"} (a single-arm
-PROGNOSTIC risk region: partition the Super-Learner risk Q(W)=E\link{Y|W} on the
+PROGNOSTIC risk region: partition the Super-Learner risk
+\eqn{Q(W)=E[Y \mid W]} on the
 training folds and report the HELD-OUT region risk. No control arm or
 propensity is needed; for a region mean the influence-function SE equals the
 binomial SE, so Q(W) is used only to discover the region. \code{"risk"}

@@ -6,18 +6,26 @@
 #' compared between the regions. This outputs an exposure-covariate region pairing. Then in an estimation sample, we estimate
 #' a stochastic shift intervention using targeted learning in each level of the covariate, shifting the discovered exposure.
 #' This is done in a CV-TMLE procedure where each fold is used as validation and the complementary folds are used as training.
-#' This package outputs the targeted estimates for the discovered exposure in the levels of the discovered covariate both at the k-fold
-#' specific level and pooled across folds, which estimates the overall oracle parameter.
+#' This package outputs the targeted estimates of the stochastic-shift effect
+#' \eqn{E[Y_{A_i + \delta_i} - Y]} in the discovered region and its complement,
+#' both at the k-fold specific level and pooled across folds, which estimates
+#' the data-adaptive oracle contrast between \eqn{V} and \eqn{V^c}.
 #'
 #'
 #' @param w A \code{matrix}, \code{data.frame}, or similar containing a set of
 #' baseline covariates. These variables are measured before exposures.
 #' @param a \code{matrix}, \code{data.frame}, or similar containing individual or
 #' multiple exposures.
-#' @param y \code{numeric} vector of observed outcomes.
-#' @param deltas A \code{numeric} value indicating the shift in exposures to
-#' define the target parameter, with respect to the scale of the exposures (A). If adaptive_delta
-#' is true, these values will be reduced.
+#' @param y \code{numeric} vector of observed outcomes. In the randomized-trial
+#' workflow this should be a fully observed scalar endpoint at the analysis time.
+#' Censored fixed-time event endpoints with informative loss to follow-up require
+#' censoring-adjusted preprocessing or a dedicated time-to-event estimator; do
+#' not code censored subjects as event-free unless that is the intended estimand.
+#' @param deltas A numeric scalar for a single exposure, or a named/unnamed
+#' \code{numeric} vector or list with one shift per exposure. Unnamed values are
+#' matched to exposure columns in order. Values define the additive exposure
+#' shift on the observed exposure scale. If \code{adaptive_delta = TRUE}, these
+#' values may be reduced fold-by-fold to respect the clever-covariate threshold.
 #' @param estimator The type of estimator to fit: \code{"tmle"} (default) for
 #' targeted maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.
 #' @param fluctuation Method used in the targeting step for TML estimation: "standard" or "weighted".
@@ -38,7 +46,7 @@
 #' @param parallel_type Type of parallelization to use if parallel is TRUE:
 #' "multi_session" (default), "multicore", or "sequential".
 #' @param num_cores Number of CPU cores to use in parallelization (default: 2).
-#' @param seed \code{numeric} seed value to be passed to all functions.
+#' @param seed Optional \code{numeric} seed value to be passed to all functions.
 #' @param hn_trunc_thresh Truncation level for the clever covariate (default: 10).
 #' @param adaptive_delta If TRUE, reduces the user-specified delta until
 #' the Hn calculated for a shift does not have any observation greater
@@ -52,11 +60,17 @@
 #' effect-modification regions (default: 1).
 #' @param rct If TRUE, run the randomized-trial workflow for a single binary
 #' exposure (estimate the subject-level treatment effect and find the oracle
-#' effect-modification region). If FALSE (default), run the mixed-exposure
-#' stochastic-shift workflow.
+#' effect-modification region). This workflow assumes the supplied outcome is
+#' already the trial endpoint to be analyzed. If FALSE (default), run the
+#' mixed-exposure stochastic-shift workflow.
 #' @param rct_type Only used when \code{rct = TRUE}. Either \code{"ate"} (default),
 #' which targets the subject-level ATE \eqn{Q(1, W) - Q(0, W)}, or \code{"incps"},
 #' an incremental propensity-score shift from \eqn{\alpha} to \eqn{\alpha + \delta}.
+#' @param alpha Only used when \code{rct = TRUE}. Optional known marginal
+#' treatment randomization probability. If \code{NULL}, alpha is estimated within
+#' each training fold as the observed treatment proportion. Trial analyses should
+#' pass the design probability when it is known, especially under unequal
+#' randomization.
 #' @param target Only used when \code{rct = TRUE}. \code{"effect"} (default) finds
 #'   regions of differential treatment EFFECT (needs both arms); \code{"risk"}
 #'   finds a single-arm PROGNOSTIC high-risk region (held-out risk of the outcome,
@@ -66,10 +80,11 @@
 #' discovering effect-modification regions in the RCT workflow (default: 0.1).
 #'
 #' @return An S3 object of class \code{EffectXshift} containing the results of the
-#' procedure to compute a TML or one-step estimate of the counterfactual mean
-#' under a modified treatment policy that shifts a continuous-valued exposure
-#' by a scalar amount \code{delta} in subregions of the exposure space.
-#' These exposures are data-adaptively identified using the CV-TMLE procedure.
+#' procedure to compute TML or one-step estimates of stochastic-shift effects
+#' in a data-adaptively discovered covariate region \eqn{V} and its complement
+#' \eqn{V^c}. For \code{rct = TRUE}, the object instead contains randomized-trial
+#' region effects, the \eqn{V - V^c} contrast, validation rows for \eqn{V} and
+#' \eqn{V^c}, and descriptive trial region diagnostics.
 #' @export
 #' @importFrom MASS mvrnorm
 #' @importFrom foreach %dopar%
@@ -94,7 +109,7 @@ EffectXshift <- function(w,
                          parallel = TRUE,
                          parallel_type = "multi_session",
                          num_cores = 2,
-                         seed = seed,
+                         seed = NULL,
                          hn_trunc_thresh = 10,
                          adaptive_delta = FALSE,
                          top_n = 1,
@@ -103,6 +118,7 @@ EffectXshift <- function(w,
                          max_depth = 1,
                          rct = FALSE,
                          rct_type = c("ate", "incps"),
+                         alpha = NULL,
                          target = c("effect", "risk"),
                          pval_thresh = 0.1) {
   # check arguments and set up some objects for programmatic convenience
@@ -111,6 +127,14 @@ EffectXshift <- function(w,
   fluctuation <- match.arg(fluctuation)
   rct_type <- match.arg(rct_type)
   target <- match.arg(target)
+  parallel_type <- match.arg(parallel_type, c("multi_session", "multicore", "sequential"))
+
+  if (!is.null(seed)) {
+    if (!is.numeric(seed) || length(seed) != 1 || is.na(seed)) {
+      stop("seed must be NULL or a single numeric value.", call. = FALSE)
+    }
+    set.seed(seed)
+  }
   # coerce W to matrix and, if no names in W, assign them generically
   if (!is.data.frame(w)) w <- as.data.frame(w)
   w_names <- colnames(w)
@@ -129,6 +153,57 @@ EffectXshift <- function(w,
     colnames(a) <- a_names
   }
 
+  if (rct && length(a_names) != 1) {
+    stop("rct = TRUE requires exactly one binary exposure column.", call. = FALSE)
+  }
+
+  if (rct && !is.null(alpha)) {
+    if (!is.numeric(alpha) || length(alpha) != 1 || is.na(alpha) ||
+        alpha <= 0 || alpha >= 1) {
+      stop("alpha must be NULL or a single numeric value strictly between 0 and 1.", call. = FALSE)
+    }
+  }
+
+  normalize_deltas <- function(deltas, a_names) {
+    if (missing(deltas) || is.null(deltas)) {
+      stop("deltas must be supplied.", call. = FALSE)
+    }
+
+    delta_vec <- unlist(deltas, use.names = TRUE)
+    if (!is.numeric(delta_vec) || anyNA(delta_vec)) {
+      stop("deltas must be numeric and non-missing.", call. = FALSE)
+    }
+
+    delta_names <- names(delta_vec)
+    has_complete_names <- !is.null(delta_names) && all(nzchar(delta_names))
+
+    if (length(delta_vec) == 1 && length(a_names) == 1) {
+      names(delta_vec) <- a_names
+      return(as.list(delta_vec))
+    }
+
+    if (length(delta_vec) != length(a_names)) {
+      stop("deltas must have length 1 for a single exposure or one value per exposure.", call. = FALSE)
+    }
+
+    if (!has_complete_names) {
+      names(delta_vec) <- a_names
+    }
+
+    missing_deltas <- setdiff(a_names, names(delta_vec))
+    if (length(missing_deltas) > 0) {
+      stop(
+        "deltas is missing values for exposure(s): ",
+        paste(missing_deltas, collapse = ", "),
+        call. = FALSE
+      )
+    }
+
+    as.list(delta_vec[a_names])
+  }
+
+  deltas <- normalize_deltas(deltas, a_names)
+
   # If NULL create default learners
 
   if (is.null(g_learner)) {
@@ -143,7 +218,7 @@ EffectXshift <- function(w,
 
   # Set up parallel type
 
-  if (parallel == TRUE) {
+  if (parallel == TRUE && parallel_type != "sequential") {
     if (parallel_type == "multi_session") {
       future::plan(future::multisession,
         workers = num_cores,
@@ -164,11 +239,11 @@ EffectXshift <- function(w,
   # Create internal data
 
   data_internal <- data.table::data.table(w, a, y)
-  `%notin%` <- Negate(`%in%`)
-
 
   # Create folds for CV procedure
   data_internal$folds <- create_cv_folds(n_folds, data_internal$y)
+
+  future_seed <- if (is.null(seed)) TRUE else seed
 
   fold_basis_results <- furrr::future_map(unique(data_internal$folds),
     function(fold_k) {
@@ -186,18 +261,22 @@ EffectXshift <- function(w,
           outcome_type = outcome_type,
           mu_learner = mu_learner,
           g_learner = g_learner,
+          estimator = estimator,
+          fluctuation = fluctuation,
           seed = seed,
           top_n = top_n,
           min_obs = min_obs,
           fold = fold_k,
           density_classification = density_classification,
+          adaptive_delta = adaptive_delta,
+          hn_trunc_thresh = hn_trunc_thresh,
           max_depth = max_depth
         )
       } else{
         effect_mod_results <- find_max_effect_mods_rct(
           at = at,
           av = av,
-          delta = as.numeric(deltas),
+          delta = unname(unlist(deltas))[1],
           a_name = a_names,
           w_names = w_names,
           outcome = "y",
@@ -208,6 +287,7 @@ EffectXshift <- function(w,
           min_obs = min_obs,
           fold = fold_k,
           max_depth = max_depth,
+          alpha = alpha,
           rct_type = rct_type,
           target = target,
           pval_thresh = pval_thresh
@@ -228,6 +308,7 @@ EffectXshift <- function(w,
       q_region_vc <- effect_mod_results$q_region_vc
       data_region_v <- effect_mod_results$data_region_v
       data_region_vc <- effect_mod_results$data_region_vc
+      positivity_diagnostics <- effect_mod_results$positivity_diagnostics
       data <- effect_mod_results$data
 
 
@@ -241,6 +322,7 @@ EffectXshift <- function(w,
         q_region_vc,
         data_region_v,
         data_region_vc,
+        positivity_diagnostics,
         data
       )
 
@@ -254,13 +336,14 @@ EffectXshift <- function(w,
         "q_estimates_region_vc",
         "data_region_v",
         "data_region_vc",
+        "positivity_diagnostics",
         "data"
       )
 
       results_list
 
     },
-    .options = furrr::furrr_options(seed = seed, packages = "EffectXshift")
+    .options = furrr::furrr_options(seed = future_seed, packages = "EffectXshift")
   )
 
 
@@ -274,10 +357,11 @@ EffectXshift <- function(w,
   q_estimates_region_vc <- purrr::map(fold_basis_results, c("q_estimates_region_vc"))
   data_region_v  <- purrr::map(fold_basis_results, c("data_region_v"))
   data_region_vc <- purrr::map(fold_basis_results, c("data_region_vc"))
+  positivity_diagnostics <- purrr::map(fold_basis_results, c("positivity_diagnostics"))
   data <- purrr::map(fold_basis_results, c("data"))
 
-  ## Are we in a scenario with multiple exposures or a single binary exposure?
-  if (length(a_names) > 1) {
+  ## Are we in the stochastic-shift workflow or the randomized-trial workflow?
+  if (rct == FALSE) {
     # -------------------------------------------------
     # CASE 1: Multiple exposures in a mixture scenario
     # -------------------------------------------------
@@ -293,7 +377,7 @@ EffectXshift <- function(w,
       q_fold_data_exposure <- exposure_shift_q[names(exposure_shift_q) == exposure]
       q_fold_data_exposure_combined <- do.call(rbind, q_fold_data_exposure)
 
-      g_fold_data_exposure <- exposure_shift_g[names(exposure_shift_q) == exposure]
+      g_fold_data_exposure <- exposure_shift_g[names(exposure_shift_g) == exposure]
       g_fold_data_exposure_combined <- do.call(rbind, g_fold_data_exposure)
 
       # Also combine the underlying data for these folds
@@ -303,10 +387,16 @@ EffectXshift <- function(w,
       tmle_fit <- tmle_exposhift(
         data_internal = data_combined,
         Qn_scaled = q_fold_data_exposure_combined,
+        Qn_unscaled = scale_to_original(
+          q_fold_data_exposure_combined,
+          min_orig = min(data_combined$y),
+          max_orig = max(data_combined$y)
+        ),
         Hn = g_fold_data_exposure_combined,
-        fluctuation = "standard",
+        fluctuation = fluctuation,
         y = data_combined$y,
-        delta = deltas[[exposure]]
+        delta = deltas[[exposure]],
+        estimator = estimator
       )
 
       indiv_shift_in_fold <- calc_final_ind_shift_param(
@@ -320,6 +410,11 @@ EffectXshift <- function(w,
 
     # Combine results
     pooled_exposure_results_df <- do.call(rbind, pooled_exposure_results_list)
+    positivity_diagnostics_df <- data.table::rbindlist(
+      positivity_diagnostics,
+      fill = TRUE
+    )
+    selection_diagnostics <- diagnose_selection(k_fold_results)
 
     # Then do region V, region V^c for the aggregated data
     g_fold_data_region_combined <- data.table::rbindlist(g_estimates_region_v)
@@ -329,11 +424,17 @@ EffectXshift <- function(w,
     tmle_fit_v <- tmle_exposhift(
       data_internal = data_region_v_combined,
       Qn_scaled = q_fold_data_region_combined,
+      Qn_unscaled = scale_to_original(
+        q_fold_data_region_combined,
+        min_orig = min(data_region_v_combined$y),
+        max_orig = max(data_region_v_combined$y)
+      ),
       # optional if you have scale_to_original or other transformations
       Hn = g_fold_data_region_combined,
-      fluctuation = "standard",
+      fluctuation = fluctuation,
       y = data_region_v_combined$y,
-      delta = mean(unlist(deltas))
+      delta = mean(unlist(deltas)),
+      estimator = estimator
     )
     indiv_shift_in_fold_v <- calc_final_ind_shift_param(
       tmle_fit = tmle_fit_v,
@@ -349,10 +450,16 @@ EffectXshift <- function(w,
     tmle_fit_vc <- tmle_exposhift(
       data_internal = data_region_vc_combined,
       Qn_scaled = q_fold_data_region_combined_vc,
+      Qn_unscaled = scale_to_original(
+        q_fold_data_region_combined_vc,
+        min_orig = min(data_region_vc_combined$y),
+        max_orig = max(data_region_vc_combined$y)
+      ),
       Hn = g_fold_data_region_combined_vc,
-      fluctuation = "standard",
+      fluctuation = fluctuation,
       y = data_region_vc_combined$y,
-      delta = mean(unlist(deltas))
+      delta = mean(unlist(deltas)),
+      estimator = estimator
     )
     indiv_shift_in_fold_vc <- calc_final_ind_shift_param(
       tmle_fit = tmle_fit_vc,
@@ -364,7 +471,9 @@ EffectXshift <- function(w,
       "Effect Modification K-Fold Results"           = k_fold_results,
       "Effect Modification Region V Pooled Results"  = indiv_shift_in_fold_v,
       "Effect Modification Region V^c Pooled Results" = indiv_shift_in_fold_vc,
-      "Marginal Shift Results"                       = pooled_exposure_results_df
+      "Marginal Shift Results"                       = pooled_exposure_results_df,
+      "Selection Diagnostics"                        = selection_diagnostics,
+      "Positivity Diagnostics"                       = positivity_diagnostics_df
     )
 
     return(results_list)
@@ -435,10 +544,17 @@ EffectXshift <- function(w,
 
     pooled_results <- rbind(region_v_res, region_vc_res, contrast_res)
     rownames(pooled_results) <- NULL
+    trial_region_diagnostics <- make_trial_region_diagnostics(
+      region_v_data = data_region_v_combined,
+      region_vc_data = data_region_vc_combined,
+      treatment = a_names[1],
+      outcome = "y"
+    )
 
     results_list <- list(
       "Effect Modification K-Fold Results" = k_fold_results,
       "Pooled Region Effects"              = pooled_results,
+      "Trial Region Diagnostics"           = trial_region_diagnostics,
       "Region V Data"                      = data_region_v_combined,
       "Region V^c Data"                    = data_region_vc_combined
     )
@@ -446,4 +562,3 @@ EffectXshift <- function(w,
     return(results_list)
   }
 }
-

@@ -51,7 +51,10 @@ tmle_exposhift <- function(data_internal,
                            fluctuation = c("standard", "weighted"),
                            eif_reg_type = c("hal", "glm"),
                            y,
-                           estimator = "tmle") {
+                           estimator = c("tmle", "onestep")) {
+  fluctuation <- match.arg(fluctuation)
+  estimator <- match.arg(estimator)
+
   # initialize counter
   n_steps <- 0
 
@@ -146,6 +149,8 @@ fit_fluctuation <- function(y,
                             ipc_weights = rep(1, length(y)),
                             method = c("standard", "weighted"),
                             flucmod_tol = 50) {
+  method <- match.arg(method)
+
   y_star <- scale_to_unit(
     vals = y
   )
