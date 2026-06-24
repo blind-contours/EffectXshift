@@ -38,7 +38,7 @@ and Rotnitzky 2013).
 Our target parameter is:
 
 $$
-\begin{align*}
+\begin{aligned}
 (\hat A_i, \hat V)
 &= \underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\arg\max}
 \left\{
@@ -50,7 +50,7 @@ E\{Y \mid A_i + \delta_i, A_{\setminus i}, W\}
 - E\{Y \mid A_i, A_{\setminus i}, W\}
 \mid W \in V
 \right].
-\end{align*}
+\end{aligned}
 $$
 
 This finds the exposure-covariate region combination where the effect of
