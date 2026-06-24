@@ -15,7 +15,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# R/`EffectXshift`
+# R/`EffectXshift` <img src="man/figures/EffectXshift_logo.png" align="right" height="139" alt="EffectXshift hex logo" />
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/blind-contours/EffectXshift/actions/workflows/r.yml/badge.svg?branch=main)](https://github.com/blind-contours/EffectXshift/actions/workflows/r.yml)
