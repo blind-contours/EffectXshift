@@ -53,7 +53,7 @@ jobs:
       - name: Check package
         run: |
           options(crayon.enabled = TRUE)
-          rcmdcheck::rcmdcheck(args = c("--no-manual", "--ignore-vignettes"), error_on = "error")
+          rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
 
       - name: Upload code coverage

@@ -242,7 +242,7 @@ exposures_to_keep <- setdiff(exposures, exposures_to_remove)
 
 ## Run EffectXshift 
 
-```{r run EffectXshift for NHANES, warning=FALSE, message=FALSE}
+```{r run EffectXshift for NHANES, eval = FALSE, warning=FALSE, message=FALSE}
 
 ptm <- proc.time()
 
@@ -289,7 +289,7 @@ One note is that for this example we will get more variability than normal becau
 Let's first look at the results for each fold: 
 
 
-```{r k-fold results, eval = TRUE}
+```{r k-fold results, eval = FALSE}
 
 k_fold_results <- NHANES_results$`Effect Modification K-Fold Results`
 
@@ -303,7 +303,7 @@ Psi is the comparison of the expected outcome under shift intervention compared 
 
 Above, the first row in each fold corresponds to the region v and the second row vc for the pooled results. The pooled results, leveraging the full data is below:
 
-```{r pooled results, eval = TRUE}
+```{r pooled results, eval = FALSE}
 pooled_results <- rbind(NHANES_results$`Effect Modification Region V Pooled Results`, NHANES_results$`Effect Modification Region V^c Pooled Results`)
 
 pooled_results %>%

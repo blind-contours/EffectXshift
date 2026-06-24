@@ -42,17 +42,8 @@
 <li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Articles
-     
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/EffectXshift-vignette.html">Effect Modification Identification and Estimation using Data-Adaptive Stochastic Interventions</a>
-    </li>
-  </ul>
+  <a href="../articles/index.html">Articles</a>
 </li>
       </ul>
 <ul class="nav navbar-nav navbar-right"></ul>
@@ -65,14 +56,13 @@
 
       
 
-      </header><script src="EffectXshift-vignette_files/kePrint-0.0.1/kePrint.js"></script><link href="EffectXshift-vignette_files/lightable-0.0.1/lightable.css" rel="stylesheet">
-<div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Effect Modification Identification and Estimation using Data-Adaptive Stochastic Interventions</h1>
                         <h4 data-toc-skip class="author">David McCoy</h4>
             
-            <h4 data-toc-skip class="date">2026-06-11</h4>
+            <h4 data-toc-skip class="date">2026-06-24</h4>
       
       
       <div class="hidden name"><code>EffectXshift-vignette.Rmd</code></div>
@@ -114,17 +104,39 @@
 <p>Despite their effectiveness, these methods often act as black boxes, offering limited insights into which specific subpopulations are most affected by a treatment or exposure. Additionally, many of these methods are limited to only estimating the differential effects of a binary treatment/exposure. Our work with EffectXshift addresses this gap by providing an interpretable framework that not only estimates the impact of interventions but also identifies subpopulations with the maximal effect difference. This approach enhances our understanding of treatment effects, facilitating targeted interventions and personalized treatment strategies.</p>
 </div>
 <div class="section level2">
+<h2 id="relationship-to-other-methods">Relationship to Other Methods<a class="anchor" aria-label="anchor" href="#relationship-to-other-methods"></a>
+</h2>
+<p>EffectXshift sits between stochastic-intervention estimators, heterogeneous-treatment-effect methods, and exposure-mixture methods. Stochastic-intervention estimators define and estimate mean outcomes under modified exposure policies <span class="citation">(Dı́az and van der Laan 2012; Haneuse and Rotnitzky 2013)</span>, but typically do not search for the exposure and covariate region with maximal effect modification. Honest causal trees/forests and meta-learners focus on heterogeneous effects <span class="citation">(Athey and Imbens 2016; Wager and Athey 2018; Künzel et al. 2019)</span>, but most commonly target binary or simpler treatments rather than additive stochastic shifts of continuous mixture components. Exposure-mixture methods such as quantile g-computation estimate overall mixture effects or component contributions <span class="citation">(Keil et al. 2020)</span>, while EffectXshift searches for interpretable exposure-region pairs where the stochastic-shift effect is most different.</p>
+<p>This data-adaptive search is useful but should be treated carefully. Users should review fold-level selection stability and positivity diagnostics before interpreting pooled estimates. Consistent exposure/rule selection across folds supports a more stable finding; large clever covariates indicate weak support for the requested shift.</p>
+</div>
+<div class="section level2">
+<h2 id="notes-for-trialists">Notes for Trialists<a class="anchor" aria-label="anchor" href="#notes-for-trialists"></a>
+</h2>
+<p>For a randomized trial with one binary treatment, set <code>rct = TRUE</code> and pass one 0/1 treatment column. In <code>rct_type = "ate"</code> mode, EffectXshift asks which baseline covariate-defined subgroup has the largest treatment-effect difference against its complement. It estimates (Q(1, W) - Q(0, W)), searches for the region <code>V</code> that maximizes the differential treatment effect, and reports held-out estimates for <code>V</code>, <code>V^c</code>, and the <code>V - V^c</code> contrast.</p>
+<p>Trialists should pass the known allocation probability with <code>alpha</code> whenever it is known, especially under unequal randomization. If <code>alpha = NULL</code>, the probability is estimated within each training fold from the observed treatment proportion. Use <code>target = "risk"</code> only for a prognostic high-risk subgroup analysis; it reports held-out outcome risk and is not a treatment-effect modification estimand. Current scope is one binary treatment and a marginal randomization probability; cluster-randomized, adaptive, crossover, or strongly stratified designs may require design-specific handling.</p>
+<p>For reporting, include treatment coding, the allocation probability, eligible baseline covariates, <code>n_folds</code>, <code>min_obs</code>, <code>max_depth</code>, <code>pval_thresh</code>, fold-level selected rules, the <code>V</code>, <code>V^c</code>, and <code>V - V^c</code> estimates with confidence intervals, selected-region arm counts and observed outcome summaries from <code>Trial Region Diagnostics</code>, and whether the analysis was prespecified or exploratory.</p>
+<p>For fixed-time event endpoints, define the time point () and endpoint scale before subgroup discovery. The current randomized-trial workflow expects a fully observed scalar endpoint, for example event by (), survival at (), or a continuous endpoint at a visit. Informative censoring before () requires a censoring-adjusted estimator; do not code censored subjects as event-free unless that composite endpoint is the intended estimand. A time-to-event extension should estimate a censoring survival model, construct an IPCW/AIPW/TMLE pseudo-outcome for the fixed-time risk or survival contrast, and then search for effect-modifying baseline regions using that adjusted pseudo-outcome <span class="citation">(International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use 2019; Moore and van der Laan 2009; Brooks et al. 2013)</span>.</p>
+</div>
+<div class="section level2">
 <h2 id="target-parameter">Target Parameter<a class="anchor" aria-label="anchor" href="#target-parameter"></a>
 </h2>
 <p>EffectXshift uses data-adaptive machine learning methods to identify the exposure-covariate combination that has the maximum difference in the impact of intervention.</p>
-<p>Given a set of exposures <span class="math inline">\(\boldsymbol{A}\)</span>, a covariate space <span class="math inline">\(W\)</span>, and a particular outcome <span class="math inline">\(Y\)</span>, our goal is to identify the exposure <span class="math inline">\(A_i \in \boldsymbol{A}\)</span> and region <span class="math inline">\(V \subseteq W\)</span> that demonstrate the maximal difference in the expected outcome with an intervention applied, compared across <span class="math inline">\(V\)</span> and its complementary region <span class="math inline">\(V^c\)</span>. Our target parameter looks like:</p>
+<p>Given a set of exposures <span class="math inline">\(\boldsymbol{A}\)</span>, a covariate space <span class="math inline">\(W\)</span>, and a particular outcome <span class="math inline">\(Y\)</span>, our goal is to identify the exposure <span class="math inline">\(A_i \in \boldsymbol{A}\)</span> and region <span class="math inline">\(V \subseteq W\)</span> that demonstrate the maximal difference in the stochastic-shift effect, compared across <span class="math inline">\(V\)</span> and its complementary region <span class="math inline">\(V^c\)</span>. Our target parameter looks like:</p>
 <p>$$</p>
 <p><span class="math display">\[\begin{align*}
-&amp;\underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\text{arg max}} \\
-&amp;\quad E\left[\, E\left[Y \,|\, A_i + \delta_i, \, W_j \in V, \, W_{\setminus j}\right] \right. \\
-&amp;\quad \left. - E\left[Y \,|\,A_i + \delta_i, \, W_j \in V^c, \, W_{\setminus j}\right] \, \right].
+(\hat A_i, \hat V)
+&amp;= \underset{A_i \in \boldsymbol{A}, \, V \subseteq W}{\arg\max}
+\left\{
+\Psi_i(V) - \Psi_i(V^c)
+\right\}, \\
+\Psi_i(V)
+&amp;= E\left[
+E\{Y \mid A_i + \delta_i, A_{\setminus i}, W\}
+- E\{Y \mid A_i, A_{\setminus i}, W\}
+\mid W \in V
+\right].
 \end{align*}\]</span></p>
-<p>$$ Here, <span class="math inline">\(\delta_i\)</span> denotes the intervention effect on exposure <span class="math inline">\(A_i\)</span>, and <span class="math inline">\(V^c\)</span> represents the complementary set of <span class="math inline">\(V\)</span> within <span class="math inline">\(W\)</span>.</p>
+<p>$$ Here, <span class="math inline">\(\delta_i\)</span> denotes the additive intervention on exposure <span class="math inline">\(A_i\)</span>, <span class="math inline">\(\Psi_i(V)\)</span> is the stochastic-shift effect in region <span class="math inline">\(V\)</span>, and <span class="math inline">\(V^c\)</span> represents the complementary set of <span class="math inline">\(V\)</span> within <span class="math inline">\(W\)</span>.</p>
 <p>To elucidate the EffectXshift algorithm, we start by fitting an outcome model utilizing the Super Learner ensemble methodology. This model is tasked with predicting the outcome variable, (Y), based on a set of exposures, (), and covariates, (). The Super Learner algorithm, a machine learning ensemble, optimally combines predictions from a pre-specified library of candidate models to minimize prediction error, thereby offering a flexible and robust approach to outcome modeling.</p>
 <p>Subsequently, for each exposure (A_i) within the vector of exposures (), we apply a shift, denoted by (_i), and predict the expected outcome under this perturbation, yielding (E[Y | A_i + _i, ]). This process is repeated for the baseline scenario without the shift to compute (E[Y | , ]). The difference between these two expected outcomes, (E[Y | A_i + _i, ] - E[Y | , ]), constitutes our individual treatment effect (ITE) vectors, capturing the expected change in outcome attributable to the intervention (_i) on exposure (A_i).</p>
 <p>To identify subpopulations with maximally differential responses to the intervention, we employ a custom decision tree algorithm that partitions the covariate space () in a manner that maximizes the average difference in population intervention effects between the resulting regions. This tree-based partitioning is performed recursively, with splits chosen to greedily maximize the difference in mean ITE between subgroups defined by the covariates within (). This approach aims to approximate the oracle target parameter: the region in the covariate space where the intervention exhibits the maximal differential effect.</p>
@@ -277,9 +289,7 @@
 <span>  max_depth <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span>
-<span><span class="co">#&gt;    user  system elapsed </span></span>
-<span><span class="co">#&gt;  19.992   0.875 268.389</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/proc.time.html" class="external-link">proc.time</a></span><span class="op">(</span><span class="op">)</span> <span class="op">-</span> <span class="va">ptm</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="investigating-results">Investigating Results<a class="anchor" aria-label="anchor" href="#investigating-results"></a>
@@ -293,331 +303,6 @@
 <span><span class="va">k_fold_results</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"K-Fold Effect Modification Results"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_classic</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">F</span>, html_font <span class="op">=</span> <span class="st">"Cambria"</span><span class="op">)</span></span></code></pre></div>
-<table class="table  lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-K-Fold Effect Modification Results
-</caption>
-<thead><tr>
-<th style="text-align:left;">
-</th>
-<th style="text-align:left;">
-Exposure
-</th>
-<th style="text-align:right;">
-Effect
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower.CI
-</th>
-<th style="text-align:right;">
-Upper.CI
-</th>
-<th style="text-align:left;">
-Modifier
-</th>
-<th style="text-align:right;">
-Fold
-</th>
-<th style="text-align:right;">
-Rank
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-LBX074LA1
-</td>
-<td style="text-align:left;">
-LBX074LA
-</td>
-<td style="text-align:right;">
-0.7994771
-</td>
-<td style="text-align:right;">
-0.0226341
-</td>
-<td style="text-align:right;">
-0.7551
-</td>
-<td style="text-align:right;">
-0.8438
-</td>
-<td style="text-align:left;">
-age_cent &lt;= -1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBX074LA2
-</td>
-<td style="text-align:left;">
-LBX074LA
-</td>
-<td style="text-align:right;">
-0.5658187
-</td>
-<td style="text-align:right;">
-0.0487206
-</td>
-<td style="text-align:right;">
-0.4703
-</td>
-<td style="text-align:right;">
-0.6613
-</td>
-<td style="text-align:left;">
-age_cent &gt; -1
-</td>
-<td style="text-align:right;">
-1
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBXD03LA1
-</td>
-<td style="text-align:left;">
-LBXD03LA
-</td>
-<td style="text-align:right;">
-0.8167177
-</td>
-<td style="text-align:right;">
-0.0354414
-</td>
-<td style="text-align:right;">
-0.7473
-</td>
-<td style="text-align:right;">
-0.8862
-</td>
-<td style="text-align:left;">
-age_cent &lt;= -4
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBXD03LA2
-</td>
-<td style="text-align:left;">
-LBXD03LA
-</td>
-<td style="text-align:right;">
-0.4765830
-</td>
-<td style="text-align:right;">
-0.0467089
-</td>
-<td style="text-align:right;">
-0.3850
-</td>
-<td style="text-align:right;">
-0.5681
-</td>
-<td style="text-align:left;">
-age_cent &gt; -4
-</td>
-<td style="text-align:right;">
-2
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBXD03LA11
-</td>
-<td style="text-align:left;">
-LBXD03LA
-</td>
-<td style="text-align:right;">
-0.6043067
-</td>
-<td style="text-align:right;">
-0.0306724
-</td>
-<td style="text-align:right;">
-0.5442
-</td>
-<td style="text-align:right;">
-0.6644
-</td>
-<td style="text-align:left;">
-age_cent &lt;= -4
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBXD03LA21
-</td>
-<td style="text-align:left;">
-LBXD03LA
-</td>
-<td style="text-align:right;">
-0.4643143
-</td>
-<td style="text-align:right;">
-0.0390713
-</td>
-<td style="text-align:right;">
-0.3877
-</td>
-<td style="text-align:right;">
-0.5409
-</td>
-<td style="text-align:left;">
-age_cent &gt; -4
-</td>
-<td style="text-align:right;">
-3
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBXD03LA12
-</td>
-<td style="text-align:left;">
-LBXD03LA
-</td>
-<td style="text-align:right;">
--0.5310408
-</td>
-<td style="text-align:right;">
-0.0302616
-</td>
-<td style="text-align:right;">
--0.5904
-</td>
-<td style="text-align:right;">
--0.4717
-</td>
-<td style="text-align:left;">
-age_cent &lt;= -4
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBXD03LA22
-</td>
-<td style="text-align:left;">
-LBXD03LA
-</td>
-<td style="text-align:right;">
--0.2760789
-</td>
-<td style="text-align:right;">
-0.0251036
-</td>
-<td style="text-align:right;">
--0.3253
-</td>
-<td style="text-align:right;">
--0.2269
-</td>
-<td style="text-align:left;">
-age_cent &gt; -4
-</td>
-<td style="text-align:right;">
-4
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBX074LA11
-</td>
-<td style="text-align:left;">
-LBX074LA
-</td>
-<td style="text-align:right;">
-0.7758920
-</td>
-<td style="text-align:right;">
-0.0285572
-</td>
-<td style="text-align:right;">
-0.7199
-</td>
-<td style="text-align:right;">
-0.8319
-</td>
-<td style="text-align:left;">
-age_cent &lt;= 1
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-LBX074LA21
-</td>
-<td style="text-align:left;">
-LBX074LA
-</td>
-<td style="text-align:right;">
-0.5784782
-</td>
-<td style="text-align:right;">
-0.0453696
-</td>
-<td style="text-align:right;">
-0.4896
-</td>
-<td style="text-align:right;">
-0.6674
-</td>
-<td style="text-align:left;">
-age_cent &gt; 1
-</td>
-<td style="text-align:right;">
-5
-</td>
-<td style="text-align:right;">
-1
-</td>
-</tr>
-</tbody>
-</table>
 <p>Psi is the comparison of the expected outcome under shift intervention compared to the mean outcome in each strata of the covariate. Variance estimates are from the influence function for stochastic interventions.</p>
 <p>Above, the first row in each fold corresponds to the region v and the second row vc for the pooled results. The pooled results, leveraging the full data is below:</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -626,122 +311,34 @@ age_cent &gt; 1
 <span><span class="va">pooled_results</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu">kableExtra</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kbl.html" class="external-link">kbl</a></span><span class="op">(</span>caption <span class="op">=</span> <span class="st">"Pooled TMLE Results"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/pkg/kableExtra/man/kable_classic.html" class="external-link">kable_classic</a></span><span class="op">(</span>full_width <span class="op">=</span> <span class="cn">F</span>, html_font <span class="op">=</span> <span class="st">"Cambria"</span><span class="op">)</span></span></code></pre></div>
-<table class="table  lightable-classic" style="font-family: Cambria; width: auto !important; margin-left: auto; margin-right: auto;">
-<caption>
-Pooled TMLE Results
-</caption>
-<thead><tr>
-<th style="text-align:left;">
-Condition
-</th>
-<th style="text-align:right;">
-Psi
-</th>
-<th style="text-align:right;">
-Variance
-</th>
-<th style="text-align:right;">
-SE
-</th>
-<th style="text-align:right;">
-Lower CI
-</th>
-<th style="text-align:right;">
-Upper CI
-</th>
-<th style="text-align:right;">
-P-value
-</th>
-<th style="text-align:left;">
-Fold
-</th>
-<th style="text-align:left;">
-Type
-</th>
-<th style="text-align:left;">
-Variables
-</th>
-<th style="text-align:right;">
-N
-</th>
-</tr></thead>
-<tbody>
-<tr>
-<td style="text-align:left;">
-v
-</td>
-<td style="text-align:right;">
--0.4496631
-</td>
-<td style="text-align:right;">
-0.0000221
-</td>
-<td style="text-align:right;">
-0.0046961
-</td>
-<td style="text-align:right;">
--0.4589
-</td>
-<td style="text-align:right;">
--0.4405
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-v
-</td>
-<td style="text-align:right;">
-426
-</td>
-</tr>
-<tr>
-<td style="text-align:left;">
-vc
-</td>
-<td style="text-align:right;">
-0.4711579
-</td>
-<td style="text-align:right;">
-0.0003288
-</td>
-<td style="text-align:right;">
-0.0181327
-</td>
-<td style="text-align:right;">
-0.4356
-</td>
-<td style="text-align:right;">
-0.5067
-</td>
-<td style="text-align:right;">
-0
-</td>
-<td style="text-align:left;">
-Pooled TMLE
-</td>
-<td style="text-align:left;">
-Indiv Shift
-</td>
-<td style="text-align:left;">
-vc
-</td>
-<td style="text-align:right;">
-581
-</td>
-</tr>
-</tbody>
-</table>
 <p>Of course, pooled results are only interpretable if the same exposure-covariate region was found in the definition of v and vc. When results are consistent, this indicates a shift in the same exposure in the same region of the covariate space and we are able to leverage more data in the estimation folds to get more precise estimates.</p>
 <div id="refs" class="references csl-bib-body hanging-indent">
+<div id="ref-athey2016recursive" class="csl-entry">
+Athey, Susan, and Guido Imbens. 2016. <span>“Recursive Partitioning for Heterogeneous Causal Effects.”</span> <em>Proceedings of the National Academy of Sciences</em> 113 (27): 7353–60. <a href="https://doi.org/10.1073/pnas.1510489113" class="external-link">https://doi.org/10.1073/pnas.1510489113</a>.
+</div>
+<div id="ref-brooks2013targeted" class="csl-entry">
+Brooks, Jordan C, Mark J van der Laan, Daniel E Singer, and Alan S Go. 2013. <span>“Targeted Minimum Loss-Based Estimation of Causal Effects in Right-Censored Survival Data with Time-Dependent Covariates: Warfarin, Stroke, and Death in Atrial Fibrillation.”</span> <em>Journal of Causal Inference</em> 1 (2): 235–54. <a href="https://doi.org/10.1515/jci-2013-0001" class="external-link">https://doi.org/10.1515/jci-2013-0001</a>.
+</div>
 <div id="ref-diaz2012population" class="csl-entry">
 Dı́az, Iván, and Mark J van der Laan. 2012. <span>“Population Intervention Causal Effects Based on Stochastic Interventions.”</span> <em>Biometrics</em> 68 (2): 541–49.
+</div>
+<div id="ref-haneuse2013estimation" class="csl-entry">
+Haneuse, Sebastian, and Andrea Rotnitzky. 2013. <span>“Estimation of the Effect of Interventions That Modify the Received Treatment.”</span> <em>Statistics in Medicine</em> 32 (30): 5260–77.
+</div>
+<div id="ref-ich2019e9r1" class="csl-entry">
+International Council for Harmonisation of Technical Requirements for Pharmaceuticals for Human Use. 2019. <span>“<span class="nocase">ICH E9(R1) Addendum on Estimands and Sensitivity Analysis in Clinical Trials to the Guideline on Statistical Principles for Clinical Trials</span>.”</span> <a href="https://database.ich.org/sites/default/files/E9-R1_Step4_Guideline_2019_1203.pdf" class="external-link">https://database.ich.org/sites/default/files/E9-R1_Step4_Guideline_2019_1203.pdf</a>.
+</div>
+<div id="ref-keil2020quantile" class="csl-entry">
+Keil, Alexander P, Jessie P Buckley, Katie M O’Brien, Kelly K Ferguson, Shanshan Zhao, and Alexandra J White. 2020. <span>“A Quantile-Based g-Computation Approach to Addressing the Effects of Exposure Mixtures.”</span> <em>Environmental Health Perspectives</em> 128 (4): 047004. <a href="https://doi.org/10.1289/EHP5838" class="external-link">https://doi.org/10.1289/EHP5838</a>.
+</div>
+<div id="ref-kunzel2019metalearners" class="csl-entry">
+Künzel, Sören R, Jasjeet S Sekhon, Peter J Bickel, and Bin Yu. 2019. <span>“Metalearners for Estimating Heterogeneous Treatment Effects Using Machine Learning.”</span> <em>Proceedings of the National Academy of Sciences</em> 116 (10): 4156–65. <a href="https://doi.org/10.1073/pnas.1804597116" class="external-link">https://doi.org/10.1073/pnas.1804597116</a>.
+</div>
+<div id="ref-moore2009increasing" class="csl-entry">
+Moore, Kelly L, and Mark J van der Laan. 2009. <span>“Increasing Power in Randomized Trials with Right Censored Outcomes Through Covariate Adjustment.”</span> <em>Journal of Biopharmaceutical Statistics</em> 19 (6): 1099–1131. <a href="https://doi.org/10.1080/10543400903243017" class="external-link">https://doi.org/10.1080/10543400903243017</a>.
+</div>
+<div id="ref-wager2018estimation" class="csl-entry">
+Wager, Stefan, and Susan Athey. 2018. <span>“Estimation and Inference of Heterogeneous Treatment Effects Using Random Forests.”</span> <em>Journal of the American Statistical Association</em> 113 (523): 1228–42. <a href="https://doi.org/10.1080/01621459.2017.1319839" class="external-link">https://doi.org/10.1080/01621459.2017.1319839</a>.
 </div>
 </div>
 </div>
