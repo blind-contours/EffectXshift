@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/blind-contours/EffectXshift/workflows/R-CMD-check/badge.svg)](https://github.com/blind-contours/EffectXshift/actions)
+[![R-CMD-check](https://github.com/blind-contours/EffectXshift/actions/workflows/r.yml/badge.svg?branch=main)](https://github.com/blind-contours/EffectXshift/actions/workflows/r.yml)
 [![Coverage
 Status](https://img.shields.io/codecov/c/github/blind-contours/EffectXshift/master.svg)](https://codecov.io/github/blind-contours/EffectXshift?branch=master)
 [![Project Status: Active – The project has reached a stable, usable
@@ -135,7 +135,7 @@ estimation and `sl3` is not on CRAN the `EffectXshift` package is not
 available on CRAN and must be downloaded here.
 
 ``` r
-remotes::install_github("tlverse/sl3@devel")
+remotes::install_github("tlverse/sl3@master")
 ```
 
 Make sure `sl3` installs correctly then install `EffectXshift`
