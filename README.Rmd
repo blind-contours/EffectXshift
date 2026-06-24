@@ -54,7 +54,9 @@ E\{Y \mid A_i + \delta_i, A_{\setminus i}, W\}
 \end{aligned}
 ```
 
-This finds the exposure-covariate region combination where the effect of an intervention is maximally different. 
+This finds the exposure-covariate region combination where the effect of an intervention is maximally different.
+
+**Randomized trials and binary treatments.** The same machinery also works for a single binary exposure, such as the treatment indicator in a randomized controlled trial (set `rct = TRUE`). In this case `EffectXshift` estimates the individual (heterogeneous) treatment effect — the contrast $E\{Y \mid A = 1, W\} - E\{Y \mid A = 0, W\}$ — and searches the covariate space for the interpretable region whose treatment effect differs most from its complement. The result is a readable rule (for example, `age > 65 & sex = female`) describing the subpopulation that responds most to treatment, together with doubly-robust held-out estimates and confidence intervals from the same CV-TMLE framework. Because the randomization probability is known, these estimates remain valid even when the outcome model is misspecified.
 
 ## Under the Hood 
 
