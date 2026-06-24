@@ -18,12 +18,10 @@
 #' @param deltas A \code{numeric} value indicating the shift in exposures to
 #' define the target parameter, with respect to the scale of the exposures (A). If adaptive_delta
 #' is true, these values will be reduced.
-#' @param estimator The type of estimator to fit: \code{"tmle"} for targeted
-#' maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.
-#' @param fluctuation Method used in the targeting step for TML estimation: "standard" or "weighted".
-#' This determines where to place the auxiliary covariate in the logistic tilting regression.
 #' @param estimator The type of estimator to fit: \code{"tmle"} (default) for
 #' targeted maximum likelihood estimation, or \code{"onestep"} for a one-step estimator.
+#' @param fluctuation Method used in the targeting step for TML estimation: "standard" or "weighted".
+#' This determines where to place the auxiliary covariate in the logistic tilting regression.
 #' @param mu_learner Learners for fitting Super Learner ensembles to the outcome model via \pkg{sl3}.
 #' @param g_learner Learners for fitting the exposure mechanism g(A|W) via \pkg{sl3}.
 #' Used to estimate the density ratio for continuous exposures when
@@ -59,6 +57,11 @@
 #' @param rct_type Only used when \code{rct = TRUE}. Either \code{"ate"} (default),
 #' which targets the subject-level ATE \eqn{Q(1, W) - Q(0, W)}, or \code{"incps"},
 #' an incremental propensity-score shift from \eqn{\alpha} to \eqn{\alpha + \delta}.
+#' @param target Only used when \code{rct = TRUE}. \code{"effect"} (default) finds
+#'   regions of differential treatment EFFECT (needs both arms); \code{"risk"}
+#'   finds a single-arm PROGNOSTIC high-risk region (held-out risk of the outcome,
+#'   no control arm required). With \code{target = "risk"} the returned "effect"
+#'   columns are absolute risks, not causal contrasts.
 #' @param pval_thresh p-value threshold for accepting a partition split when
 #' discovering effect-modification regions in the RCT workflow (default: 0.1).
 #'
@@ -100,12 +103,14 @@ EffectXshift <- function(w,
                          max_depth = 1,
                          rct = FALSE,
                          rct_type = c("ate", "incps"),
+                         target = c("effect", "risk"),
                          pval_thresh = 0.1) {
   # check arguments and set up some objects for programmatic convenience
   call <- match.call(expand.dots = TRUE)
   estimator <- match.arg(estimator)
   fluctuation <- match.arg(fluctuation)
   rct_type <- match.arg(rct_type)
+  target <- match.arg(target)
   # coerce W to matrix and, if no names in W, assign them generically
   if (!is.data.frame(w)) w <- as.data.frame(w)
   w_names <- colnames(w)
@@ -204,6 +209,7 @@ EffectXshift <- function(w,
           fold = fold_k,
           max_depth = max_depth,
           rct_type = rct_type,
+          target = target,
           pval_thresh = pval_thresh
         )
 

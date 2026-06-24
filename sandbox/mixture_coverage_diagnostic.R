@@ -33,13 +33,44 @@ sim_one <- function() {
   Y  <- 1 + A1 + 0.5 * A2 + 0.2 * A3 + 2 * A1 * W1 + 0.4 * W2 + rnorm(n_obs)
   w <- data.frame(W1 = W1, W2 = W2, W3 = W3)
   a <- data.frame(A1 = A1, A2 = A2, A3 = A3)
-  ml <- list(Lrnr_ranger$new(num.trees = 100), Lrnr_glm$new())
+  # Learner choice: "ranger" (default) or "hal" (highly adaptive lasso, a
+  # faster-converging nuisance with characterized rates -> better calibration).
+  learner <- Sys.getenv("DIAG_LEARNER", "ranger")
+  if (learner == "hal") {
+    # HAL plus a glm companion: Lrnr_sl with the nnls metalearner needs >= 2
+    # learners in the stack. The nnls weights put most mass on HAL.
+    ml <- list(
+      Lrnr_hal9001$new(smoothness_orders = 1, max_degree = 2, num_knots = c(5, 3)),
+      Lrnr_glm$new()
+    )
+  } else if (learner == "oracle") {
+    # Correctly-specified, sqrt(n) nuisance: a GLM with all pairwise interactions
+    # (captures the true A1:W1 modification for Q, and the log-linear classifier
+    # odds for the density ratio). If CIs are calibrated here, the variance
+    # FORMULA is sound and the residual undercoverage is a slow-ML-nuisance
+    # (rate) effect; if they are still anti-conservative, the formula is at fault.
+    ml <- list(Lrnr_glm$new(formula = "~ .^2"), Lrnr_mean$new())
+  } else {
+    ml <- list(Lrnr_ranger$new(num.trees = 100), Lrnr_glm$new())
+  }
 
   dens_class <- as.logical(Sys.getenv("DIAG_DENSITY_CLASS", "TRUE"))
-  # With direct density estimation use the package's default density Super
-  # Learner (g_learner = NULL builds it), since a regression stack is not a
-  # density estimator.
-  g_lrn <- if (dens_class) ml else NULL
+  glearner <- Sys.getenv("DIAG_GLEARNER", "semipar")
+  # Direct conditional-density learner choices:
+  #   semipar    : homoscedastic semiparametric + GLM mean (exact for the
+  #                Gaussian DGP; fast).
+  #   haldensify : HAL-based conditional density with a characterized ~n^-1/3
+  #                rate (the principled choice for valid shift-intervention CIs).
+  g_direct <- if (glearner == "haldensify") {
+    Lrnr_haldensify$new(
+      n_bins = 5, grid_type = "equal_range",
+      lambda_seq = exp(seq(-1, -10, length = 100)),
+      max_degree = 2, smoothness_orders = 1
+    )
+  } else {
+    Lrnr_density_semiparametric$new(mean_learner = Lrnr_glm$new())
+  }
+  g_lrn <- if (dens_class) ml else g_direct
 
   res <- tryCatch(EffectXshift(
     w = w, a = a, y = Y, deltas = list(A1 = delta, A2 = delta, A3 = delta),

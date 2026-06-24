@@ -39,6 +39,13 @@
 #' @param max_depth Maximum depth of the partition search tree.
 #' @param pval_thresh p-value threshold for accepting a split.
 #' @param rct_type Either \code{"ate"} or \code{"incps"}.
+#' @param target Either \code{"effect"} (default; the treatment-effect-modification
+#'   contrast Q(1,W)-Q(0,W), requires both arms) or \code{"risk"} (a single-arm
+#'   PROGNOSTIC risk region: partition the Super-Learner risk Q(W)=E[Y|W] on the
+#'   training folds and report the HELD-OUT region risk. No control arm or
+#'   propensity is needed; for a region mean the influence-function SE equals the
+#'   binomial SE, so Q(W) is used only to discover the region. \code{"risk"}
+#'   estimates a prediction, not a causal effect.
 #'
 #' @return A list with:
 #' \item{K_fold_EM_results}{Data frame with 2 rows per discovered region: region V and its complement V^c.}
@@ -81,9 +88,11 @@ find_max_effect_mods_rct <- function(
     fold,
     max_depth = 2,
     pval_thresh = 0.05,
-    rct_type = c("ate","incps")
+    rct_type = c("ate","incps"),
+    target = c("effect", "risk")
 ) {
   rct_type <- match.arg(rct_type)
+  target   <- match.arg(target)
   future::plan(future::sequential, gc = TRUE)
   set.seed(seed)
 
@@ -101,11 +110,33 @@ find_max_effect_mods_rct <- function(
       ~ ifelse(is.na(.), mean(., na.rm = TRUE), .)
     ))
 
+  # ============================================================
+  # PER-SUBJECT TARGET QUANTITY
+  #   target = "effect": contrast Q(1,W) - Q(0,W)   (needs both arms)
+  #   target = "risk"  : single-arm risk Q(W)=E[Y|W] (prognostic; no control arm)
+  # ============================================================
+  if (target == "effect") {
+
   # ---------------------------------------------------------
   # 1) alpha if not given
   # ---------------------------------------------------------
   if (is.null(alpha)) {
     alpha <- mean(at[[a_name]])
+  }
+  # Guardrail: a contrast needs a usable control arm. Warn when the smaller arm
+  # has too few EVENTS to anchor Q(0,W) -- the discovered regions will be driven
+  # by between-fold noise rather than real effect modification.
+  .min_arm_events <- min(
+    sum(at[[outcome]][at[[a_name]] == 1], na.rm = TRUE),
+    sum(at[[outcome]][at[[a_name]] == 0], na.rm = TRUE)
+  )
+  if (is.finite(.min_arm_events) && .min_arm_events < 10) {
+    warning(sprintf(
+      paste0("find_max_effect_mods_rct: only %.0f events in the smaller treatment ",
+             "arm (fold %s). The contrast Q(1,W)-Q(0,W) is thinly anchored and ",
+             "regions may reflect fold-to-fold noise. Consider target = 'risk' for a ",
+             "single-arm prognostic analysis."),
+      .min_arm_events, as.character(fold)))
   }
   # delta only shifts the propensity in the incremental-propensity-shift mode;
   # the ATE mode ignores it, so only enforce the [0, 1] bound for "incps".
@@ -184,6 +215,9 @@ find_max_effect_mods_rct <- function(
   # ---------------------------------------------------------
   get_fluctuation_model <- function(Y, offset_term, clever_cov, data, outcome_type) {
     if (outcome_type %in% c("binary", "binomial")) {
+      # Bound Q away from {0,1}: flexible learners can predict exactly 0/1 for a
+      # rare outcome, and qlogis(0|1) = +/-Inf would crash the fluctuation glm.
+      offset_term <- pmin(pmax(offset_term, 1e-6), 1 - 1e-6)
       glmfit <- stats::glm(
         formula = as.formula(
           paste(Y, "~ -1 + offset(qlogis(offset_term)) +", clever_cov)
@@ -241,8 +275,10 @@ find_max_effect_mods_rct <- function(
     data_0$H_ATE_cf <- -1 / (1 - alpha)
 
     if (outcome_type %in% c("binary", "binomial")) {
-      data_1$Q_star_1 <- plogis(qlogis(data_1$offset_cf) + eps * data_1$H_ATE_cf)
-      data_0$Q_star_0 <- plogis(qlogis(data_0$offset_cf) + eps * data_0$H_ATE_cf)
+      bcf1 <- pmin(pmax(data_1$offset_cf, 1e-6), 1 - 1e-6)
+      bcf0 <- pmin(pmax(data_0$offset_cf, 1e-6), 1 - 1e-6)
+      data_1$Q_star_1 <- plogis(qlogis(bcf1) + eps * data_1$H_ATE_cf)
+      data_0$Q_star_0 <- plogis(qlogis(bcf0) + eps * data_0$H_ATE_cf)
     } else {
       data_1$Q_star_1 <- data_1$offset_cf + eps * data_1$H_ATE_cf
       data_0$Q_star_0 <- data_0$offset_cf + eps * data_0$H_ATE_cf
@@ -306,6 +342,31 @@ find_max_effect_mods_rct <- function(
     av$Effect  <- delta * av_res$effect
     av$IC_full <- delta * av_res$eif
     av$Dstar   <- delta * (av_res$eif + av_res$psi_hat)
+  }
+
+  } else {
+    # =========================================================
+    # target = "risk": single-arm prognostic risk Q(W) = E[Y|W]
+    # ---------------------------------------------------------
+    # No treatment node is intervened on, so there is no propensity term and no
+    # control arm is required. We fit Q on the covariates, partition the smooth
+    # TRAINING risk score to discover the high-risk region, and report the
+    # HELD-OUT empirical risk on validation. For an (unconditional) region mean
+    # the efficient influence function is 1(W in V)/pi_V * (Y - psi_V), so the
+    # IF-based SE equals the binomial SE -- Q(W) buys DISCOVERY, not efficiency.
+    # =========================================================
+    q_task_tr <- sl3::sl3_Task$new(
+      data = at, covariates = w_names, outcome = outcome, outcome_type = outcome_type)
+    sl_q <- sl3::Lrnr_sl$new(learners = mu_learner, metalearner = sl3::Lrnr_nnls$new())
+    q_fit <- sl_q$train(q_task_tr)
+    at$Qhat <- q_fit$predict(q_task_tr)
+    av$Qhat <- q_fit$predict(sl3::sl3_Task$new(
+      data = av, covariates = w_names, outcome = outcome, outcome_type = outcome_type))
+
+    # training: partition the smooth risk score (Effect = Q-hat);
+    # validation: held-out empirical outcome (Effect = Y) -> honest region rate.
+    at$Effect <- at$Qhat;            at$IC_full <- at[[outcome]]; at$Dstar <- at[[outcome]]
+    av$Effect <- av[[outcome]];      av$IC_full <- av[[outcome]]; av$Dstar <- av[[outcome]]
   }
 
   # ---------------------------------------------------------

@@ -27,6 +27,7 @@ EffectXshift(
   max_depth = 1,
   rct = FALSE,
   rct_type = c("ate", "incps"),
+  target = c("effect", "risk"),
   pval_thresh = 0.1
 )
 }
@@ -99,6 +100,12 @@ stochastic-shift workflow.}
 \item{rct_type}{Only used when \code{rct = TRUE}. Either \code{"ate"} (default),
 which targets the subject-level ATE \eqn{Q(1, W) - Q(0, W)}, or \code{"incps"},
 an incremental propensity-score shift from \eqn{\alpha} to \eqn{\alpha + \delta}.}
+
+\item{target}{Only used when \code{rct = TRUE}. \code{"effect"} (default) finds
+regions of differential treatment EFFECT (needs both arms); \code{"risk"}
+finds a single-arm PROGNOSTIC high-risk region (held-out risk of the outcome,
+no control arm required). With \code{target = "risk"} the returned "effect"
+columns are absolute risks, not causal contrasts.}
 
 \item{pval_thresh}{p-value threshold for accepting a partition split when
 discovering effect-modification regions in the RCT workflow (default: 0.1).}
